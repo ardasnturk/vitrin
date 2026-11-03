@@ -392,13 +392,14 @@ private struct AscMetadataTab: View {
                     }
                     if let id = versionID ?? versions.first?["id"]?.stringValue {
                         let state = JSONAPI.text(versions.first { $0["id"]?.stringValue == id } ?? [:], "appVersionState")
-                        LocalizationEditor(versionID: id, editable: ["PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED", "METADATA_REJECTED", "INVALID_BINARY"].contains(state))
+                        LocalizationEditor(versionID: id, editable: ["PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED", "METADATA_REJECTED", "INVALID_BINARY"].contains(state), primaryLocale: app.primaryLocale)
                             .id(id)
                     } else {
                         Text(L.t("apps.noVersions")).foregroundStyle(.secondary)
                     }
                     SectionTitle(L.t("asc.meta.appInfo"))
                     AppInfoEditor(appID: app.id)
+                    StoreSettings(appID: app.id)
                 }
             }
         }
@@ -410,6 +411,7 @@ private struct AscMetadataTab: View {
 private struct LocalizationEditor: View {
     var versionID: String
     var editable: Bool
+    var primaryLocale = ""
     @State private var locale: String?
     @State private var drafts: [String: [String: String]] = [:]
     @State private var saving = false
@@ -425,14 +427,14 @@ private struct LocalizationEditor: View {
     var body: some View {
         AscLoad(args: ["localizations", "list", "--version", versionID, "--paginate"]) { doc, reload in
             let items = JSONAPI.items(doc).sorted { JSONAPI.text($0, "locale") < JSONAPI.text($1, "locale") }
-            let current = locale ?? items.first.map { JSONAPI.text($0, "locale") }
+            let current = locale ?? items.first { JSONAPI.text($0, "locale") == primaryLocale }.map { JSONAPI.text($0, "locale") } ?? items.first.map { JSONAPI.text($0, "locale") }
             HStack(alignment: .top, spacing: 14) {
                 VStack(alignment: .leading, spacing: 2) {
                     ForEach(items.indices, id: \.self) { i in
                         let l = JSONAPI.text(items[i], "locale")
                         Button { locale = l } label: {
                             HStack {
-                                Text(l).font(.callout.monospaced())
+                                Text(AscText.language(l)).font(.callout).lineLimit(1)
                                 Spacer()
                                 if drafts[items[i]["id"]?.stringValue ?? ""]?.isEmpty == false { Circle().fill(Color.accentColor).frame(width: 6, height: 6) }
                             }
@@ -444,7 +446,7 @@ private struct LocalizationEditor: View {
                     }
                 }
                 .glassCard(padding: 6)
-                .frame(width: 150)
+                .frame(width: 220)
                 if let item = items.first(where: { JSONAPI.text($0, "locale") == current }), let id = item["id"]?.stringValue {
                     VStack(alignment: .leading, spacing: 12) {
                         if !editable { Label(L.t("asc.meta.locked"), systemImage: "lock.fill").font(.callout).foregroundStyle(.secondary) }
@@ -463,7 +465,7 @@ private struct LocalizationEditor: View {
                             Button(L.t("asc.meta.save")) { Task { await save(id: id, reload: reload) } }
                             Button(L.t("common.cancel"), role: .cancel) {}
                         } message: {
-                            Text((drafts[id] ?? [:]).keys.sorted().map { L.t("asc.field.\($0)") }.joined(separator: ", ") + " · \(current ?? "")")
+                            Text((drafts[id] ?? [:]).keys.sorted().map { L.t("asc.field.\($0)") }.joined(separator: ", ") + " · \(AscText.language(current ?? ""))")
                         }
                     }
                     .glassCard(padding: 16)
@@ -523,7 +525,7 @@ private struct AppInfoEditor: View {
                     let it = items[i]
                     let locale = JSONAPI.text(it, "locale")
                     HStack(spacing: 12) {
-                        Text(locale).font(.callout.monospaced()).frame(width: 70, alignment: .leading)
+                        Text(AscText.language(locale)).font(.callout).lineLimit(1).frame(width: 170, alignment: .leading)
                         VStack(alignment: .leading, spacing: 1) {
                             Text(JSONAPI.text(it, "name")).font(.callout.weight(.medium)).lineLimit(1)
                             Text(JSONAPI.text(it, "subtitle")).font(.caption).foregroundStyle(.secondary).lineLimit(1)
@@ -538,9 +540,6 @@ private struct AppInfoEditor: View {
                 if items.isEmpty { Text(L.t("asc.empty")).foregroundStyle(.secondary).padding(12) }
             }
             .glassCard(padding: 4)
-            ActionBar(title: L.t("act.section.listing")) {
-                AscActionButton(action: AscActions.categories(app: appID), done: reload)
-            }
         }
     }
 }
