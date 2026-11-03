@@ -583,10 +583,7 @@ private struct AscTestFlightTab: View {
                     if !groups.isEmpty { AscActionButton(action: AscActions.deleteGroup(groups: groups), done: reload) }
                 }
                 SectionTitle(L.t("asc.tf.groups"))
-                ResourceTable(items: JSONAPI.items(doc), columns: [
-                    (L.t("asc.field.name"), "name", .text), (L.t("asc.field.isInternalGroup"), "isInternalGroup", .bool),
-                    (L.t("asc.field.publicLinkEnabled"), "publicLinkEnabled", .bool), (L.t("asc.field.createdDate"), "createdDate", .date),
-                ], empty: L.t("asc.empty"))
+                BetaGroupList(doc: doc)
             }
             SectionTitle(L.t("asc.tf.testers"))
             AscLoad(args: ["testflight", "testers", "list", "--app", app.id, "--limit", "200"], refresh: tick) { doc, _ in
@@ -595,6 +592,10 @@ private struct AscTestFlightTab: View {
                     (L.t("asc.field.email"), "email", .mono), (L.t("asc.field.state"), "state", .state),
                 ], empty: L.t("asc.empty"))
             }
+            AscSection(title: L.t("asc.tf.feedback"), args: ["testflight", "feedback", "list", "--app", app.id, "--limit", "30"], empty: L.t("asc.tf.noFeedback"))
+            AscSection(title: L.t("asc.tf.crashes"), args: ["testflight", "crashes", "list", "--app", app.id, "--limit", "30"], empty: L.t("asc.tf.noCrashes"))
+            AscSection(title: L.t("asc.tf.betaInfo"), args: ["testflight", "app-localizations", "list", "--app", app.id])
+            AscSection(title: L.t("asc.tf.reviewInfo"), args: ["testflight", "review", "view", "--app", app.id])
         }
     }
 }
