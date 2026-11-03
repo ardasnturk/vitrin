@@ -1,10 +1,10 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { resolveEditable, writeEditable } from '../src/studio/files.js';
 import { buildOverview } from '../src/studio/overview.js';
-import { startStudioServer, type StudioServer } from '../src/studio/server.js';
+import { startStudioServer, studioHandshake, writeTokenFile, type StudioServer } from '../src/studio/server.js';
 import { briefPrompt } from '../src/studio/claude.js';
 
 const ROOT = resolve(import.meta.dirname, '..', '..', '..');
@@ -172,6 +172,24 @@ describe('Studio server', () => {
     expect(await route.text()).toContain(server.token);
     expect((await get('/studio.js')).headers.get('content-type')).toContain('javascript');
     expect(await (await get('/studio.js')).text()).not.toContain(server.token);
+  });
+
+  it('hands its URL and token to a program that drives it: --json prints them, --token-file writes them for the owner only', async () => {
+    const h = studioHandshake(server, RITIM, 4242);
+    expect(h).toEqual({ url: server.url, port: server.port, token: server.token, root: RITIM, pid: 4242, version: expect.stringMatching(/^\d+\.\d+\.\d+/) });
+    const dir = mkdtempSync(join(tmpdir(), 'vitrin-studio-'));
+    try {
+      const file = join(dir, 'nested', 'studio.json');
+      await writeTokenFile(file, h);
+      expect(JSON.parse(readFileSync(file, 'utf8'))).toEqual(h);
+      expect(statSync(file).mode & 0o777).toBe(0o600);
+      expect(existsSync(`${file}.${process.pid}.tmp`)).toBe(false);
+      // A second Studio overwrites the file atomically (rename), so a poller never reads half a JSON object.
+      await writeTokenFile(file, { ...h, token: 'second' });
+      expect(JSON.parse(readFileSync(file, 'utf8')).token).toBe('second');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it('refuses a decision that is not JSON, before touching the inventory', async () => {

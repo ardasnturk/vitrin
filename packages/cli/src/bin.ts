@@ -189,7 +189,8 @@ program
   .description('Vitrin Studio: the whole flow in a local web UI on 127.0.0.1 (stages, editors, previews, review, upload, a Claude panel)')
   .option('--port <port>', 'port (0 = any free port)', '4871')
   .option('--no-open', 'do not open the browser')
-  .action(action(async (o: { port: string; open: boolean }) => studioCommand({ cwd: globals().cwd, port: Number(o.port), open: o.open })));
+  .option('--token-file <path>', 'write the URL and the session token as JSON (0600) for a program that drives the Studio; --json prints them')
+  .action(action(async (o: { port: string; open: boolean; tokenFile?: string }) => studioCommand({ cwd: globals().cwd, port: Number(o.port), open: o.open, tokenFile: o.tokenFile })));
 
 program
   .command('approve')

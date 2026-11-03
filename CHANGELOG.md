@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased
+
+### Added
+- **Vitrin for Mac** (`apps/VitrinMac`): a native macOS 15 app (Swift 6, SwiftUI) over the Studio's local API. It adds projects, offers `vitrin init`, shows the flow with its stages, blockers, next step and Claude's questions, runs stages with a live log, edits the store text with the App Store Connect counters, shows the research tables, screenshots, design samples, the store preview and the App Previews, the review gallery with approve and reject, and the upload checklist (keys by name only, dry-run plan, explicit confirmation, read-back, finalize). A menu bar mode keeps it running when the window closes, and an update check reads the GitHub releases. English and Turkish. Build with `xcodegen generate && xcodebuild -scheme VitrinMac build` in `apps/VitrinMac`.
+- **`vitrin studio --token-file <path>` and `vitrin studio --json`** hand the Studio's URL, port and session token to a program that drives it (the macOS app): the file is written for its owner only (0600) and atomically, and removed when the Studio stops.
+
 ## 1.2.0 — 2026-11-03
 
 ### Security

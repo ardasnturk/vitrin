@@ -1,12 +1,12 @@
-import { appPaths, exec, existsSync, loadConfig, log, readJsonIfExists, VITRIN_HOME, writeJson } from '@vitrin/core';
+import { appPaths, exec, existsSync, loadConfig, log, readJsonIfExists, VITRIN_HOME, vitrinVersion, writeJson } from '@vitrin/core';
 import { StudioQuestions } from '@vitrin/schemas';
 import { watch, type FSWatcher } from 'node:fs';
 import { createReadStream } from 'node:fs';
-import { readFile, realpath, rm, stat } from 'node:fs/promises';
+import { mkdir, readFile, realpath, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { spawn, type ChildProcess } from 'node:child_process';
-import { extname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { buildInventory, checkApproval, recordApproval, recordRejections, summarize, syncFastlaneMetadata } from '../approval.js';
 import { createContext, NeedsInput } from '../context.js';
 import { buildReport } from '../report.js';
@@ -484,20 +484,54 @@ export interface StudioOptions {
   cwd?: string;
   port?: number;
   open?: boolean;
+  /** Where to write the handshake (url, port, token …) for another program that drives this Studio, e.g. the macOS app. */
+  tokenFile?: string;
 }
 
-/** `vitrin studio [--port] [--no-open]` — serves the Studio until Ctrl+C. */
+/**
+ * What a program that starts `vitrin studio` needs to talk to it: the URL, the session token every POST/PUT/DELETE
+ * must send in `x-vitrin-token`, and the process to stop. `vitrin studio --json` prints it; `--token-file` writes it.
+ */
+export interface StudioHandshake {
+  url: string;
+  port: number;
+  token: string;
+  root: string;
+  pid: number;
+  version: string;
+}
+
+export function studioHandshake(server: Pick<StudioServer, 'url' | 'port' | 'token'>, root: string, pid = process.pid): StudioHandshake {
+  return { url: server.url, port: server.port, token: server.token, root, pid, version: vitrinVersion() };
+}
+
+/**
+ * Writes the handshake as JSON readable by its owner only (0600), via a temporary file and a rename so a reader that
+ * polls for the file never sees a half-written one. The folder is created when it is missing.
+ */
+export async function writeTokenFile(file: string, handshake: StudioHandshake): Promise<void> {
+  const abs = resolve(file);
+  await mkdir(dirname(abs), { recursive: true });
+  const tmp = `${abs}.${process.pid}.tmp`;
+  await writeFile(tmp, `${JSON.stringify(handshake)}\n`, { encoding: 'utf8', mode: 0o600 });
+  await rename(tmp, abs);
+}
+
+/** `vitrin studio [--port] [--no-open] [--token-file <path>]` — serves the Studio until Ctrl+C. */
 export async function studioCommand(opts: StudioOptions): Promise<number> {
   const root = resolve(opts.cwd ?? process.cwd());
   const server = await startStudioServer(root, { port: opts.port ?? 4871 });
+  const handshake = studioHandshake(server, root);
   log.ok(`Vitrin Studio: ${server.url}  (127.0.0.1 only; Ctrl+C stops it)`);
   if (!studioUiDir()) log.warn('The Studio UI is not built: run `pnpm build` in the Vitrin checkout (packages/studio/dist).');
-  log.result({ url: server.url });
+  if (opts.tokenFile) await writeTokenFile(opts.tokenFile, handshake);
+  log.result(handshake);
   if (opts.open !== false && process.platform === 'darwin') await exec('open', [server.url]);
   await new Promise<void>((ok) => {
     process.once('SIGINT', () => ok());
     process.once('SIGTERM', () => ok());
   });
   await server.close();
+  if (opts.tokenFile) await rm(resolve(opts.tokenFile), { force: true }).catch(() => undefined);
   return 0;
 }
