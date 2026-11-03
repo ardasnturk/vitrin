@@ -3,7 +3,7 @@ import { log, mask, SchemaError, setLogMode, vitrinVersion } from '@vitrin/core'
 import { Command } from 'commander';
 import pc from 'picocolors';
 import { approvalStage, approveCommand } from './approval.js';
-import { createContext, EXIT, NeedsInput, type GlobalOptions } from './context.js';
+import { createContext, EXIT, NeedsInput, studioRunRefusal, type GlobalOptions } from './context.js';
 import { runDoctor } from './commands/doctor.js';
 import { initCommand } from './commands/init.js';
 import { mockupsCommand } from './commands/mockups.js';
@@ -29,12 +29,18 @@ function globals(): GlobalOptions {
   return program.opts<GlobalOptions>();
 }
 
-/** Uniform error handling: NeedsInput → exit 2, everything else → exit 1, secrets always masked. */
+/**
+ * Uniform error handling: NeedsInput → exit 2, everything else → exit 1, secrets always masked.
+ * Commander passes the options and the Command last; a user-only command inside a Studio-started Claude run stops here.
+ */
 function action<A extends unknown[]>(fn: (...args: A) => Promise<number>) {
   return async (...args: A) => {
     setLogMode(globals());
     let code: number;
     try {
+      const cmd = (args as unknown[]).at(-1);
+      const refusal = cmd instanceof Command ? studioRunRefusal(cmd.name(), cmd.opts<{ dryRun?: boolean }>()) : undefined;
+      if (refusal) throw new Error(refusal);
       code = await fn(...args);
     } catch (err) {
       if (err instanceof NeedsInput) {

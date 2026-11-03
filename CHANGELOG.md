@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased
+
+### Security
+- **The Studio's Claude runs can no longer reach the user's commands, whatever the prompt lets through.** The Claude panel starts `claude -p` with `VITRIN_STUDIO_RUN=1`, and under that mark the CLI refuses `upload`, `approve`, `submit`, `finalize`, `init` and `studio` with exit 1 before they do anything (`upload --dry-run` stays open: it prints the plan and changes nothing). Before this, the rule lived only in the system prompt and in tool rules that match the command text: `vitrin -C . upload --yes` passed `Bash(vitrin:*)` without meeting `Bash(vitrin upload:*)`. The approval hash gate held either way; now the claim is enforced by the CLI. The run's tool rules are tighter too: no `cat` or `open` in Bash, `vitrin -*` denied so a global option cannot hide the subcommand, and `.env*`, `*.p8` and `secrets/` denied to Read (which also covers Edit, Write, Grep and the file commands Claude Code recognizes in Bash).
+
 ## 1.1.0 — 2026-11-03
 
 ### Security

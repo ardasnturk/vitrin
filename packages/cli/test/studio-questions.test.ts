@@ -47,7 +47,7 @@ describe('answering a question in the Studio', () => {
     // A stand-in for Claude Code: records its arguments and answers like `claude -p --output-format stream-json`.
     writeFileSync(
       join(bin, 'claude'),
-      `#!/bin/sh\nprintf '%s\\n' "$@" > "${join(bin, 'args.txt')}"\necho '{"type":"system","subtype":"init","session_id":"s1"}'\necho '{"type":"result","subtype":"success","is_error":false,"result":"tamam","session_id":"s1","total_cost_usd":0.01}'\n`,
+      `#!/bin/sh\nprintf '%s\\n' "$@" > "${join(bin, 'args.txt')}"\nprintf '%s' "$VITRIN_STUDIO_RUN" > "${join(bin, 'env.txt')}"\necho '{"type":"system","subtype":"init","session_id":"s1"}'\necho '{"type":"result","subtype":"success","is_error":false,"result":"tamam","session_id":"s1","total_cost_usd":0.01}'\n`,
     );
     chmodSync(join(bin, 'claude'), 0o755);
     process.env.PATH = `${bin}:${path}`;
@@ -91,6 +91,8 @@ describe('answering a question in the Studio', () => {
     expect(args).toContain('metadata/briefs/design.md');
     expect(args).toContain('Turkish (tr)');
     expect(args).toContain('metadata/questions.json');
+    // The child carries the mark that makes the CLI refuse upload, approve, submit, finalize, init and studio.
+    expect(readFileSync(join(bin, 'env.txt'), 'utf8')).toBe('1');
     // The last question goes away with its file.
     expect((await post('/api/questions/answer', { id: 'install-ffmpeg', answer: 'Evet' })).status).toBe(202);
     for (let i = 0; i < 100 && existsSync(join(dir, 'metadata', 'questions.json')); i++) await new Promise((ok) => setTimeout(ok, 50));

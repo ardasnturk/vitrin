@@ -17,6 +17,27 @@ export class NeedsInput extends Error {
   }
 }
 
+/**
+ * The Studio's Claude runner marks its child process with this variable. The commands below are the user's own
+ * decisions (publishing, approving, setting the project up) and refuse to run under it, whatever the prompt or the
+ * tool rules let through: the Studio is where the user clicks them.
+ */
+export const STUDIO_RUN_ENV = 'VITRIN_STUDIO_RUN';
+
+/** Commands a Studio-started Claude run may not execute; `studio` because a nested Studio would inherit the mark and never end. */
+export const USER_ONLY_COMMANDS: readonly string[] = ['upload', 'approve', 'submit', 'finalize', 'init', 'studio'];
+
+/**
+ * The refusal for a user-only command inside a Studio-started Claude run, or undefined when the command may run.
+ * `upload --dry-run` stays open on purpose: it only prints the plan and changes nothing in the stores.
+ */
+export function studioRunRefusal(command: string, options: { dryRun?: boolean }, env: NodeJS.ProcessEnv = process.env): string | undefined {
+  if (!env[STUDIO_RUN_ENV]) return undefined;
+  if (!USER_ONLY_COMMANDS.includes(command)) return undefined;
+  if (command === 'upload' && options.dryRun) return undefined;
+  return `vitrin ${command} is the user's command: run it from the Studio, not from a Claude run.`;
+}
+
 export interface GlobalOptions {
   cwd?: string;
   force?: boolean;

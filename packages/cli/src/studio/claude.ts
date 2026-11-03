@@ -2,12 +2,15 @@ import { mask, which } from '@vitrin/core';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import { randomUUID } from 'node:crypto';
+import { STUDIO_RUN_ENV } from '../context.js';
 
 /**
  * The Studio's Claude panel: the user's own Claude Code (`claude -p`, headless, stream-json) runs the creative stages
  * from a brief, inside the app repository. No API key: it uses the Claude Code the user is signed in to. The run is
- * fenced to the files the /vitrin skill writes (metadata/ and vitrin.config.yaml) and can never upload, approve,
- * submit or finalize: those stay the user's clicks in the Studio.
+ * fenced to the files the /vitrin skill writes (metadata/ and vitrin.config.yaml) and cannot upload, approve, submit,
+ * finalize or init: those stay the user's clicks in the Studio. Three layers make that so: the system prompt says it,
+ * the tool rules below deny the usual spellings, and the CLI refuses those commands in any process the run starts
+ * (the child carries VITRIN_STUDIO_RUN=1; see studioRunRefusal in context.ts). Only the last one is a boundary.
  */
 
 export type ClaudeEvent =
@@ -31,8 +34,39 @@ export interface ClaudeRun {
   events: ClaudeEvent[];
 }
 
-const ALLOWED_TOOLS = ['Read', 'Edit', 'Write', 'Glob', 'Grep', 'MultiEdit', 'Skill', 'Bash(vitrin:*)', 'Bash(cat:*)', 'Bash(ls:*)', 'Bash(ffmpeg:*)', 'Bash(ffprobe:*)', 'Bash(open:*)'];
-const DISALLOWED_TOOLS = ['Bash(vitrin upload:*)', 'Bash(vitrin approve:*)', 'Bash(vitrin submit:*)', 'Bash(vitrin finalize:*)', 'Bash(vitrin init:*)', 'Bash(git:*)', 'WebFetch', 'WebSearch'];
+/*
+ * Claude Code permission rules (code.claude.com/docs/en/permissions). A Bash rule matches the whole command text,
+ * `*` stands for any text and the `:*` suffix is the same as a trailing ` *`: `Bash(vitrin:*)` matches `vitrin` and
+ * `vitrin design --force` but not `vitrinx`. Compound commands are split at && || ; | & and newlines, and every part
+ * must be allowed; a deny rule wins when any part matches it. The rules see only the text Claude writes, so another
+ * spelling of the same program (`npx vitrin`, `node dist/bin.js`, `vitrin "upload"`) is simply not allowed, and in a
+ * headless run (`-p`) anything not allowed is denied. No `cat` (it would read .env and the .p8 key) and no `open`
+ * (it would open any URL or file): the panel shows the files, and the Studio opens the pages.
+ */
+export const ALLOWED_TOOLS = ['Read', 'Edit', 'Write', 'Glob', 'Grep', 'MultiEdit', 'Skill', 'Bash(vitrin:*)', 'Bash(ls:*)', 'Bash(ffmpeg:*)', 'Bash(ffprobe:*)'];
+/*
+ * Denied: the user's commands as Claude would write them, and `vitrin -*` for every global option placed before the
+ * subcommand (`vitrin -C . upload`, `vitrin --cwd . upload`, `vitrin --force upload`); commander also takes the global
+ * options after the subcommand, so `vitrin design --force` stays open. A Read deny also blocks Edit and Write on the
+ * same path (Write rules of their own never match), and is applied to Grep, Glob and the file commands Claude Code
+ * recognizes in Bash. A bare file pattern matches at any depth, like .gitignore; the `**` forms say so explicitly.
+ */
+export const DISALLOWED_TOOLS = [
+  'Bash(vitrin upload:*)',
+  'Bash(vitrin approve:*)',
+  'Bash(vitrin submit:*)',
+  'Bash(vitrin finalize:*)',
+  'Bash(vitrin init:*)',
+  'Bash(vitrin studio:*)',
+  'Bash(vitrin -*)',
+  'Bash(git:*)',
+  'WebFetch',
+  'WebSearch',
+  'Read(.env*)',
+  'Read(**/.env*)',
+  'Read(**/*.p8)',
+  'Read(**/secrets/**)',
+];
 
 const SYSTEM = `You are running headless inside Vitrin Studio, a local web UI for the Vitrin pipeline (the /vitrin skill). The user watches your output in a panel and cannot answer questions mid-run: never wait for an answer. When you need a decision from the user (a design, a wording, whether to install a tool …), do everything that does not depend on it, then add the question to metadata/questions.json — { "questions": [{ "id": "kebab-case-id", "stage": "the pipeline stage it unblocks", "question": "…", "options": [{ "label": "what the button says", "value": "what you get back" }] }] }, options only when the answer is a choice — keep any questions already in the file, and end the run with one sentence that says what you asked. The Studio shows the question as a card, removes it when the user answers, and starts you again with the answer. Run every command in the foreground and wait for it to finish: never start background commands, never sleep or poll for them. Write only inside metadata/ and vitrin.config.yaml. Never run vitrin upload, approve, submit, finalize or init, never use git, never commit: the user does those in the Studio. When you are done, end with a short summary of what you wrote and what to run next.`;
 
@@ -107,6 +141,8 @@ export class ClaudeRunner extends EventEmitter {
     const env = { ...process.env };
     delete env.CLAUDECODE;
     delete env.CLAUDE_CODE_ENTRYPOINT;
+    // The mark the CLI checks: upload, approve, submit, finalize, init and studio refuse to run in this process tree.
+    env[STUDIO_RUN_ENV] = '1';
     const child = spawn(this.binary!, args, { cwd: this.root, env, stdio: ['ignore', 'pipe', 'pipe'] });
     this.child = child;
     let buf = '';
