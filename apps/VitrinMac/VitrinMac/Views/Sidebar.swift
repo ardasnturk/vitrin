@@ -5,6 +5,8 @@ import SwiftUI
 struct Sidebar: View {
     @Environment(AppModel.self) private var model
     @State private var credentials = ASCCredentials.shared
+    /// Projects whose pages the user folded away; the selected project is open otherwise.
+    @State private var folded: Set<String> = []
 
     var body: some View {
         List(selection: Binding(get: { current }, set: { sel in select(sel) })) {
@@ -15,7 +17,17 @@ struct Sidebar: View {
 
             Section {
                 ForEach(model.store.projects) { project in
-                    DisclosureGroup(isExpanded: Binding(get: { model.selectedProjectID == project.id && !model.showHome && model.selectedAppID == nil }, set: { if $0 { Task { await model.open(project) } } })) {
+                    let open = isOpen(project)
+                    ProjectRow(project: project, session: model.sessions[project.id], open: open) { toggle(project) }
+                        .tag(Selection(project: project.id, page: .flow))
+                        .contextMenu {
+                            Button(L.t("projects.reveal")) { NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: project.path) }
+                            if let s = model.sessions[project.id], let url = s.url { Button(L.t("project.openStudio")) { NSWorkspace.shared.open(url) } }
+                            if let s = model.sessions[project.id], s.isReady { Button(L.t("project.restartStudio")) { Task { if let cli = model.cli { await s.restart(cli: cli) } } } }
+                            Divider()
+                            Button(L.t("projects.remove"), role: .destructive) { model.removeProject(project.id) }
+                        }
+                    if open {
                         // The App Store Connect page only for a project linked to an app of the team.
                         ForEach(ProjectPage.allCases.filter { $0 != .asc || model.ascApp(for: project) != nil }) { page in
                             Label {
@@ -26,18 +38,9 @@ struct Sidebar: View {
                                 }
                             } icon: { IconBadge(symbol: page.badgeSymbol, colors: page.badgeColors, size: 20) }
                             .padding(.vertical, 1)
+                            .padding(.leading, 16)
                             .tag(Selection(project: project.id, page: page))
                         }
-                    } label: {
-                        ProjectRow(project: project, session: model.sessions[project.id])
-                            .tag(Selection(project: project.id, page: .flow))
-                            .contextMenu {
-                                Button(L.t("projects.reveal")) { NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: project.path) }
-                                if let s = model.sessions[project.id], let url = s.url { Button(L.t("project.openStudio")) { NSWorkspace.shared.open(url) } }
-                                if let s = model.sessions[project.id], s.isReady { Button(L.t("project.restartStudio")) { Task { if let cli = model.cli { await s.restart(cli: cli) } } } }
-                                Divider()
-                                Button(L.t("projects.remove"), role: .destructive) { model.removeProject(project.id) }
-                            }
                     }
                 }
                 Button { model.pickProjectFolder() } label: {
@@ -75,6 +78,20 @@ struct Sidebar: View {
         .safeAreaInset(edge: .bottom) { footer }
     }
 
+    private func isOpen(_ project: Project) -> Bool {
+        model.selectedProjectID == project.id && !model.showHome && model.selectedAppID == nil && model.selectedTeamPage == nil && !folded.contains(project.id)
+    }
+
+    /// The row's chevron: folds an open project; on a closed one, opens the project.
+    private func toggle(_ project: Project) {
+        if isOpen(project) { folded.insert(project.id); return }
+        folded.remove(project.id)
+        model.selectedTeamPage = nil
+        model.selectedAppID = nil
+        model.showHome = false
+        Task { await model.open(project) }
+    }
+
     private var current: Selection? {
         if let t = model.selectedTeamPage { return Selection(team: t.rawValue) }
         if model.showHome || (model.selectedAppID == nil && model.selectedProjectID == nil) { return Selection(home: true) }
@@ -101,6 +118,7 @@ struct Sidebar: View {
         }
         model.selectedAppID = nil
         model.showHome = false
+        if let id = sel.project { folded.remove(id) }
         if let id = sel.project, id != model.selectedProjectID || model.sessions[id]?.isReady != true, let p = model.store.project(id) { Task { await model.open(p) } }
         model.selectedPage = sel.page
     }
@@ -239,8 +257,23 @@ struct ProjectRow: View {
     @Environment(AppModel.self) private var model
     var project: Project
     var session: ProjectSession?
+    var open = false
+    var toggle: () -> Void = {}
     var body: some View {
         HStack(spacing: 8) {
+            // Our own chevron, centred on the row: the list's disclosure triangle sits on the first text line and
+            // touches the icon.
+            Button(action: toggle) {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(.secondary)
+                    .rotationEffect(.degrees(open ? 90 : 0))
+                    .frame(width: 16, height: 24)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(L.t(open ? "projects.fold" : "projects.unfold"))
+            .accessibilityIdentifier("sidebar.project.toggle")
             if let s = session, let o = s.overview, let icon = o.app?.icon, let url = s.client?.fileURL(icon) {
                 AsyncImage(url: url) { img in img.resizable() } placeholder: { IconBadge(symbol: "app.fill", colors: BadgeColors.warm) }
                     .frame(width: 22, height: 22).clipShape(RoundedRectangle(cornerRadius: 22 * 0.26, style: .continuous))
@@ -272,7 +305,7 @@ struct AppRow: View {
     var linked: Project?
     var body: some View {
         HStack(spacing: 8) {
-            AppIconPlaceholder(size: 22)
+            AppIcon(app: app, size: 26)
             VStack(alignment: .leading, spacing: 1) {
                 HStack(spacing: 4) {
                     Text(app.name).lineLimit(1)
@@ -292,14 +325,36 @@ struct AppRow: View {
     }
 }
 
-/// The icon the API does not give (the Studio's overview has the project's): a badge in the team colours.
-struct AppIconPlaceholder: View {
+/// An app's icon from its newest build (`AppIconStore`), else a badge with its initial.
+struct AppIcon: View {
+    @Environment(AppModel.self) private var model
+    var app: ASCApp
     var size: CGFloat
     var body: some View {
-        RoundedRectangle(cornerRadius: size * 0.26, style: .continuous)
+        Group {
+            if let url = model.icons.url(for: app.id, size: size) {
+                AsyncImage(url: url) { phase in
+                    if let image = phase.image { image.resizable().interpolation(.high) } else { AppIconPlaceholder(name: app.name, size: size) }
+                }
+            } else {
+                AppIconPlaceholder(name: app.name, size: size)
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(RoundedRectangle(cornerRadius: size * 0.225, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: size * 0.225, style: .continuous).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
+        .accessibilityHidden(true)
+    }
+}
+
+/// An app without a build has no icon yet: its initial on the team colours.
+struct AppIconPlaceholder: View {
+    var name = ""
+    var size: CGFloat
+    var body: some View {
+        RoundedRectangle(cornerRadius: size * 0.225, style: .continuous)
             .fill(LinearGradient(colors: BadgeColors.cool, startPoint: .topLeading, endPoint: .bottomTrailing))
-            .overlay(Image(systemName: "app.fill").font(.system(size: size * 0.5, weight: .semibold)).foregroundStyle(.white))
+            .overlay(Text(name.first.map { String($0).uppercased() } ?? "").font(.system(size: size * 0.5, weight: .semibold, design: .rounded)).foregroundStyle(.white))
             .frame(width: size, height: size)
-            .accessibilityHidden(true)
     }
 }

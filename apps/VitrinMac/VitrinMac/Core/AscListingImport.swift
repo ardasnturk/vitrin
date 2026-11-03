@@ -52,3 +52,11 @@ import Foundation
         return s + "\n"
     }
 }
+
+extension JSONEncoder {
+    static let pretty: JSONEncoder = {
+        let e = JSONEncoder()
+        e.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+        return e
+    }()
+}

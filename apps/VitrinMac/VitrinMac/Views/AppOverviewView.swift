@@ -97,8 +97,7 @@ struct AppOverviewView: View {
 
     private var hero: some View {
         HStack(spacing: 16) {
-            RoundedRectangle(cornerRadius: 15, style: .continuous).fill(.white.opacity(0.2)).frame(width: 60, height: 60)
-                .overlay(Image(systemName: "app.fill").font(.system(size: 28, weight: .semibold)))
+            AppIcon(app: app, size: 64).shadow(color: .black.opacity(0.25), radius: 6, y: 3)
             VStack(alignment: .leading, spacing: 5) {
                 Text(app.name).font(.title.bold()).lineLimit(1).minimumScaleFactor(0.7)
                 Text(app.bundleId).font(.callout.monospaced()).opacity(0.85).textSelection(.enabled).lineLimit(1)
@@ -258,14 +257,17 @@ struct ResourceTable: View {
         }
     }
 
+    /// Every value in words (`AscText`): a `.mono` column stays monospaced only for codes that have no words.
     @ViewBuilder private func cell(_ item: [String: JSONValue], _ c: (title: String, key: String, kind: Kind)) -> some View {
-        let t = c.key == "id" ? (item["id"]?.stringValue ?? "") : JSONAPI.text(item, c.key)
+        let raw = c.key == "id" ? item["id"] : JSONAPI.attr(item, c.key)
+        let t = raw.map { AscText.plain(c.key, $0) } ?? ""
         switch c.kind {
         case .text: Text(t.isEmpty ? "—" : t).lineLimit(2).textSelection(.enabled)
-        case .mono: Text(t.isEmpty ? "—" : t).font(.callout.monospaced()).lineLimit(1).textSelection(.enabled)
-        case .date: Text(t.isEmpty ? "—" : JSONAPI.date(t)).lineLimit(1)
-        case .state: if t.isEmpty { Text("—") } else { Pill(ASCWords.state(t), ASCWords.tone(t)).lineLimit(1) }
-        case .bool: Image(systemName: t == "true" ? "checkmark.circle.fill" : "circle").foregroundStyle(t == "true" ? .green : .secondary)
+        case .mono: Text(t.isEmpty ? "—" : t).font(t == raw?.stringValue ? .callout.monospaced() : .callout).lineLimit(1).textSelection(.enabled)
+        case .date: Text(t.isEmpty ? "—" : t).lineLimit(1)
+        case .state:
+            if let s = raw?.stringValue, !s.isEmpty { Pill(ASCWords.state(s), ASCWords.tone(s)).lineLimit(1) } else { Text("—") }
+        case .bool: Image(systemName: raw?.boolValue == true ? "checkmark.circle.fill" : "circle").foregroundStyle(raw?.boolValue == true ? .green : .secondary)
         }
     }
 }

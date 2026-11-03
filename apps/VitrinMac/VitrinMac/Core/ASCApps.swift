@@ -45,19 +45,14 @@ enum ASCWords {
     }
 
     /// The state in the user's language when the catalog knows it, else readable ("Pending Apple Release").
-    @MainActor static func state(_ s: String) -> String {
-        let key = "ascState.\(s)"
-        let t = L.t(key)
-        if t != key { return t }
-        return s.lowercased().split(separator: "_").map { $0.prefix(1).uppercased() + $0.dropFirst() }.joined(separator: " ")
-    }
+    @MainActor static func state(_ s: String) -> String { AscText.value(s) }
 
     static func tone(_ state: String) -> Tone {
         switch state {
-        case "READY_FOR_SALE", "READY_FOR_DISTRIBUTION", "ACCEPTED": return .ok
-        case "WAITING_FOR_REVIEW", "IN_REVIEW", "PENDING_DEVELOPER_RELEASE", "PENDING_APPLE_RELEASE", "PROCESSING_FOR_DISTRIBUTION", "PROCESSING_FOR_APP_STORE", "WAITING_FOR_EXPORT_COMPLIANCE": return .info
-        case "REJECTED", "DEVELOPER_REJECTED", "METADATA_REJECTED", "INVALID_BINARY", "REMOVED_FROM_SALE", "DEVELOPER_REMOVED_FROM_SALE": return .err
-        case "PREPARE_FOR_SUBMISSION": return .warn
+        case "READY_FOR_SALE", "READY_FOR_DISTRIBUTION", "ACCEPTED", "VALID", "ACTIVE", "ENABLED", "APPROVED", "COMPLETE", "IN_BETA_TESTING", "BETA_APPROVED": return .ok
+        case "WAITING_FOR_REVIEW", "IN_REVIEW", "PENDING_DEVELOPER_RELEASE", "PENDING_APPLE_RELEASE", "PROCESSING_FOR_DISTRIBUTION", "PROCESSING_FOR_APP_STORE", "WAITING_FOR_EXPORT_COMPLIANCE", "PROCESSING", "READY_FOR_REVIEW", "IN_PROGRESS": return .info
+        case "REJECTED", "DEVELOPER_REJECTED", "METADATA_REJECTED", "INVALID_BINARY", "REMOVED_FROM_SALE", "DEVELOPER_REMOVED_FROM_SALE", "UNRESOLVED_ISSUES", "FAILED", "INVALID", "EXPIRED", "REMOVED": return .err
+        case "PREPARE_FOR_SUBMISSION", "READY_TO_SUBMIT", "MISSING_METADATA", "WAITING_FOR_UPLOAD", "DEVELOPER_ACTION_NEEDED", "ACTION_REQUIRED": return .warn
         default: return .neutral
         }
     }

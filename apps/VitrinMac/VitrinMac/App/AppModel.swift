@@ -12,6 +12,7 @@ import Observation
     let ascApps = ASCAppList()
     /// Who App Store Connect requests run as (Vitrin's key, asc's own login, or nobody).
     let connection = AscConnection()
+    let icons = AppIconStore()
     private(set) var sessions: [String: ProjectSession] = [:]
     private(set) var cli: CLILocation?
     private(set) var cliError: String?
@@ -66,6 +67,7 @@ import Observation
     /// Reads the team's apps again (launch, key change, the refresh button).
     func refreshApps() async {
         await ascApps.refresh(cli: cli, connection: connection)
+        Task { await icons.load(apps: ascApps.apps) }
         if let id = selectedAppID, ascApps.app(id) == nil, ascApps.error == nil { selectedAppID = nil }
     }
 

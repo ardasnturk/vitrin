@@ -79,19 +79,12 @@ struct AscActionSheet: View {
                 }
                 .glassCard(padding: 14)
             }
-            CopyCode(text: commandLine)
             if let r = result {
                 VStack(alignment: .leading, spacing: 6) {
                     if let report = r.json?.objectValue, report["checks"] != nil { ReadinessReport(report: report) }
                     Label(r.ok ? L.t(action.readOnly ? "asc.action.read" : "asc.action.done") : r.errorLine, systemImage: r.ok ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                         .foregroundStyle(r.ok ? .green : .red).font(.callout).fixedSize(horizontal: false, vertical: true)
-                    if !r.stdout.isEmpty || !r.stderr.isEmpty {
-                        DisclosureGroup(L.t("asc.cmd.raw")) {
-                            ScrollView { Text(String((r.stdout + "\n" + r.stderr).prefix(20_000))).font(.caption.monospaced()).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading) }
-                                .frame(maxHeight: 220)
-                        }
-                        .font(.callout)
-                    }
+                    if r.ok, r.json?.objectValue?["checks"] == nil, let j = r.json { ScrollView { AscDataView(doc: j) }.frame(maxHeight: 220) }
                 }
             }
             if let error { Text(error).foregroundStyle(.red).font(.callout) }
@@ -173,7 +166,6 @@ struct AscActionSheet: View {
         return args + ["--output", "json"]
     }
 
-    private var commandLine: String { "asc " + arguments.map { $0.contains(" ") || $0.isEmpty ? "\"\($0)\"" : $0 }.joined(separator: " ") }
 
     private func run() async {
         running = true

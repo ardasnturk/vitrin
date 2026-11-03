@@ -1,100 +1,354 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
-/// The asc commands of one area, where the area lives: each command group of the area as a card, its subcommands
-/// as rows with asc's own one-line description, nested groups opening in place. A row opens the command as a form
-/// (`AscCommandRunner`) with the app and the version already filled in. This replaces the flat "All commands" list:
-/// every command group asc has is shown on the page it belongs to (see `AscAreas`).
+/// What asc can do in one place, as app features rather than commands: each area (`AscAreas`) is a card that opens in
+/// place. What only reads opens and loads by itself, what needs a choice first (a build, a group) asks for it right
+/// there, and what changes something is a button with a short form. Nothing here shows a command line or JSON.
 struct AscCommandShelf: View {
     var title: String
     var groups: [String]
     var prefill: [String: String] = [:]
-    @State private var helps: [String: AscHelp] = [:]
-    @State private var open: [String]?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionTitle(title)
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 300), spacing: 12, alignment: .top)], spacing: 12) {
-                ForEach(groups, id: \.self) { g in
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack(spacing: 8) {
-                            IconBadge(symbol: AscAreas.symbol(g), colors: BadgeColors.gray, size: 22)
-                            VStack(alignment: .leading, spacing: 0) {
-                                Text(AscAreas.title(g)).font(.headline)
-                                Text(helps[g]?.description ?? "asc \(g)").font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                            }
-                        }
-                        if let h = helps[g] {
-                            if h.subcommands.isEmpty {
-                                row(path: [g], name: g, summary: h.description)
-                            } else {
-                                ForEach(h.subcommands) { e in CommandRow(path: [g, e.name], entry: e, open: $open) }
-                            }
-                        } else {
-                            ProgressView().controlSize(.small)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .glassCard(padding: 12)
-                    .task { if helps[g] == nil { helps[g] = try? await AscHelp.load([g]) } }
-                }
-            }
-        }
-        .sheet(item: Binding(get: { open.map(OpenPath.init) }, set: { open = $0?.path })) { p in
-            VStack(spacing: 0) {
-                AscCommandRunner(path: p.path, appID: prefill["app"], prefill: prefill)
-                Divider()
-                HStack { Spacer(); Button(L.t("common.close")) { open = nil }.keyboardShortcut(.cancelAction) }.padding(12)
-            }
-            .frame(width: 720, height: 640)
+            ForEach(groups, id: \.self) { g in AscGroupCard(path: g, prefill: prefill) }
         }
     }
-
-    private func row(path: [String], name: String, summary: String) -> some View {
-        Button { open = path } label: {
-            HStack { Text(summary.isEmpty ? name : summary).font(.callout).lineLimit(1); Spacer(); Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary) }
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-
-    struct OpenPath: Identifiable { var path: [String]; var id: String { path.joined(separator: " ") } }
 }
 
-/// One subcommand: its description first (what it does), the command name small; a group expands to its children.
-private struct CommandRow: View {
-    var path: [String]
-    var entry: AscHelp.Entry
-    @Binding var open: [String]?
-    @State private var children: [AscHelp.Entry]?
-    @State private var expanded = false
+/// One area, closed until asked for: a page with many areas stays short and asks nothing of App Store Connect.
+private struct AscGroupCard: View {
+    var path: String
+    var prefill: [String: String]
+    @State private var open = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Button {
-                Task {
-                    if children == nil { children = (try? await AscHelp.load(path))?.subcommands ?? [] }
-                    if children?.isEmpty == false { expanded.toggle() } else { open = path }
-                }
-            } label: {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Image(systemName: children?.isEmpty == false ? (expanded ? "chevron.down" : "chevron.right") : "circle.fill")
-                        .font(.system(size: children?.isEmpty == false ? 9 : 4)).foregroundStyle(.tertiary).frame(width: 10)
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(AscAreas.sentence(entry.summary, fallback: entry.name)).font(.callout).lineLimit(2)
-                        Text(path.joined(separator: " ")).font(.caption2.monospaced()).foregroundStyle(.tertiary)
+        VStack(alignment: .leading, spacing: 10) {
+            Button { withAnimation(.easeOut(duration: 0.15)) { open.toggle() } } label: {
+                HStack(spacing: 10) {
+                    IconBadge(symbol: AscAreas.symbol(path), colors: BadgeColors.gray, size: 26)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(AscAreas.title(path)).font(.headline)
+                        Text(AscCatalog.counts(path)).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                     }
-                    Spacer(minLength: 0)
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.tertiary).rotationEffect(.degrees(open ? 90 : 0))
                 }
-                .padding(.vertical, 3)
-                .padding(.leading, CGFloat(path.count - 2) * 14)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            if expanded, let children {
-                ForEach(children) { c in CommandRow(path: path + [c.name], entry: c, open: $open) }
+            if open { AscGroupBody(path: path, prefill: prefill) }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassCard(padding: 12)
+    }
+}
+
+/// A group's insides: its reads, its buttons, its subgroups.
+struct AscGroupBody: View {
+    var path: String
+    var prefill: [String: String]
+
+    var body: some View {
+        // A leaf at the top (`asc status`) is its own only command.
+        let children = AscCatalog.children(path)
+        let items = children.isEmpty ? [AscCatalog.command(path)].compactMap { $0 } : children
+        VStack(alignment: .leading, spacing: 6) {
+            ForEach(items.filter { !$0.group && $0.read }) { c in AscReadRow(command: c, prefill: prefill) }
+            let writes = items.filter { !$0.group && !$0.read }
+            if !writes.isEmpty {
+                FlowLayout(spacing: 6) {
+                    ForEach(writes) { c in AscWriteButton(command: c, prefill: prefill) }
+                }
+                .padding(.vertical, 2)
+            }
+            ForEach(items.filter(\.group)) { c in AscSubgroupRow(command: c, prefill: prefill) }
+        }
+    }
+}
+
+private struct AscSubgroupRow: View {
+    var command: AscCommand
+    var prefill: [String: String]
+    @State private var open = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Button { withAnimation(.easeOut(duration: 0.15)) { open.toggle() } } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "chevron.right").font(.caption2.weight(.bold)).foregroundStyle(.tertiary).rotationEffect(.degrees(open ? 90 : 0)).frame(width: 12)
+                    Text(command.title).font(.callout.weight(.medium))
+                    Spacer()
+                }
+                .padding(.vertical, 3)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            if open { AscGroupBody(path: command.path, prefill: prefill).padding(.leading, 18) }
+        }
+    }
+}
+
+/// A read: opening it loads it; if it needs a choice, the choice comes first and loading follows by itself.
+private struct AscReadRow: View {
+    var command: AscCommand
+    var prefill: [String: String]
+    @State private var open = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Button { withAnimation(.easeOut(duration: 0.15)) { open.toggle() } } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "chevron.right").font(.caption2.weight(.bold)).foregroundStyle(.tertiary).rotationEffect(.degrees(open ? 90 : 0)).frame(width: 12)
+                    Text(command.title).font(.callout)
+                    Spacer()
+                }
+                .padding(.vertical, 3)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("asc.read.\(command.path)")
+            if open { AscReadResult(command: command, prefill: prefill).padding(.leading, 18) }
+        }
+    }
+}
+
+/// The result of a read, with a picker for each thing it needs that the page does not know.
+struct AscReadResult: View {
+    var command: AscCommand
+    var prefill: [String: String]
+    @State private var chosen: [String: String] = [:]
+
+    private var missing: [String] { command.needs.filter { (chosen[$0] ?? prefill[$0] ?? "").isEmpty } }
+
+    private var args: [String] {
+        var a = command.words
+        for f in command.takes { if let v = prefill[f], !v.isEmpty { a += ["--\(f)", v] } }
+        for f in command.needs { if let v = chosen[f] ?? prefill[f], !v.isEmpty, !command.takes.contains(f) { a += ["--\(f)", v] } }
+        return a
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(command.needs.filter { (prefill[$0] ?? "").isEmpty }, id: \.self) { f in
+                AscIDPicker(flag: f, command: command, prefill: prefill, selection: Binding(get: { chosen[f] ?? "" }, set: { chosen[f] = $0 }))
+            }
+            if missing.isEmpty {
+                AscLoad(args: args) { doc, _ in AscDataView(doc: doc) }.id(args.joined(separator: " "))
             }
         }
+    }
+}
+
+/// Picks the thing a command needs from the list it comes from (a build from the app's builds), by its name; a
+/// free field when there is no such list.
+struct AscIDPicker: View {
+    var flag: String
+    var command: AscCommand
+    var prefill: [String: String]
+    @Binding var selection: String
+    @State private var options: [(id: String, label: String)]?
+
+    var body: some View {
+        HStack(spacing: 8) {
+            if flag != "id" { Text(AscText.flag(flag)).font(.callout).foregroundStyle(.secondary) }
+            if let options, !options.isEmpty {
+                Picker("", selection: $selection) {
+                    Text(L.t("asc.choose")).tag("")
+                    ForEach(options, id: \.id) { o in Text(o.label).tag(o.id) }
+                }
+                .labelsHidden().frame(maxWidth: 380)
+            } else if options == nil {
+                ProgressView().controlSize(.small)
+            } else {
+                TextField("", text: $selection).textFieldStyle(.roundedBorder).frame(maxWidth: 380)
+            }
+            Spacer(minLength: 0)
+        }
+        .task {
+            guard options == nil else { return }
+            guard let source = AscCatalog.source(flag: flag, path: command.path) else { options = []; return }
+            var a = source.words
+            for f in source.takes { if let v = prefill[f], !v.isEmpty { a += ["--\(f)", v] } }
+            guard let doc = try? await AscCLI.json(a), case .list(let rows) = AscDataView.shape(doc) else { options = []; return }
+            options = rows.map { r in
+                let s = AscRowList.summary(r)
+                return (r.id, s.detail.isEmpty ? s.title : "\(s.title) · \(s.detail)")
+            }
+        }
+    }
+}
+
+/// A change: a button that opens its short form.
+struct AscWriteButton: View {
+    var command: AscCommand
+    var prefill: [String: String]
+    var done: () -> Void = {}
+    @State private var open = false
+
+    var body: some View {
+        Button { open = true } label: { Label(command.title, systemImage: AscCatalog.symbol(command)) }
+            .controlSize(.small)
+            .tint(AscCatalog.isDestructive(command) ? .red : nil)
+            .accessibilityIdentifier("asc.write.\(command.path)")
+            .sheet(isPresented: $open) { AscCommandForm(command: command, prefill: prefill) { changed in open = false; if changed { done() } } }
+    }
+}
+
+/// The form of a change: what its examples use comes first, the rest under "More options"; what the page knows is
+/// filled in and hidden. One button applies it (a destructive one asks once more), and the answer shows in words.
+struct AscCommandForm: View {
+    var command: AscCommand
+    var prefill: [String: String]
+    var close: (_ changed: Bool) -> Void
+    @State private var help: AscHelp?
+    @State private var values: [String: String] = [:]
+    @State private var switches: [String: Bool] = [:]
+    @State private var running = false
+    @State private var result: AscCLI.Result?
+    @State private var failure: String?
+    @State private var confirm = false
+
+    private static let hidden: Set<String> = ["output", "pretty", "help", "api-debug", "debug", "report", "report-file", "retry-log", "strict-auth", "profile", "read-only", "confirm", "paginate", "next", "limit", "fields", "include"]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 12) {
+                IconBadge(symbol: AscCatalog.symbol(command), colors: AscCatalog.isDestructive(command) ? BadgeColors.alert : BadgeColors.brand, size: 34)
+                Text(command.title).font(.title3.bold())
+            }
+            if let help {
+                ScrollView { form(help).frame(maxWidth: .infinity, alignment: .leading) }.frame(maxHeight: 420)
+            } else if let failure {
+                Text(failure).foregroundStyle(.red).font(.callout)
+            } else {
+                ProgressView()
+            }
+            if let r = result {
+                if r.ok {
+                    Label(L.t("asc.action.done"), systemImage: "checkmark.circle.fill").foregroundStyle(.green).font(.callout)
+                    if let j = r.json { ScrollView { AscDataView(doc: j) }.frame(maxHeight: 220) }
+                } else {
+                    Label(r.errorLine, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red).font(.callout).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            HStack {
+                if running { ProgressView().controlSize(.small) }
+                Spacer()
+                Button(result?.ok == true ? L.t("common.close") : L.t("common.cancel")) { close(result?.ok == true) }.keyboardShortcut(.cancelAction)
+                if result?.ok != true {
+                    Button(command.title) { if AscCatalog.isDestructive(command) { confirm = true } else { Task { await run() } } }
+                        .buttonStyle(GradientButtonStyle(fullWidth: false)).disabled(running || help == nil).keyboardShortcut(.defaultAction)
+                }
+            }
+        }
+        .padding(20)
+        .frame(width: 560)
+        .confirmationDialog(command.title, isPresented: $confirm, titleVisibility: .visible) {
+            Button(command.title, role: .destructive) { Task { await run() } }
+            Button(L.t("common.cancel"), role: .cancel) {}
+        } message: { Text(L.t("asc.action.undoable")) }
+        .task {
+            do {
+                let h = try await AscHelp.load(command.words)
+                help = h
+                for f in h.flags { if let v = prefill[f.name], !v.isEmpty { values[f.name] = v } }
+            } catch { failure = error.localizedDescription }
+        }
+    }
+
+    private func flags(_ h: AscHelp) -> [AscHelp.Flag] {
+        h.flags.filter { !Self.hidden.contains($0.name) && (prefill[$0.name] ?? "").isEmpty }
+    }
+
+    /// The flags the command's examples use: what a person normally fills in.
+    private func mainNames(_ h: AscHelp) -> Set<String> {
+        var names = Set<String>()
+        let examples = h.details.components(separatedBy: "\n").filter { $0.contains("asc ") }
+        for line in examples.prefix(2) {
+            for m in line.matches(of: /--([a-z][a-z0-9-]*)/) { names.insert(String(m.1)) }
+        }
+        return names
+    }
+
+    @ViewBuilder private func form(_ h: AscHelp) -> some View {
+        let all = flags(h)
+        let main = mainNames(h)
+        let first = all.filter { main.contains($0.name) || $0.required }
+        let rest = all.filter { !first.contains($0) }
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(first.isEmpty ? all : first) { f in field(f) }
+            if !first.isEmpty && !rest.isEmpty {
+                DisclosureGroup(L.t("asc.moreOptions")) {
+                    VStack(alignment: .leading, spacing: 10) { ForEach(rest) { f in field(f) } }.padding(.top, 6)
+                }
+                .font(.callout)
+            }
+            if all.isEmpty { Text(L.t("asc.action.ready")).font(.callout).foregroundStyle(.secondary) }
+        }
+        .padding(.trailing, 8)
+    }
+
+    @ViewBuilder private func field(_ f: AscHelp.Flag) -> some View {
+        if f.isBool {
+            Toggle(isOn: Binding(get: { switches[f.name] ?? (f.defaultValue == "true") }, set: { switches[f.name] = $0 })) {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(AscText.flag(f.name)).font(.callout)
+                    Text(hint(f)).font(.caption).foregroundStyle(.secondary).lineLimit(2)
+                }
+            }
+            .toggleStyle(.switch).controlSize(.small)
+        } else if let choices = AscCatalog.choices(f.summary) {
+            Picker(selection: Binding(get: { values[f.name] ?? "" }, set: { values[f.name] = $0 })) {
+                Text(f.defaultValue.map { AscText.value($0) } ?? L.t("asc.choose")).tag("")
+                ForEach(choices, id: \.self) { c in Text(AscText.value(c)).tag(c) }
+            } label: { Text(AscText.flag(f.name)).font(.callout) }
+        } else if AscCatalog.source(flag: f.name, path: command.path) != nil, AscText.isID(f.name) {
+            AscIDPicker(flag: f.name, command: command, prefill: prefill, selection: Binding(get: { values[f.name] ?? "" }, set: { values[f.name] = $0 }))
+        } else {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(AscText.flag(f.name)).font(.callout)
+                HStack {
+                    TextField("", text: Binding(get: { values[f.name] ?? "" }, set: { values[f.name] = $0 })).textFieldStyle(.roundedBorder)
+                    if AscCatalog.takesPath(f.name) {
+                        Button(L.t("asc.pickFile")) {
+                            let panel = NSOpenPanel()
+                            panel.canChooseDirectories = f.name.contains("dir")
+                            if panel.runModal() == .OK, let u = panel.url { values[f.name] = u.path }
+                        }
+                    }
+                }
+                Text(hint(f)).font(.caption).foregroundStyle(.secondary).lineLimit(2)
+            }
+        }
+    }
+
+    private func hint(_ f: AscHelp.Flag) -> String {
+        f.summary.replacingOccurrences(of: #"\s*\(default: [^)]*\)\s*$"#, with: "", options: .regularExpression)
+    }
+
+    private func arguments(_ h: AscHelp) -> [String] {
+        var a = command.words
+        for f in h.flags {
+            if f.isBool {
+                if let on = switches[f.name], on != (f.defaultValue == "true") { a.append("--\(f.name)=\(on)") }
+            } else if let v = values[f.name]?.trimmingCharacters(in: .whitespaces), !v.isEmpty {
+                a += ["--\(f.name)", v]
+            }
+        }
+        // asc asks for --confirm on its own destructive commands; the form's button is the user's confirmation.
+        if h.flags.contains(where: { $0.name == "confirm" }) { a.append("--confirm") }
+        return a
+    }
+
+    private func run() async {
+        guard let help else { return }
+        running = true
+        defer { running = false }
+        var args = arguments(help)
+        if help.flags.contains(where: { $0.name == "output" }) { args += ["--output", "json"] }
+        do { result = try await AscCLI.run(args, readOnly: false, timeout: 600) } catch { failure = error.localizedDescription }
     }
 }
 
