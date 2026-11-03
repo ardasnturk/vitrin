@@ -18,3 +18,7 @@ skills-lock.json
 
 # Release tarballs (pnpm pack:release)
 release/
+
+# Xcode (apps/VitrinMac)
+xcuserdata/
+DerivedData/
