@@ -785,53 +785,30 @@ private struct RatingsCard: View {
     }
 }
 
-/// The screenshots and App Previews in App Store Connect for the version being prepared, per language and display type.
+/// What the store shows: the screenshots of the current version as images, then the other kinds of store media.
 private struct AscVisualsTab: View {
     var app: ASCApp
     var body: some View {
         TabPage {
-            AscLoad(args: ["screenshots", "list", "--app", app.id, "--version", app.current?.version ?? "", "--platform", app.current?.platform ?? "IOS"]) { doc, _ in
-                let sets = flatten(doc)
-                if sets.isEmpty {
-                    Text(L.t("asc.visuals.none")).foregroundStyle(.secondary).glassCard(padding: 14)
-                } else {
-                    VStack(spacing: 0) {
-                        ForEach(sets.indices, id: \.self) { i in
-                            HStack {
-                                Text(sets[i].locale).font(.callout.monospaced()).frame(width: 80, alignment: .leading)
-                                Text(sets[i].type).font(.callout.monospaced())
-                                Spacer()
-                                Pill(L.t("asc.visuals.count", sets[i].count), sets[i].count > 0 ? .ok : .neutral)
-                            }
-                            .padding(.horizontal, 12).padding(.vertical, 6)
-                            if i < sets.count - 1 { Divider().opacity(0.5) }
-                        }
-                    }
-                    .glassCard(padding: 4)
-                }
-            }
+            ScreenshotGallery(app: app)
+            AscSection(title: L.t("asc.visuals.pages"), args: ["product-pages", "custom-pages", "list", "--app", app.id], empty: L.t("asc.visuals.noPages"))
+            if let v = app.current { AscSection(title: L.t("asc.visuals.experiments"), args: ["product-pages", "experiments", "list", "--version-id", v.id], empty: L.t("asc.visuals.noExperiments")) }
+            AscSection(title: L.t("asc.visuals.events"), args: ["app-events", "list", "--app", app.id], empty: L.t("asc.visuals.noEvents"))
         }
     }
+}
 
-    /// asc's screenshot listing, flattened to (locale, display type, count) whatever its nesting.
-    private func flatten(_ doc: JSONValue) -> [(locale: String, type: String, count: Int)] {
-        var out: [(String, String, Int)] = []
-        func walk(_ v: JSONValue, locale: String) {
-            if let o = v.objectValue {
-                let loc = o["locale"]?.stringValue ?? locale
-                // asc's shape: localizations[].sets[] = { set: { attributes.screenshotDisplayType }, screenshots: [...] }
-                if let set = o["set"]?.objectValue, let type = set["attributes"]?.objectValue?["screenshotDisplayType"]?.stringValue {
-                    out.append((loc, type, o["screenshots"]?.arrayValue?.count ?? 0)); return
-                }
-                if let type = o["displayType"]?.stringValue ?? o["screenshotDisplayType"]?.stringValue ?? o["attributes"]?.objectValue?["screenshotDisplayType"]?.stringValue {
-                    let n = o["screenshots"]?.arrayValue?.count ?? o["count"]?.numberValue.map(Int.init) ?? o["items"]?.arrayValue?.count ?? 0
-                    out.append((loc, type, n)); return
-                }
-                for (_, x) in o { walk(x, locale: loc) }
-            } else if let a = v.arrayValue { for x in a { walk(x, locale: locale) } }
+/// The rest of the store: only what the app has shows up here as a list.
+private struct AscMoreTab: View {
+    var app: ASCApp
+    var body: some View {
+        TabPage {
+            AscSection(title: L.t("asc.more.appClips"), args: ["app-clips", "list", "--app", app.id], empty: L.t("asc.more.noAppClips"))
+            AscSection(title: L.t("asc.more.achievements"), args: ["game-center", "achievements", "list", "--app", app.id], empty: L.t("asc.more.noGameCenter"))
+            AscSection(title: L.t("asc.more.leaderboards"), args: ["game-center", "leaderboards", "list", "--app", app.id], empty: L.t("asc.more.noGameCenter"))
+            AscSection(title: L.t("asc.more.webhooks"), args: ["webhooks", "list", "--app", app.id], empty: L.t("asc.more.noWebhooks"))
+            AscSection(title: L.t("asc.more.assets"), args: ["background-assets", "list", "--app", app.id], empty: L.t("asc.more.noAssets"))
         }
-        walk(doc, locale: "")
-        return out.map { (locale: $0.0, type: $0.1, count: $0.2) }.sorted { ($0.locale, $0.type) < ($1.locale, $1.type) }
     }
 }
 
