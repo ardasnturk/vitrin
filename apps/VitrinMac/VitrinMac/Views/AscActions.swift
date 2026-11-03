@@ -195,6 +195,15 @@ struct ActionBar<Content: View>: View {
     static let releaseTypes: [(value: String, label: String)] = [("AFTER_APPROVAL", "After approval"), ("MANUAL", "Manual"), ("SCHEDULED", "Scheduled")]
 
     // Release
+    static func reviewDetails(id: String, item: [String: JSONValue]) -> AscAction {
+        AscAction(title: L.t("act.reviewDetails"), detail: L.t("act.reviewDetails.detail"), symbol: "pencil", command: ["review", "details-update"], fixed: ["--id", id], fields: [
+            .init(flag: "contact-first-name", label: AscText.field("contactFirstName"), initial: JSONAPI.text(item, "contactFirstName")),
+            .init(flag: "contact-last-name", label: AscText.field("contactLastName"), initial: JSONAPI.text(item, "contactLastName")),
+            .init(flag: "contact-email", label: AscText.field("contactEmail"), initial: JSONAPI.text(item, "contactEmail")),
+            .init(flag: "contact-phone", label: AscText.field("contactPhone"), initial: JSONAPI.text(item, "contactPhone")),
+            .init(flag: "notes", label: AscText.field("notes"), kind: .multiline, initial: JSONAPI.text(item, "notes")),
+        ])
+    }
     static func createVersion(app: String) -> AscAction {
         AscAction(title: L.t("act.createVersion"), detail: L.t("act.createVersion.detail"), symbol: "plus.square.on.square", command: ["versions", "create"], fixed: ["--app", app], fields: [
             .init(flag: "version", label: L.t("asc.field.version"), kind: .text(placeholder: "1.1.0"), required: true),

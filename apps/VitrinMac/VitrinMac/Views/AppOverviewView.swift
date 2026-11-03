@@ -331,13 +331,10 @@ private struct AscStatusTab: View {
                         statusCard(L.t("asc.status.phased"), "chart.bar.fill", BadgeColors.warm, o["phasedRelease"], [("configured", "bool"), ("state", "state")])
                     }
                     ReleaseActions(app: app, status: o, reload: reload)
-                    if let links = o["links"]?.objectValue, !links.isEmpty {
-                        HStack {
-                            ForEach(links.keys.sorted(), id: \.self) { k in
-                                if let s = links[k]?.stringValue, let u = URL(string: s) { Button(L.t("asc.link.\(k)")) { NSWorkspace.shared.open(u) }.controlSize(.small) }
-                            }
-                        }
-                    }
+                    ReviewReadiness(appID: app.id)
+                    if let v = o["appstore"]?.objectValue?["versionId"]?.stringValue { ReviewContactCard(versionID: v) }
+                    SubmissionHistory(appID: app.id)
+                    VersionHistory(appID: app.id)
                 }
             }
         }
