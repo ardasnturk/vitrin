@@ -76,7 +76,7 @@ struct AppOverviewView: View {
                     case .money: AscMoneyTab(app: app)
                     case .visuals: AscVisualsTab(app: app)
                     case .analytics: AscAnalyticsTab(app: app)
-                    case .more: TabPage { EmptyView() }
+                    case .more: AscMoreTab(app: app)
                     }
                 }
             }
@@ -811,7 +811,8 @@ private struct AscAnalyticsTab: View {
     var app: ASCApp
     var body: some View {
         TabPage {
-            Text(L.t("asc.analytics.intro")).font(.callout).foregroundStyle(.secondary).glassCard(padding: 14)
+            WeeklyInsights(appID: app.id)
+            PerformanceOverview(appID: app.id)
         }
     }
 }
