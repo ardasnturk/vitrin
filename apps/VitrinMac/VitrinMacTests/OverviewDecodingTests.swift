@@ -55,7 +55,7 @@ final class OverviewDecodingTests: XCTestCase {
 
     func testFilesAndRendered() throws {
         let o = try load()
-        XCTAssertEqual(o.config?.uploader, "deliver")
+        XCTAssertEqual(o.config?.uploader, "asc")
         XCTAssertFalse(o.screenshots.isEmpty, "the example has rendered screenshots")
         XCTAssertNotNil(o.validation)
         XCTAssertNil(o.approval, "the example is not approved; the UI tests must keep it that way")

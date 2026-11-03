@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { decodeJwt, decodeProtectedHeader } from 'jose';
 import { describe, expect, it } from 'vitest';
-import { AscClient, buildPlan, createExperiment, createToken, diffRefData, eventAttributes, experimentCreateBody, exportFastlaneMetadata, fetchLiveListing, formatPlan, isEditableVersion, isPem, screenshotTargetOf, treatmentCreateBody } from '../src/index.js';
+import { AscClient, buildPlan, createExperiment, createToken, diffRefData, eventAttributes, experimentCreateBody, exportStoreMetadata, fetchLiveListing, formatPlan, isEditableVersion, isPem, screenshotTargetOf, treatmentCreateBody } from '../src/index.js';
 
 const { privateKey } = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
 const pem = privateKey.export({ type: 'pkcs8', format: 'pem' }).toString();
@@ -27,18 +27,18 @@ describe('JWT', () => {
   });
 });
 
-describe('fastlane export', () => {
-  it('writes deliver files and never writes demo credentials', async () => {
+describe('store text export', () => {
+  it('writes one file per field and never writes demo credentials', async () => {
     const root = mkdtempSync(join(tmpdir(), 'vitrin-fl-'));
     const paths = appPaths(root);
     const config = VitrinConfig.parse({ app: { locales: ['tr'] }, urls: { support: 'https://a.app/s', privacy: 'https://a.app/p' }, review: { firstName: 'Arda', email: 'a@a.app' } });
     const app: AppMetadata = { copyright: '2026 JASTech', primaryCategory: 'HEALTH_AND_FITNESS', primarySubcategories: [], secondarySubcategories: [], reviewNotes: 'Demo modu' };
     const m = { locale: 'tr', name: 'Ritim', subtitle: 'Alt', promotionalText: '', description: 'Açıklama', keywords: 'a,b', whatsNew: '', claims: [] } as LocaleMetadata;
-    await exportFastlaneMetadata(paths, config, app, [m]);
-    const md = paths.fastlaneMetadata;
+    await exportStoreMetadata(paths, config, app, [m]);
+    const md = paths.storeMetadata;
     expect(readFileSync(join(md, 'tr', 'name.txt'), 'utf8')).toBe('Ritim\n');
     expect(readFileSync(join(md, 'tr', 'support_url.txt'), 'utf8')).toBe('https://a.app/s\n');
-    // Cleared optional field → empty file so deliver clears the remote value; release notes stay absent.
+    // Cleared optional field → empty file so the upload clears the remote value; release notes stay absent.
     expect(readFileSync(join(md, 'tr', 'promotional_text.txt'), 'utf8')).toBe('');
     expect(existsSync(join(md, 'tr', 'release_notes.txt'))).toBe(false);
     expect(readFileSync(join(md, 'copyright.txt'), 'utf8')).toBe('2026 JASTech\n');

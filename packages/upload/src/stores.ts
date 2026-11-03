@@ -7,12 +7,12 @@ import { AssetLibraryClient, type PlacementSpec } from './asset-library.js';
 import { classicTypeFor, displayTypesFor, perTypeRoute } from './display-types.js';
 import { ClassicMediaClient } from './screenshot-sets.js';
 import type { PollOptions } from './upload-operations.js';
-import { runLane, runSupplyLane, type CommandRunner } from './fastlane.js';
+import { runSupplyLane, type CommandRunner } from './supply.js';
 import { isActive, type PlanItem, type PlayPlanInput, type UploadPlan } from './plan.js';
-import { buildDeliverFolders, collectRenderedAssets, deliverAcceptsPreview, deliverPlatformFor, platformsFromConfig, type DeliverFolders, type RenderedAsset } from './platforms.js';
+import { collectRenderedAssets, platformsFromConfig, type RenderedAsset } from './platforms.js';
 import { checkPlayImages, exportPlayMetadata, loadPlayInputs, playExportDir, playImageSets, readPlayImageInfo, strayPlayLocaleDirs, type PlayInputs } from './play.js';
 import { PlayClient, playKeyFromEnv, type PlayKeySource } from './play-client.js';
-import { deliverAssetsFor, perDisplayTypeAssetsFor, type PlatformScope, type PlayScope } from './scope.js';
+import { perDisplayTypeAssetsFor, type PlatformScope, type PlayScope } from './scope.js';
 
 export interface PlayContext {
   packageName?: string;
@@ -78,71 +78,16 @@ function scopeOf(plan: UploadPlan, platform: string): PlatformScope | undefined 
   return plan.scope?.apple.find((s) => s.platform === platform);
 }
 
-/**
- * One deliver run per Apple platform this run touches, each with its own metadata, screenshot and preview folders.
- * Only complete sets (`replace-all`) go into the folders, because deliver's overwrite deletes every set of each
- * locale it uploads to; partial sets are replaced one display type at a time by `uploadPerDisplayType` (classic
- * appScreenshotSets/appPreviewSets API, App Asset Library for iPhone Duo). Text is skipped when
- * metadata is not selected, and a platform with nothing to do gets no run.
- */
-export async function runDeliverForPlatforms(
-  paths: AppPaths,
-  plan: UploadPlan,
-  assets: RenderedAsset[],
-  opts: { bundleId: string; languages: string[]; skipScreenshots?: boolean; lane?: string },
-  runner: CommandRunner = exec,
-): Promise<DeliverFolders[]> {
-  const done: DeliverFolders[] = [];
-  // The asc uploader replaces deliver entirely (runAscForPlatforms).
-  if (plan.uploader === 'asc') return done;
-  for (const p of plan.platforms) {
-    if (!p.version && plan.remoteKnown) continue;
-    const ps = scopeOf(plan, p.platform);
-    if (plan.scope && !isActive(ps)) continue;
-    const files = ps ? deliverAssetsFor(ps, assets) : assets;
-    const media = opts.skipScreenshots || plan.uploader === 'asset-library' ? [] : files;
-    const skipMetadata = ps ? !ps.metadata : false;
-    if (skipMetadata && !media.length) continue;
-    const folders = await buildDeliverFolders(paths, p.platform, media, { locales: opts.languages, dropReleaseNotes: p.firstRelease });
-    log.step(`fastlane deliver ${p.platform} (${skipMetadata ? 'no text, ' : ''}${folders.screenshots} screenshots, ${folders.previews} previews)…`);
-    await runLane(
-      paths,
-      opts.lane ?? 'vitrin_upload',
-      {
-        bundleId: opts.bundleId,
-        languages: opts.languages,
-        appVersion: p.version?.versionString,
-        platform: p.platform,
-        skipScreenshots: folders.screenshots === 0,
-        skipMetadata,
-        metadataPath: folders.metadataPath,
-        screenshotsPath: folders.screenshotsPath,
-        previewsPath: folders.previewsPath,
-      },
-      runner,
-    );
-    done.push(folders);
-  }
-  return done;
-}
-
-/**
- * Files of a platform that are replaced one display type at a time: partial sets, and complete preview sets deliver
- * has no type for (Mac, Apple TV, Vision Pro — the classic API has DESKTOP, APPLE_TV and APPLE_VISION_PRO).
- */
+/** Files of a platform that this run replaces, one display type at a time. */
 export function perDisplayTypeFilesFor(plan: UploadPlan, platform: string, assets: RenderedAsset[]): RenderedAsset[] {
   const ps = scopeOf(plan, platform);
   if (!ps || !isActive(ps)) return [];
-  const partial = perDisplayTypeAssetsFor(ps, assets);
-  const previewsWithoutType = assets.filter(
-    (a) => a.kind === 'preview' && ps.previews === 'replace-all' && ps.previewTargets.includes(a.target.id) && deliverPlatformFor(a.target.platform) === ps.platform && !deliverAcceptsPreview(ps.platform, a.file),
-  );
-  return [...partial, ...previewsWithoutType];
+  return perDisplayTypeAssetsFor(ps, assets);
 }
 
-/** The subset of `perDisplayTypeFilesFor` that needs the App Asset Library (no classic type, or uploader asset-library). */
+/** The subset of `perDisplayTypeFilesFor` that needs the App Asset Library (no classic display type: iPhone Duo). */
 export function assetLibraryFilesFor(plan: UploadPlan, platform: string, assets: RenderedAsset[]): RenderedAsset[] {
-  return perDisplayTypeFilesFor(plan, platform, assets).filter((a) => perTypeRoute(a.target, plan.uploader) === 'asset-library');
+  return perDisplayTypeFilesFor(plan, platform, assets).filter((a) => perTypeRoute(a.target) === 'asset-library');
 }
 
 export interface PerDisplayTypeOptions {
@@ -156,7 +101,7 @@ export interface PerDisplayTypeOptions {
  * Replaces exactly the display types in this run and nothing else, one localization at a time:
  * - through the classic appScreenshotSets/appPreviewSets API when it has a type for the target (finds or creates
  *   that one set, deletes only its items, uploads, commits with the MD5 checksum and sets the order);
- * - through the App Asset Library otherwise (iPhone Duo), or for everything with `uploader: asset-library`
+ * - through the App Asset Library otherwise (iPhone Duo)
  *   (deletes only placements of that placementType and refData placementGroup, uploads, places, orders).
  * Other device sets of the locale stay untouched. Returns the number of files uploaded.
  */
@@ -172,7 +117,7 @@ export async function uploadPerDisplayType(client: AscClient, plan: UploadPlan, 
     const groups = new Map<string, { locale: string; kind: 'screenshot' | 'preview'; route: 'classic' | 'asset-library'; type: string; spec?: PlacementSpec; files: RenderedAsset[] }>();
     for (const a of [...files].sort((x, y) => x.order.localeCompare(y.order) || x.target.id.localeCompare(y.target.id))) {
       if (a.kind !== 'screenshot' && a.kind !== 'preview') continue;
-      const route = perTypeRoute(a.target, plan.uploader);
+      const route = perTypeRoute(a.target);
       if (route === 'none') throw new Error(`${a.target.id}: no classic display type and no App Asset Library placement in data/asc-display-types.json; refusing a partial replacement that could touch other sets.`);
       if (route === 'classic' && opts.classic === 'skip') continue;
       const spec = displayTypesFor(a.target.id)?.assetLibrary;

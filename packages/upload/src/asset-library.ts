@@ -28,7 +28,7 @@ export type { UploadOperation } from './upload-operations.js';
  * search and event creatives.
  *
  * Vitrin uses this only for what the classic appScreenshotSets/appPreviewSets API cannot do (iPhone Duo, product
- * page header and search creatives, event assets), or for all media with `upload.uploader: asset-library`.
+ * page header and search creatives, event assets).
  */
 
 export type AssetKind = 'image' | 'video';

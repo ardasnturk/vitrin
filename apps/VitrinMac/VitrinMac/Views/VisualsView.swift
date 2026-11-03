@@ -20,19 +20,23 @@ struct VisualsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(L.t("page.visuals")).font(.title.bold())
-                        Text(L.t("visuals.intro")).foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    stageButtons
+                // Title, then the stage buttons on their own wrapping row, then the tabs and the language: nothing here
+                // has a minimum width larger than the page, so a narrow page (the Claude column open) never overflows.
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(L.t("page.visuals")).font(.title.bold())
+                    // No vertical fixedSize here: measured at a zero width it grew a letter per line and pushed the whole window up.
+                    Text(L.t("visuals.intro")).foregroundStyle(.secondary).lineLimit(2)
                 }
-                HStack {
-                    Picker("", selection: $tab) { ForEach(Tab.allCases) { Text(L.t("visuals.\($0.rawValue)")).tag($0) } }.pickerStyle(.segmented).frame(maxWidth: 520)
-                    Spacer()
+                stageButtons
+                HStack(spacing: 10) {
+                    // The tabs as a segmented control when it fits, else a menu: never wider than the page.
+                    ViewThatFits(in: .horizontal) {
+                        Picker("", selection: $tab) { ForEach(Tab.allCases) { Text(L.t("visuals.\($0.rawValue)")).tag($0) } }.labelsHidden().pickerStyle(.segmented).fixedSize()
+                        Picker("", selection: $tab) { ForEach(Tab.allCases) { Text(L.t("visuals.\($0.rawValue)")).tag($0) } }.labelsHidden().fixedSize()
+                    }
+                    Spacer(minLength: 0)
                     if tab != .samples {
-                        Picker("", selection: $locale) { ForEach(overview.config?.locales ?? [], id: \.self) { Text($0).tag($0) } }.frame(width: 120)
+                        Picker("", selection: $locale) { ForEach(overview.config?.locales ?? [], id: \.self) { Text($0).tag($0) } }.labelsHidden().fixedSize()
                     }
                 }
             }
@@ -46,8 +50,16 @@ struct VisualsView: View {
         }
     }
 
+    /// The stage buttons with their labels when they fit, icons only when the page is narrow.
     private var stageButtons: some View {
-        HStack {
+        ViewThatFits(in: .horizontal) {
+            stageButtonRow.fixedSize()
+            stageButtonRow.labelStyle(.iconOnly).fixedSize()
+        }
+    }
+
+    private var stageButtonRow: some View {
+        HStack(spacing: 6) {
             ForEach(["capture", "mockups", "design", "video"], id: \.self) { id in
                 if let view = overview.stage(id), view.stageStatus != .skipped {
                     if let b = view.brief {

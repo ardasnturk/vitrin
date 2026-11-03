@@ -31,13 +31,13 @@ export function classicTypeFor(target: Pick<RenderTarget, 'id' | 'kind'>, file?:
 export type PerTypeRoute = 'classic' | 'asset-library' | 'none';
 
 /**
- * Partial sets go through the classic appScreenshotSets/appPreviewSets API whenever it has a type for the target
- * (it replaces exactly one display type of one localization); the App Asset Library is used only for what the
- * classic API cannot do (iPhone Duo), or for everything with `uploader: asset-library`.
+ * A set goes through its classic display type whenever App Store Connect has one for the target (`asc
+ * screenshots|video-previews upload --replace` replaces exactly that one set of one localization); the App Asset
+ * Library is used only for what has no classic type (iPhone Duo).
  */
-export function perTypeRoute(target: Pick<RenderTarget, 'id' | 'kind'>, uploader: 'deliver' | 'asset-library' | 'asc', file?: AscDisplayTypesFile): PerTypeRoute {
+export function perTypeRoute(target: Pick<RenderTarget, 'id' | 'kind'>, file?: AscDisplayTypesFile): PerTypeRoute {
   const d = displayTypesFor(target.id, file);
-  if (uploader !== 'asset-library' && classicTypeFor(target, file)) return 'classic';
+  if (classicTypeFor(target, file)) return 'classic';
   if (d?.assetLibrary) return 'asset-library';
   return 'none';
 }

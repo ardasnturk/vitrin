@@ -113,8 +113,9 @@ export class AscClient {
   private token?: { value: string; exp: number };
   private readonly retry: RetryPolicy;
 
+  /** `creds` is undefined only for subclasses that send requests another way (AscCliClient: `asc api`). */
   constructor(
-    private readonly creds: AscCredentials,
+    private readonly creds: AscCredentials | undefined,
     private readonly fetchImpl: typeof fetch = fetch,
     opts: { retry?: Partial<RetryPolicy> } = {},
   ) {
@@ -123,6 +124,7 @@ export class AscClient {
 
   private async auth(): Promise<string> {
     const now = Math.floor(Date.now() / 1000);
+    if (!this.creds) throw new AscCredentialError('ASC API key is missing (ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_PATH).');
     if (!this.token || this.token.exp - now < 60) {
       this.token = { value: await createToken(this.creds, now), exp: now + TOKEN_LIFETIME_SEC };
     }
@@ -133,7 +135,7 @@ export class AscClient {
    * One API call with bounded retries: 429, 5xx and requests that got no response at all are tried again after
    * `Retry-After` (seconds or HTTP-date) or exponential backoff, within the policy's attempt and total-wait caps.
    * Any other 4xx is final. A write may be repeated after a 5xx or a dropped connection, since App Store Connect
-   * may or may not have applied it; fastlane's Spaceship retries the same way. A DELETE that is answered 404 on a
+   * may or may not have applied it, so it is retried the same way. A DELETE that is answered 404 on a
    * repeat counts as done: the first attempt removed the resource before the response was lost.
    */
   async request<T = JsonApiDocument>(method: string, path: string, body?: unknown): Promise<T> {

@@ -1,14 +1,77 @@
 import SwiftUI
 
+/// The Remote Code family Settings window: a 210 pt badge sidebar, a pane header, a grouped form on the brand
+/// background. Opens on the Account pane while no key is stored.
 struct SettingsView: View {
-    var body: some View {
-        TabView {
-            GeneralSettings().tabItem { Label(L.t("settings.general"), systemImage: "gear") }
-            AccountSettings().tabItem { Label(L.t("settings.account"), systemImage: "person.crop.circle.badge.checkmark") }
-            CLISettings().tabItem { Label(L.t("settings.cli"), systemImage: "terminal") }
-            UpdateSettings().tabItem { Label(L.t("settings.updates"), systemImage: "arrow.down.circle") }
+    enum Pane: String, CaseIterable, Identifiable {
+        case account, general, claude, cli, updates
+        var id: String { rawValue }
+        var symbol: String {
+            switch self {
+            case .account: return "key.horizontal.fill"
+            case .general: return "gearshape.fill"
+            case .claude: return "sparkles"
+            case .cli: return "terminal.fill"
+            case .updates: return "arrow.down.circle.fill"
+            }
         }
-        .frame(width: 600, height: 480)
+        var colors: [Color] {
+            switch self {
+            case .account: return BadgeColors.cool
+            case .general: return BadgeColors.gray
+            case .claude: return BadgeColors.magic
+            case .cli: return BadgeColors.deep
+            case .updates: return BadgeColors.fresh
+            }
+        }
+        var titleKey: String { self == .claude ? "settings.claude" : "settings.\(rawValue)" }
+        var subtitleKey: String { "settings.\(rawValue).subtitle" }
+    }
+
+    @State private var pane: Pane = ASCCredentials.shared.isSet ? .general : .account
+
+    var body: some View {
+        HStack(spacing: 0) {
+            List(Pane.allCases, selection: $pane) { p in
+                Label { Text(L.t(p.titleKey)) } icon: { IconBadge(symbol: p.symbol, colors: p.colors) }
+                    .padding(.vertical, 3)
+                    .tag(p)
+                    .accessibilityIdentifier("settings.pane.\(p.rawValue)")
+            }
+            .listStyle(.sidebar)
+            .scrollContentBackground(.hidden)
+            .frame(width: 210)
+            .background(.thinMaterial)
+            Divider()
+            VStack(alignment: .leading, spacing: 0) {
+                PaneHeader(symbol: pane.symbol, colors: pane.colors, title: Text(L.t(pane.titleKey)), subtitle: Text(L.t(pane.subtitleKey)))
+                Group {
+                    switch pane {
+                    case .account: AccountSettings()
+                    case .general: GeneralSettings()
+                    case .claude: ClaudeSettings()
+                    case .cli: CLISettings()
+                    case .updates: UpdateSettings()
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .brandWindowBackground()
+        }
+        .frame(width: 780, height: 560)
+        .onAppear { SettingsWindow.bringToFront() }
+    }
+}
+
+struct ClaudeSettings: View {
+    var body: some View {
+        Form {
+            Section {
+                ClaudeModelPicker()
+                Text(L.t("settings.claudeModelHint")).font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
     }
 }
 
@@ -18,22 +81,13 @@ struct GeneralSettings: View {
     var body: some View {
         @Bindable var settings = settings
         Form {
-            Picker(L.t("settings.language"), selection: $settings.language) {
-                Text(L.t("settings.languageSystem")).tag(AppLanguage.system)
-                Text(L.t("settings.languageProject")).tag(AppLanguage.project)
-                Text("English").tag(AppLanguage.en)
-                Text("Türkçe").tag(AppLanguage.tr)
-            }
+            LanguagePicker(selection: $settings.language)
             Text(L.t("settings.languageHint")).font(.caption).foregroundStyle(.secondary)
             Toggle(L.t("settings.menuBar"), isOn: $settings.showMenuBarExtra)
             Toggle(L.t("settings.keepInMenuBar"), isOn: $settings.keepInMenuBar).disabled(!settings.showMenuBarExtra)
             Toggle(L.t("settings.notifications"), isOn: $settings.notifications)
             Toggle(L.t("settings.developerMode"), isOn: $settings.developerMode)
             Text(L.t("settings.developerModeHint")).font(.caption).foregroundStyle(.secondary)
-            Section("Claude") {
-                ClaudeModelPicker()
-                Text(L.t("settings.claudeModelHint")).font(.caption).foregroundStyle(.secondary)
-            }
         }
         .formStyle(.grouped)
         .onChange(of: settings.language) { model.applyLanguage() }
@@ -68,65 +122,18 @@ struct ClaudeModelPicker: View {
 
 /// Settings → Account: the App Store Connect API key, once for every project.
 struct AccountSettings: View {
-    @Environment(AppModel.self) private var model
-    @State private var credentials = ASCCredentials.shared
-    @State private var keyId = ""
-    @State private var issuerId = ""
-    @State private var p8: URL?
-    @State private var error: String?
-    @State private var saving = false
-
     var body: some View {
-        Form {
-            Section {
-                Text(L.t("settings.accountIntro")).font(.callout).foregroundStyle(.secondary)
-                if let k = credentials.key {
-                    LabeledContent(L.t("settings.keyId"), value: k.keyId)
-                    LabeledContent(L.t("settings.issuerId"), value: k.issuerId)
-                    LabeledContent(L.t("settings.p8")) { Text(k.keyPath).font(.caption.monospaced()).lineLimit(1).truncationMode(.middle).textSelection(.enabled) }
-                    Text(L.t("settings.keySaved")).font(.caption).foregroundStyle(.secondary)
-                    Button(L.t("settings.removeKey"), role: .destructive) { credentials.clear(); Task { await model.restartSessions() } }.accessibilityIdentifier("settings.removeKey")
-                } else {
-                    TextField(L.t("settings.keyId"), text: $keyId, prompt: Text("ABC123DEFG")).accessibilityIdentifier("settings.keyId")
-                    TextField(L.t("settings.issuerId"), text: $issuerId, prompt: Text("69a6de7f-…")).accessibilityIdentifier("settings.issuerId")
-                    LabeledContent(L.t("settings.p8")) {
-                        HStack {
-                            Text(p8?.lastPathComponent ?? L.t("settings.keyNone")).font(.callout).foregroundStyle(p8 == nil ? .secondary : .primary).lineLimit(1)
-                            Button(L.t("settings.chooseP8")) { pick() }.accessibilityIdentifier("settings.chooseP8")
-                        }
-                    }
-                    if let error { Text(error).font(.caption).foregroundStyle(.red) }
-                    Button(L.t("settings.saveKey")) { save() }.buttonStyle(.borderedProminent).disabled(saving || keyId.isEmpty || issuerId.isEmpty || p8 == nil).accessibilityIdentifier("settings.saveKey")
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                Text(L.t("settings.accountIntro")).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                AccountForm().glassCard(padding: 16)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L.t("settings.keyHint")).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    Button(L.t("settings.openASC")) { NSWorkspace.shared.open(URL(string: "https://appstoreconnect.apple.com/access/integrations/api")!) }
                 }
+                .glassCard(padding: 14)
             }
-            Section {
-                Text(L.t("settings.keyHint")).font(.caption).foregroundStyle(.secondary)
-                Button(L.t("settings.openASC")) { NSWorkspace.shared.open(URL(string: "https://appstoreconnect.apple.com/access/integrations/api")!) }
-            }
-        }
-        .formStyle(.grouped)
-    }
-
-    private func pick() {
-        let panel = NSOpenPanel()
-        panel.allowedContentTypes = [.init(filenameExtension: "p8") ?? .data]
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
-        panel.message = L.t("settings.p8")
-        if panel.runModal() == .OK { p8 = panel.url; error = nil }
-    }
-
-    private func save() {
-        guard let p8 else { return }
-        saving = true
-        defer { saving = false }
-        do {
-            try credentials.save(keyId: keyId, issuerId: issuerId, p8: p8)
-            error = nil
-            keyId = ""; issuerId = ""; self.p8 = nil
-            Task { await model.restartSessions() }
-        } catch {
-            self.error = error.localizedDescription
+            .padding(20)
         }
     }
 }

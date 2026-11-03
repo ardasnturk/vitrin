@@ -7,7 +7,7 @@ import { IssueList } from './issues.js';
 
 /** File name pattern for rendered screenshots: `NN_<slug>_<target>.png`. */
 export const SCREENSHOT_RE = /^(\d{2})_([a-z0-9-]+)_([a-z0-9.-]+)\.(png|jpe?g)$/;
-/** Preview file pattern: `NN_<DELIVER_DEVICE>.mp4`. */
+/** Preview file pattern: `NN_<PREVIEW_DEVICE>.mp4`. */
 export const PREVIEW_RE = /^(\d{2})_([A-Z0-9_]+)\.(mp4|mov|m4v)$/;
 
 /** Store name for messages. */
@@ -15,7 +15,7 @@ export function storeName(t: Pick<RenderTarget, 'store'>): string {
   return t.store === 'google-play' ? 'Google Play' : 'the App Store';
 }
 
-/** Device family of an App Preview file from its deliver device name (`NN_<DEVICE>.mp4`). */
+/** Device family of an App Preview file from its device token (`NN_<DEVICE>.mp4`). */
 export function previewFamily(device: string): 'iphone' | 'ipad' | 'mac' | 'tv' | 'vision' {
   if (device.startsWith('IPAD')) return 'ipad';
   if (device === 'DESKTOP') return 'mac';
@@ -54,7 +54,7 @@ export async function validateScreenshots(opts: {
   const issues = new IssueList();
   const counts = new Map<string, Map<string, number>>(); // target → locale → n
   for (const extra of await strayLocaleDirs(opts.screenshotsDir, opts.locales)) {
-    issues.error('image.stray-locale', `metadata/store/screenshots/${extra} is a locale not in the config; deliver will upload it too. Remove the folder or add the locale.`);
+    issues.error('image.stray-locale', `metadata/store/screenshots/${extra} is a locale not in the config; it would be reviewed and uploaded too. Remove the folder or add the locale.`);
   }
   for (const locale of opts.locales) {
     const dir = join(opts.screenshotsDir, locale);
@@ -67,7 +67,7 @@ export async function validateScreenshots(opts: {
       const m = SCREENSHOT_RE.exec(f);
       const file = join(dir, f);
       if (!m) {
-        issues.error('image.unknown-file', `Unexpected file: ${locale}/${f} (expected NN_slug_target.png). deliver uploads every image in the folder; remove the file.`, { locale, file });
+        issues.error('image.unknown-file', `Unexpected file: ${locale}/${f} (expected NN_slug_target.png). Every image in the folder is uploaded; remove the file.`, { locale, file });
         continue;
       }
       const target = opts.targets.find((t) => t.id === m[3]);
@@ -182,7 +182,7 @@ export function qualityIssues(q: ImageQuality, where: string, ctx: { locale?: st
   return issues;
 }
 
-/** Locale folders deliver would upload although the locale is not configured. */
+/** Locale folders that would be uploaded although the locale is not configured. */
 export async function strayLocaleDirs(dir: string, locales: string[]): Promise<string[]> {
   if (!existsSync(dir)) return [];
   const entries = await readdir(dir, { withFileTypes: true });
@@ -283,7 +283,7 @@ export async function validateVideos(opts: { previewsDir: string; creativeDir: s
       perDevice.set(m[2]!, (perDevice.get(m[2]!) ?? 0) + 1);
       const target = previewTargets.find((t) => t.family === previewFamily(m[2]!));
       if (!target) {
-        issues.error('video.disabled-target', `${locale}/${f}: no preview target is enabled for this device (targets.enable); deliver will upload it anyway.`, { locale });
+        issues.error('video.disabled-target', `${locale}/${f}: no preview target is enabled for this device (targets.enable); remove the file or enable the target.`, { locale });
         continue;
       }
       const probe = await ffprobe(join(dir, f));

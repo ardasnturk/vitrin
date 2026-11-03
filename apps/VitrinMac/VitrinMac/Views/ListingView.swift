@@ -2,8 +2,12 @@ import SwiftUI
 
 /// The store text per language with the App Store Connect counters, and the validation issues next to their fields.
 struct ListingView: View {
+    @Environment(AppModel.self) private var model
     var session: ProjectSession
     var overview: Overview
+    @State private var importing = false
+    @State private var importPreview: AscListingImport.Result?
+    @State private var importMessage: (String, Bool)?
     @State private var locale = ""
     @State private var doc: [String: Any] = [:]
     @State private var original = ""
@@ -29,7 +33,9 @@ struct ListingView: View {
                     Button(L.t("listing.write")) { Task { await session.run("write") } }.buttonStyle(.borderedProminent).disabled(session.isBusy).cliHelp("vitrin write")
                     if overview.stage("write")?.brief != nil { ClaudeButton(session: session, overview: overview, stage: "write") }
                 }
-                Picker("", selection: $locale) { ForEach(overview.config?.locales ?? [], id: \.self) { Text($0).tag($0) } }.pickerStyle(.segmented).frame(maxWidth: 400)
+                CapsuleTabs(items: overview.config?.locales ?? [], selection: $locale, title: { $0 }, mono: true)
+                if let app = model.ascApp(for: session.project), model.connection.isConnected { importCard(app) }
+                if let (m, ok) = importMessage { Label(m, systemImage: ok ? "checkmark.circle.fill" : "exclamationmark.triangle.fill").foregroundStyle(ok ? .green : .red).font(.callout) }
                 if let loadError {
                     Card { Text(loadError).foregroundStyle(.secondary); Text(L.t("listing.noFile")).font(.callout) }
                 } else {
@@ -85,6 +91,61 @@ struct ListingView: View {
             KeyValueRow(key: L.t("listing.marketing"), value: doc["marketingUrl"] as? String ?? overview.config?.urls.marketing ?? "—")
             Text(L.t("listing.urlsHint")).font(.caption).foregroundStyle(.secondary)
         }
+    }
+
+    /// App Store Connect's live text for the linked app: shown, then written into metadata/listing/ on confirmation.
+    @ViewBuilder private func importCard(_ app: ASCApp) -> some View {
+        let missing = loadError != nil
+        HStack(alignment: .top, spacing: 12) {
+            IconBadge(symbol: "square.and.arrow.down.fill", colors: BadgeColors.deep, size: 30)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(L.t(missing ? "listing.asc.missingTitle" : "listing.asc.title")).font(.headline)
+                Text(L.t("listing.asc.detail").replacingOccurrences(of: "{app}", with: app.name)).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer()
+            if importing { ProgressView().controlSize(.small) }
+            Button { Task { await fetchImport(app) } } label: { Label(L.t("listing.asc.import"), systemImage: "arrow.down.circle") }
+                .buttonStyle(GradientButtonStyle(fullWidth: false)).disabled(importing || session.isBusy)
+        }
+        .glassCard(padding: 14)
+        .confirmationDialog(L.t("listing.asc.confirm"), isPresented: Binding(get: { importPreview != nil }, set: { if !$0 { importPreview = nil } }), titleVisibility: .visible) {
+            Button(L.t("listing.asc.write")) { Task { await writeImport() } }
+            Button(L.t("common.cancel"), role: .cancel) { importPreview = nil }
+        } message: {
+            if let r = importPreview {
+                let locales = overview.config?.locales ?? []
+                let hits = locales.filter { r.listings[$0] != nil }
+                Text(L.t("listing.asc.confirmDetail").replacingOccurrences(of: "{version}", with: r.versionString).replacingOccurrences(of: "{locales}", with: hits.joined(separator: ", ")).replacingOccurrences(of: "{skipped}", with: r.listings.keys.filter { !locales.contains($0) }.sorted().joined(separator: ", ")).replacingOccurrences(of: #"\s*[^.]*:\s*\.$"#, with: "", options: .regularExpression))
+            }
+        }
+    }
+
+    private func fetchImport(_ app: ASCApp) async {
+        importing = true
+        defer { importing = false }
+        importMessage = nil
+        do { importPreview = try await AscListingImport.fetch(appID: app.id) } catch { importMessage = (error.localizedDescription, false) }
+    }
+
+    private func writeImport() async {
+        guard let r = importPreview, let c = session.client else { return }
+        importPreview = nil
+        importing = true
+        defer { importing = false }
+        var written: [String] = []
+        for locale in overview.config?.locales ?? [] {
+            guard let o = r.listings[locale] else { continue }
+            do {
+                try await c.save("metadata/listing/\(locale).json", text: AscListingImport.fileText(o))
+                written.append(locale)
+            } catch {
+                importMessage = ("\(locale): \(error.localizedDescription)", false)
+                return
+            }
+        }
+        importMessage = (L.t("listing.asc.done").replacingOccurrences(of: "{n}", with: "\(written.count)"), true)
+        await load()
+        await session.refresh()
     }
 
     private func load() async {

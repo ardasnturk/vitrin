@@ -1,17 +1,17 @@
 import { ASSET_OF_KIND, enabledTargets, getTarget, loadConfig, loadTargets, log, selectedPlatforms, writeText } from '@vitrin/core';
-import { AscLocale, AssetKindEnum, PlatformEnum, UploaderEnum, uploaderOf, VitrinConfig, type AppProfile, type AssetKind, type Evidence, type Platform, type RenderTarget, type Uploader } from '@vitrin/schemas';
-import { installFastlaneTemplates } from '@vitrin/upload';
+import { AscLocale, AssetKindEnum, PlatformEnum, uploaderOf, VitrinConfig, type AppProfile, type AssetKind, type Evidence, type Platform, type RenderTarget, type Uploader } from '@vitrin/schemas';
+import { ASC_INSTALL_HINT } from '@vitrin/upload';
 import { readFile } from 'node:fs/promises';
 import { relative } from 'node:path';
 import pc from 'picocolors';
 import { isMap, parseDocument } from 'yaml';
 import { EXIT, loadProfile, type Ctx } from '../context.js';
-import { detectUploaderTools, MIN_FASTLANE, compareVersions, type UploaderTools } from './doctor.js';
+import { detectUploaderTools, type UploaderTools } from './doctor.js';
 
 /**
  * `vitrin platforms` lists what the analyzer detected so the skill can offer a multiple-choice list;
  * `vitrin select` stores the user's choices in vitrin.config.yaml: `selection` (platforms, content, formats),
- * `app.locales`, `ui.language` and `upload.uploader`. Every later stage (design, video, capture, validate,
+ * `app.locales`, `ui.language` and `capture.mode`. Every later stage (design, video, capture, validate,
  * upload) only produces what is selected.
  */
 
@@ -70,8 +70,8 @@ export interface PlatformsReport {
   samples: { locale: string; target: string; family: string };
   /** The language Vitrin talks to the user in (unset = not asked yet; English until then). */
   language: string | null;
-  /** The App Store uploader the user chose (null = not chosen yet). */
-  uploader: Uploader | null;
+  /** The App Store uploader: always `asc` (kept for readers of this report). */
+  uploader: Uploader;
   /** How the app's screens are made: html (from the code, no build) or a real capture. */
   capture: VitrinConfig['capture']['mode'];
   selection: VitrinConfig['selection'];
@@ -119,7 +119,7 @@ export function platformsReport(config: VitrinConfig, profile: AppProfile): Plat
     locales,
     samples: { locale: sampleLocale(config), target: target.id, family: target.family },
     language: config.ui?.language ?? null,
-    uploader: config.upload.uploader ?? null,
+    uploader: uploaderOf(config),
     capture: config.capture.mode,
     selection: config.selection ?? {},
   };
@@ -145,8 +145,8 @@ export async function platformsCommand(ctx: Ctx, opts: { json?: boolean } = {}):
   log.info(`Assets: ${report.assets.map((a) => (a.selected ? a.asset : pc.dim(a.asset))).join(', ')}`);
   log.info(`Formats: ${report.formats.map((f) => (f.selected ? f.target : pc.dim(f.target))).join(', ') || 'none'}`);
   log.info(`Locales: ${report.locales.map((l) => (l.selected ? l.locale : pc.dim(l.locale))).join(', ')} · design samples in ${report.samples.locale} (${report.samples.target})`);
-  log.info(`Language: ${report.language ?? pc.yellow('not asked yet (English)')} · uploader: ${report.uploader ?? pc.yellow('not chosen yet')} · screens: ${report.capture}`);
-  log.dim('Change with: vitrin select --platforms ios,watchos --assets screenshots,previews --targets iphone-6.9,ipad-13 --locales en-US,tr --language tr --uploader asc');
+  log.info(`Language: ${report.language ?? pc.yellow('not asked yet (English)')} · uploader: ${report.uploader} · screens: ${report.capture}`);
+  log.dim('Change with: vitrin select --platforms ios,watchos --assets screenshots,previews --targets iphone-6.9,ipad-13 --locales en-US,tr --language tr');
   return EXIT.OK;
 }
 
@@ -175,7 +175,6 @@ export interface SelectionChange {
   urls?: Partial<Record<'support' | 'privacy' | 'marketing', string>>;
   /** ui.language; null removes it. */
   language?: string | null;
-  uploader?: Uploader;
   /** capture.mode: html (screens recreated from the code, no build) or launch-args (build + simulators). */
   capture?: CaptureMode;
 }
@@ -185,7 +184,8 @@ export type CaptureMode = (typeof CAPTURE_MODES)[number];
 
 /**
  * Writes the user's choices into the YAML text, keeping comments and every other key.
- * `null` removes the key (= produce everything detected), `undefined` leaves it unchanged.
+ * `null` removes the key (= produce everything detected), `undefined` leaves it unchanged. A removed uploader value
+ * (`upload.uploader: deliver | asset-library`) is dropped on the way: uploads always use the asc CLI.
  */
 export function applySelection(yamlText: string, change: SelectionChange): string {
   const doc = parseDocument(yamlText);
@@ -201,7 +201,12 @@ export function applySelection(yamlText: string, change: SelectionChange): strin
     const ui = doc.getIn(['ui']);
     if (isMap(ui) && ui.items.length === 0) doc.delete('ui');
   }
-  if (change.uploader !== undefined) set(['upload', 'uploader'], change.uploader);
+  const legacy = doc.getIn(['upload', 'uploader']);
+  if (legacy === 'deliver' || legacy === 'asset-library') {
+    doc.deleteIn(['upload', 'uploader']);
+    const upload = doc.getIn(['upload']);
+    if (isMap(upload) && upload.items.length === 0) doc.delete('upload');
+  }
   if (change.capture !== undefined) set(['capture', 'mode'], change.capture);
   return doc.toString({ lineWidth: 120 });
 }
@@ -216,6 +221,7 @@ export interface SelectOptions {
   privacyUrl?: string;
   marketingUrl?: string;
   language?: string;
+  /** Removed: uploads always use the asc CLI. `asc` is accepted and changes nothing; other values only warn. */
   uploader?: string;
   capture?: string;
 }
@@ -230,15 +236,21 @@ export async function selectCommand(ctx: Ctx, opts: SelectOptions): Promise<numb
   const badLocales = [...(locales ?? []), ...(primaryLocale ? [primaryLocale] : [])].filter((l) => !AscLocale.safeParse(l).success);
   if (badLocales.length) throw new Error(`Invalid store locale: ${badLocales.join(', ')} (App Store Connect codes such as en-US, tr, de-DE).`);
   const language = opts.language === undefined ? undefined : opts.language.trim() === '' || opts.language === 'default' ? null : opts.language.trim();
-  if (opts.uploader !== undefined && !(UploaderEnum.options as readonly string[]).includes(opts.uploader)) throw new Error(`Unknown uploader: ${opts.uploader}. Valid: ${UploaderEnum.options.join(', ')}.`);
-  const uploader = opts.uploader as Uploader | undefined;
+  if (opts.uploader !== undefined && opts.uploader !== 'asc') log.warn(`--uploader ${opts.uploader} was removed: App Store uploads always use the asc CLI (${ASC_INSTALL_HINT}).`);
   if (opts.capture !== undefined && !(CAPTURE_MODES as readonly string[]).includes(opts.capture)) throw new Error(`Unknown capture mode: ${opts.capture}. Valid: ${CAPTURE_MODES.join(', ')}.`);
   const capture = opts.capture as CaptureMode | undefined;
   const urlEntries = Object.entries({ support: opts.supportUrl, privacy: opts.privacyUrl, marketing: opts.marketingUrl }).filter((e): e is [string, string] => e[1] !== undefined);
   for (const [k, v] of urlEntries) if (v.trim() && !/^https?:\/\/[^\s/]+\.[^\s]+$/.test(v.trim())) throw new Error(`Invalid ${k} URL: ${v} (use a full https:// address).`);
   const urls = urlEntries.length ? (Object.fromEntries(urlEntries.map(([k, v]) => [k, v.trim()])) as SelectionChange['urls']) : undefined;
-  const change: SelectionChange = { platforms, assets, targets, locales, primaryLocale, urls, language, uploader, capture };
-  if (Object.values(change).every((v) => v === undefined)) throw new Error('Nothing to select: pass --platforms, --assets, --targets, --locales, --primary-locale, --support-url, --privacy-url, --marketing-url, --language, --uploader and/or --capture.');
+  const change: SelectionChange = { platforms, assets, targets, locales, primaryLocale, urls, language, capture };
+  if (Object.values(change).every((v) => v === undefined)) {
+    // `--uploader` alone (older skill text, an older Vitrin for Mac): nothing to store any more.
+    if (opts.uploader !== undefined) {
+      log.ok('uploader: asc (the only App Store uploader)');
+      return EXIT.OK;
+    }
+    throw new Error('Nothing to select: pass --platforms, --assets, --targets, --locales, --primary-locale, --support-url, --privacy-url, --marketing-url, --language and/or --capture.');
+  }
   const text = applySelection(await readFile(ctx.paths.config, 'utf8'), change);
   await writeText(ctx.paths.config, text);
   // Re-read through the schema so an invalid file is caught now, not in the next stage.
@@ -246,7 +258,7 @@ export async function selectCommand(ctx: Ctx, opts: SelectOptions): Promise<numb
   ctx.config = config;
   const s = config.selection ?? {};
   log.ok(`selection: platforms ${s.platforms?.join(', ') ?? 'all detected'} · assets ${s.assets?.join(', ') ?? 'all'} · formats ${s.targets?.join(', ') ?? 'all'}`);
-  log.ok(`locales: ${config.app.locales.join(', ')} (primary ${config.app.primaryLocale}) · language: ${config.ui?.language ?? 'English (default)'} · uploader: ${config.upload.uploader ?? 'not chosen yet'} · screens: ${config.capture.mode}`);
+  log.ok(`locales: ${config.app.locales.join(', ')} (primary ${config.app.primaryLocale}) · language: ${config.ui?.language ?? 'English (default)'} · screens: ${config.capture.mode}`);
   if (!config.app.locales.includes(config.app.primaryLocale)) log.warn(`The primary locale ${config.app.primaryLocale} is not one of the store locales; copy and captures fall back to it. Add it, or set one of them: vitrin select --primary-locale ${config.app.locales[0]}`);
   const profile = await loadProfile(ctx).catch(() => undefined);
   const enabled = enabledTargets(config, profile);
@@ -260,56 +272,43 @@ export async function selectCommand(ctx: Ctx, opts: SelectOptions): Promise<numb
     const extra = locales.filter((l) => !known.includes(l));
     if (extra.length) log.warn(`Not localized in the project: ${extra.join(', ')}. The store listing can still be written in them; captured screens show the app's fallback language.`);
   }
-  // fastlane files are written only when fastlane is going to be used (deliver/asset-library, or supply for Android).
-  const platformsNow = selectedPlatforms(config, profile).platforms;
-  if (config.upload.uploader && (uploaderOf(config) !== 'asc' || platformsNow.includes('android'))) {
-    for (const f of await installFastlaneTemplates(ctx.paths)) log.ok(`Wrote ${relative(ctx.root, f)}`);
-  }
+  // fastlane files (Google Play supply only) are written when the upload is prepared, not here.
   return EXIT.OK;
 }
 
 export interface UploaderReport {
-  chosen: Uploader | null;
+  /** Always `asc`: the asc CLI is the only App Store uploader. */
+  chosen: Uploader;
   tools: UploaderTools;
-  /** fastlane is needed anyway (Google Play supply). */
+  /** fastlane is still needed for Google Play (supply). */
   fastlaneNeededForPlay: boolean;
-  options: Array<{ uploader: 'asc' | 'deliver'; label: string; installed: boolean; install: string; note: string; warning?: string }>;
-  /** Suggested default for the question; the user decides. */
-  recommended: 'asc' | 'deliver';
+  /** One entry (asc); kept as a list so older readers of `vitrin uploader --json` keep working. */
+  options: Array<{ uploader: Uploader; label: string; installed: boolean; install: string; note: string; warning?: string }>;
+  recommended: Uploader;
 }
 
 /** Pure: the data behind `vitrin uploader --json`. */
 export function uploaderReport(config: VitrinConfig, tools: UploaderTools, platforms: Platform[]): UploaderReport {
-  const fastlaneOk = Boolean(tools.fastlane && compareVersions(tools.fastlane, MIN_FASTLANE) >= 0);
-  const play = platforms.includes('android');
+  const login = tools.ascLogin ? '; signed in (asc auth login)' : '';
   const options: UploaderReport['options'] = [
     {
       uploader: 'asc',
       label: 'asc CLI (App-Store-Connect-CLI)',
       installed: Boolean(tools.asc),
       install: 'brew install asc',
-      note: tools.asc ? `installed (${tools.asc}); no Ruby needed` : 'not installed; one Homebrew command, no Ruby needed',
-      // Picking a tool that is not installed means installing it first: the user hears that before choosing, and Claude installs only after a yes.
+      note: tools.asc ? `installed (${tools.asc})${login}` : 'not installed; one Homebrew command, no Ruby needed',
+      // Installing is the user's call: they hear it before anything runs, and Claude installs only after a yes.
       warning: tools.asc
         ? undefined
         : tools.brew === null
-          ? 'The asc CLI is not installed and Homebrew was not found. If the user picks asc, tell them Homebrew (https://brew.sh) and then `brew install asc` must be installed first, and install nothing without their yes.'
-          : 'The asc CLI is not installed on this computer. If the user picks asc, tell them it will be installed first with `brew install asc`, and run it only after their yes.',
-    },
-    {
-      uploader: 'deliver',
-      label: 'fastlane deliver',
-      installed: fastlaneOk,
-      install: `gem "fastlane", ">= ${MIN_FASTLANE}" in the Gemfile, then bundle install`,
-      note: tools.fastlane ? `installed (${tools.fastlane})${fastlaneOk ? '' : `, needs ≥ ${MIN_FASTLANE}`}` : `not installed; needs Ruby${tools.ruby ? ` (found ${tools.ruby})` : ' (not found)'} and Bundler`,
-      warning: fastlaneOk ? undefined : `fastlane ≥ ${MIN_FASTLANE} is not installed. If the user picks fastlane, tell them it will be added to the Gemfile and installed with \`bundle install\` first, and do it only after their yes.`,
+          ? 'The asc CLI is not installed and Homebrew was not found. Tell the user Homebrew (https://brew.sh) and then `brew install asc` must be installed before the upload, and install nothing without their yes.'
+          : 'The asc CLI is not installed on this computer. Tell the user it will be installed with `brew install asc` before the upload, and run it only after their yes.',
     },
   ];
-  const recommended = tools.asc || !fastlaneOk ? 'asc' : 'deliver';
-  return { chosen: config.upload.uploader ?? null, tools, fastlaneNeededForPlay: play, options, recommended };
+  return { chosen: uploaderOf(config), tools, fastlaneNeededForPlay: platforms.includes('android'), options, recommended: 'asc' };
 }
 
-/** `vitrin uploader`: what is installed for App Store uploads, so the skill can ask asc CLI or fastlane. */
+/** `vitrin uploader`: whether the asc CLI (the App Store uploader) is installed and signed in. */
 export async function uploaderCommand(ctx: Ctx, opts: { json?: boolean } = {}): Promise<number> {
   const profile = await loadProfile(ctx).catch(() => undefined);
   const report = uploaderReport(ctx.config, await detectUploaderTools(ctx.root), selectedPlatforms(ctx.config, profile).platforms);
@@ -317,12 +316,11 @@ export async function uploaderCommand(ctx: Ctx, opts: { json?: boolean } = {}): 
     process.stdout.write(JSON.stringify(report, null, 2) + '\n');
     return EXIT.OK;
   }
-  log.step(`App Store uploader: ${report.chosen ?? pc.yellow('not chosen yet')}`);
+  log.step('App Store uploader: asc CLI');
   for (const o of report.options) {
     log.info(`${o.installed ? pc.green('✓') : pc.dim('○')} ${o.uploader.padEnd(8)} ${o.label} — ${o.note}${o.installed ? '' : pc.dim(` → ${o.install}`)}`);
     if (o.warning) log.warn(`  ${o.warning}`);
   }
-  if (report.fastlaneNeededForPlay) log.dim('Google Play uploads always use fastlane supply.');
-  log.dim(`Choose with: vitrin select --uploader asc|deliver (suggested: ${report.recommended})`);
+  if (report.fastlaneNeededForPlay) log.dim('Google Play uploads use fastlane supply (Ruby, Bundler, fastlane).');
   return EXIT.OK;
 }

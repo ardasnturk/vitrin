@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ASC_APPS_PATH, ascAppsCommand, latestPerPlatform, listAscApps, platformLabel } from '../src/commands/asc.js';
 import { NeedsInput } from '../src/context.js';
+import { compareVersions } from '../src/commands/doctor.js';
 
 // ---- a stubbed App Store Connect: `GET /v1/apps?include=appStoreVersions` as the API answers it ----------------------
 
@@ -20,10 +21,10 @@ const app = (id: string, attributes: Record<string, unknown>, versionIds: string
   attributes,
   relationships: { appStoreVersions: { data: versionIds.map((vid) => ({ type: 'appStoreVersions', id: vid })) } },
 });
-const version = (id: string, platform: string, versionString: string, appVersionState: string, createdAt: string) => ({
+const version = (id: string, platform: string, versionString: string, appVersionState: string) => ({
   type: 'appStoreVersions',
   id,
-  attributes: { platform, versionString, appVersionState, createdAt },
+  attributes: { platform, versionString, appVersionState },
 });
 
 const PAGE_1 = {
@@ -32,10 +33,10 @@ const PAGE_1 = {
     app('200', { name: 'Acorn', bundleId: 'com.jastech.acorn', sku: 'ACORN', primaryLocale: 'tr' }, []),
   ],
   included: [
-    version('v1', 'IOS', '1.9.0', 'READY_FOR_SALE', '2026-09-01T10:00:00Z'),
-    version('v2', 'IOS', '2.0.0', 'PREPARE_FOR_SUBMISSION', '2026-10-20T10:00:00Z'),
-    version('v3', 'MAC_OS', '1.0.0', 'IN_REVIEW', '2026-10-01T10:00:00Z'),
-    version('v4', 'IOS', '1.8.0', 'REPLACED_WITH_NEW_VERSION', '2026-06-01T10:00:00Z'),
+    version('v1', 'IOS', '1.9.0', 'READY_FOR_SALE'),
+    version('v2', 'IOS', '2.0.0', 'PREPARE_FOR_SUBMISSION'),
+    version('v3', 'MAC_OS', '1.0.0', 'IN_REVIEW'),
+    version('v4', 'IOS', '1.8.0', 'REPLACED_WITH_NEW_VERSION'),
   ],
   links: { next: 'https://api.appstoreconnect.apple.com/v1/apps?cursor=AQ' },
 };
@@ -65,8 +66,8 @@ describe('listAscApps', () => {
     const ritim = apps[1]!;
     expect(ritim).toMatchObject({ id: '100', bundleId: 'com.jastech.ritim', sku: 'RITIM1', primaryLocale: 'en-US', platforms: ['IOS', 'MAC_OS'] });
     expect(ritim.versions).toEqual([
-      { id: 'v2', platform: 'IOS', version: '2.0.0', state: 'PREPARE_FOR_SUBMISSION', createdAt: '2026-10-20T10:00:00Z' },
-      { id: 'v3', platform: 'MAC_OS', version: '1.0.0', state: 'IN_REVIEW', createdAt: '2026-10-01T10:00:00Z' },
+      { id: 'v2', platform: 'IOS', version: '2.0.0', state: 'PREPARE_FOR_SUBMISSION' },
+      { id: 'v3', platform: 'MAC_OS', version: '1.0.0', state: 'IN_REVIEW' },
     ]);
     // An app without a version yet, and one whose version only has the older appStoreState.
     expect(apps[0]).toMatchObject({ name: 'Acorn', platforms: [], versions: [] });
@@ -75,15 +76,26 @@ describe('listAscApps', () => {
 
   it('asks for the versions in the same request', () => {
     expect(ASC_APPS_PATH).toContain('include=appStoreVersions');
-    expect(ASC_APPS_PATH).toContain('fields[appStoreVersions]=platform,versionString,appVersionState,appStoreState,createdAt');
+    expect(ASC_APPS_PATH).toContain('fields[appStoreVersions]=platform,versionString,appVersionState,appStoreState&');
+    // ASC answers 400 "createdAt is not a valid field name" for fields[appStoreVersions]=…,createdAt.
+    expect(ASC_APPS_PATH).not.toContain('createdAt');
+    // A sparse fieldset drops every relationship it does not name: without appStoreVersions here, no app has versions.
+    expect(ASC_APPS_PATH).toContain('fields[apps]=name,bundleId,sku,primaryLocale,appStoreVersions&');
+  });
+
+  it('compares version numbers part by part', () => {
+    expect(compareVersions('1.10', '1.9')).toBeGreaterThan(0);
+    expect(compareVersions('2.0', '1.99.1')).toBeGreaterThan(0);
+    expect(compareVersions('1.0', '1.0.0')).toBe(0);
+    expect(compareVersions('1.2.3', '1.2.4')).toBeLessThan(0);
   });
 
   it('orders the platforms iOS, macOS, tvOS, visionOS and labels them', () => {
     const latest = latestPerPlatform([
-      { type: 'appStoreVersions', id: 'a', attributes: { platform: 'VISION_OS', versionString: '1', createdAt: '2026-01-01' } },
-      { type: 'appStoreVersions', id: 'b', attributes: { platform: 'IOS', versionString: '1', createdAt: '2026-01-01' } },
-      { type: 'appStoreVersions', id: 'c', attributes: { platform: 'IOS', versionString: '2', createdAt: '2026-02-01' } },
-      { type: 'appStoreVersions', id: 'd', attributes: { platform: 'TV_OS', versionString: '1', createdAt: '2026-01-01' } },
+      { type: 'appStoreVersions', id: 'a', attributes: { platform: 'VISION_OS', versionString: '1' } },
+      { type: 'appStoreVersions', id: 'b', attributes: { platform: 'IOS', versionString: '1' } },
+      { type: 'appStoreVersions', id: 'c', attributes: { platform: 'IOS', versionString: '2' } },
+      { type: 'appStoreVersions', id: 'd', attributes: { platform: 'TV_OS', versionString: '1' } },
     ]);
     expect(latest.map((v) => `${platformLabel(v.platform)} ${v.version}`)).toEqual(['iOS 2', 'tvOS 1', 'visionOS 1']);
     expect(platformLabel('ANDROID')).toBe('ANDROID');

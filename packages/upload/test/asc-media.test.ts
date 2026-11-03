@@ -1,4 +1,4 @@
-import { appPaths, DELIVER_PREVIEW_DEVICE, loadTargets, mask, type ExecResult } from '@vitrin/core';
+import { appPaths, PREVIEW_FILE_DEVICE, loadTargets, mask, type ExecResult } from '@vitrin/core';
 import { type RenderTarget } from '@vitrin/schemas';
 import { createHash, generateKeyPairSync } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -6,11 +6,17 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  ascApiInvocation,
+  AscCliClient,
+  ascClientFor,
   ascEnv,
   ascMediaJobs,
   ascMetadataPushInvocation,
   ascScreenshotsUploadInvocation,
+  ascStoredAuth,
+  ascSubmitInvocation,
   ascValidateInvocation,
+  ascVersionsCreateInvocation,
   ascVideoPreviewsUploadInvocation,
   AscClient,
   assetCommitBody,
@@ -31,7 +37,6 @@ import {
   previewSetCreateBody,
   resolvePlacementGroup,
   runAscForPlatforms,
-  runDeliverForPlatforms,
   screenshotCommitBody,
   screenshotCreateBody,
   screenshotOrderBody,
@@ -147,7 +152,7 @@ function planWith(over: Partial<UploadPlan>, scope: Partial<NonNullable<UploadPl
     generatedAt: 'now',
     bundleId: 'com.x',
     appId: '1',
-    uploader: 'deliver',
+    uploader: 'asc',
     remoteKnown: true,
     platforms: [{ platform: 'ios', ascPlatform: 'IOS', version: { id: 'v1', versionString: '1.2.0', state: 'PREPARE_FOR_SUBMISSION' } }],
     scope: {
@@ -195,16 +200,15 @@ describe('data/asc-display-types.json', () => {
     expect(file.targets['mac-16x10']).toMatchObject({ screenshotDisplayType: 'APP_DESKTOP', assetLibrary: { displayClass: 'DEFAULT', platform: 'MAC_APP_STORE' } });
     expect(file.targets['header']?.assetLibrary).toMatchObject({ placementType: 'PRODUCT_PAGE_HEADER_ASSET', category: 'CREATIVE_ASSETS' });
     expect(file.targets['search']?.assetLibrary?.placementType).toBe('APP_STORE_SEARCH_RESULTS_ASSET');
-    expect(perTypeRoute(T('watch-ultra'), 'deliver')).toBe('classic');
-    expect(perTypeRoute(T('duo-inner'), 'deliver')).toBe('asset-library');
-    expect(perTypeRoute(T('watch-ultra'), 'asset-library')).toBe('asset-library');
+    expect(perTypeRoute(T('watch-ultra'))).toBe('classic');
+    expect(perTypeRoute(T('duo-inner'))).toBe('asset-library');
   });
 
   it('names every preview file with its classic PreviewType, including Vision Pro', () => {
     const previews = loadTargets().filter((t) => t.kind === 'preview' && t.store === 'app-store');
     expect(previews.map((t) => t.id)).toContain('preview-vision');
     expect(T('preview-vision')).toMatchObject({ width: 3840, height: 2160, platform: 'visionos', family: 'vision', defaultEnabled: false });
-    for (const t of previews) expect(DELIVER_PREVIEW_DEVICE[t.id], t.id).toBe(file.targets[t.id]?.previewType);
+    for (const t of previews) expect(PREVIEW_FILE_DEVICE[t.id], t.id).toBe(file.targets[t.id]?.previewType);
   });
 });
 
@@ -602,7 +606,12 @@ describe('asc uploader', () => {
     expect(byContent.env).toMatchObject({ ASC_PRIVATE_KEY_B64: b64, ASC_PRIVATE_KEY_PATH: '' });
     expect(mask(`key ${b64} id KEYID00002`)).not.toContain(b64);
     expect(mask('KEYID00002')).not.toContain('KEYID00002');
-    expect(ascEnv({}, root).problems).toHaveLength(3);
+    expect(byPath.source).toBe('vitrin-key');
+    // No Vitrin key at all: nothing is overridden, asc uses its own login (`asc auth login`).
+    expect(ascEnv({}, root)).toEqual({ env: {}, problems: [], source: 'asc-login' });
+    expect(ascEnv({ ASC_KEY_ID: ' ', ASC_ISSUER_ID: '' }, root).source).toBe('asc-login');
+    // A half-set key is an error, never a silent fallback.
+    expect(ascEnv({ ASC_KEY_ID: 'a' }, root)).toMatchObject({ source: 'vitrin-key', problems: ['ASC_ISSUER_ID is missing', 'ASC_KEY_PATH (or ASC_KEY_CONTENT_BASE64) is missing'] });
     expect(ascEnv({ ASC_KEY_ID: 'a', ASC_ISSUER_ID: 'b', ASC_KEY_PATH: 'missing.p8' }, root).problems[0]).toMatch(/not found/);
   });
 
@@ -614,9 +623,48 @@ describe('asc uploader', () => {
     expect(ascScreenshotsUploadInvocation({ localizationId: 'loc1', path: '/s', deviceType: 'APP_IPHONE_67' }, env)).toEqual({ command: 'asc', args: ['screenshots', 'upload', '--version-localization', 'loc1', '--path', '/s', '--device-type', 'APP_IPHONE_67', '--replace', '--confirm'], env });
     expect(ascVideoPreviewsUploadInvocation({ localizationId: 'loc1', path: '/p', deviceType: 'IPHONE_67', dryRun: true }, env).args).toEqual(['video-previews', 'upload', '--version-localization', 'loc1', '--path', '/p', '--device-type', 'IPHONE_67', '--replace', '--dry-run']);
     expect(ascValidateInvocation({ appId: '1', platform: 'IOS' }, env).args).toEqual(['validate', '--app', '1', '--platform', 'IOS']);
+    expect(ascVersionsCreateInvocation({ appId: '1', version: '1.3.0', platform: 'IOS' }, env).args).toEqual(['versions', 'create', '--app', '1', '--version', '1.3.0', '--platform', 'IOS', '--if-exists', 'skip']);
+    expect(ascSubmitInvocation({ appId: '1', versionId: 'v1', platform: 'IOS' }, env).args).toEqual(['review', 'submit', '--app', '1', '--version-id', 'v1', '--platform', 'IOS', '--latest', '--confirm']);
+    expect(ascApiInvocation('GET', '/v1/apps?limit=1', false, {}).args).toEqual(['api', 'GET', '/v1/apps?limit=1', '--allow-unknown-path']);
+    expect(ascApiInvocation('POST', '/v1/appScreenshots', true, {}).args).toEqual(['api', 'POST', '/v1/appScreenshots', '--allow-unknown-path', '--confirm', '--body-file', '-']);
   });
 
-  it('writes asc’s canonical metadata layout from the fastlane export', async () => {
+  it('reads asc’s own login from `asc auth status` and falls back to it without a Vitrin key', async () => {
+    const status = (stdout: string, code = 0) => (async () => ({ code, stdout, stderr: '' })) as unknown as CommandRunner;
+    const stored = '{"credentials":[{"name":"MyApp","isDefault":true,"storedIn":"keychain"}],"environmentCredentialsComplete":false}';
+    expect(await ascStoredAuth(status(stored))).toEqual({ profiles: ['MyApp'], defaultProfile: 'MyApp', env: false });
+    expect(await ascStoredAuth(status('{"credentials":[],"environmentCredentialsComplete":false}'))).toEqual({ profiles: [], defaultProfile: undefined, env: false });
+    expect(await ascStoredAuth(status('', 127))).toBeNull();
+    const root = mkdtempSync(join(tmpdir(), 'vitrin-asclogin-'));
+    const keyed = () => new AscClient({ keyId: 'k', issuerId: 'i', privateKey: 'p' });
+    expect((await ascClientFor({}, root, keyed, status(stored))).client).toBeInstanceOf(AscCliClient);
+    expect(await ascClientFor({}, root, keyed, status('{"credentials":[]}'))).toEqual({});
+    expect((await ascClientFor({ ASC_KEY_ID: 'k', ASC_ISSUER_ID: 'i', ASC_KEY_CONTENT_BASE64: 'eA==' }, root, keyed, status(stored))).source).toBe('vitrin-key');
+  });
+
+  it('sends Vitrin’s ASC API calls through `asc api` when asc has the login', async () => {
+    const calls: Array<{ args: string[]; input?: string; env?: NodeJS.ProcessEnv }> = [];
+    const pages: Record<string, string> = {
+      '/v1/apps/1/appStoreVersions?filter[platform]=IOS&limit=50': JSON.stringify({ data: [{ type: 'appStoreVersions', id: 'v1', attributes: { versionString: '1.2.0' } }], links: { next: 'https://api.appstoreconnect.apple.com/v1/apps/1/appStoreVersions?cursor=2' } }),
+      'https://api.appstoreconnect.apple.com/v1/apps/1/appStoreVersions?cursor=2': JSON.stringify({ data: [{ type: 'appStoreVersions', id: 'v0', attributes: { versionString: '1.1.0' } }] }),
+    };
+    const runner = (async (_cmd: string, args: string[], opts?: { input?: string; env?: NodeJS.ProcessEnv }) => {
+      calls.push({ args, input: opts?.input, env: opts?.env });
+      if (args[2] === '/v1/apps/404') return { code: 4, stdout: '', stderr: "Error: api: The specified resource does not exist: There is no resource of type 'apps' with id '404'\n" };
+      if (args[1] === 'DELETE') return { code: 0, stdout: '', stderr: '' };
+      if (args[1] === 'POST') return { code: 0, stdout: '{"data":{"type":"x","id":"new"}}', stderr: '' };
+      return { code: 0, stdout: pages[args[2]!] ?? '{"data":[]}', stderr: '' };
+    }) as unknown as CommandRunner;
+    const client = new AscCliClient(runner, '/r');
+    expect((await client.appStoreVersions('1')).map((v) => v.id)).toEqual(['v1', 'v0']);
+    expect(calls.map((c) => c.args[2])).toEqual(Object.keys(pages));
+    expect(await client.request('POST', '/v1/appScreenshotSets', { data: { type: 'appScreenshotSets' } })).toEqual({ data: { type: 'x', id: 'new' } });
+    expect(calls.at(-1)).toMatchObject({ args: ['api', 'POST', '/v1/appScreenshotSets', '--allow-unknown-path', '--confirm', '--body-file', '-'], input: '{"data":{"type":"appScreenshotSets"}}', env: {} });
+    expect(await client.request('DELETE', '/v1/appScreenshots/s1')).toBeUndefined();
+    await expect(client.get('/v1/apps/404')).rejects.toMatchObject({ status: 404, message: expect.stringMatching(/does not exist/) });
+  });
+
+  it('writes asc’s canonical metadata layout from the store text export', async () => {
     const root = mkdtempSync(join(tmpdir(), 'vitrin-ascmd-'));
     const fl = join(root, 'metadata', 'store', 'metadata');
     tmpFile(join(fl, 'tr'), 'name.txt', 'Ritim\n');
@@ -640,7 +688,7 @@ describe('asc uploader', () => {
   it('runs one asc job per locale and classic display type; Duo stays with the Asset Library', async () => {
     const root = mkdtempSync(join(tmpdir(), 'vitrin-ascrun-'));
     const paths = appPaths(root);
-    tmpFile(join(paths.fastlaneMetadata, 'tr'), 'description.txt', 'Yeni');
+    tmpFile(join(paths.storeMetadata, 'tr'), 'description.txt', 'Yeni');
     tmpFile(join(root, 'secrets'), 'k.p8', 'x');
     const src = join(root, 'src');
     const assets = [
@@ -667,8 +715,12 @@ describe('asc uploader', () => {
       expect(c.env).toMatchObject({ ASC_KEY_ID: 'KEYID00003', ASC_PRIVATE_KEY_PATH: join(root, 'secrets', 'k.p8') });
       expect(c.args.join(' ')).not.toMatch(/KEYID00003|issuer-3|k\.p8/);
     }
-    // deliver never runs with the asc uploader.
-    expect(await runDeliverForPlatforms(paths, plan, assets, { bundleId: 'com.x', languages: ['tr'] }, rec.runner)).toEqual([]);
+    // Without a Vitrin key the same commands run with asc's own login: no ASC_* variable is set or cleared.
+    const login = recorder();
+    await runAscForPlatforms(paths, plan, assets, client, { languages: ['tr'], env: {} }, login.runner);
+    expect(login.calls.map((c) => c.args.slice(0, 2).join(' '))).toEqual(['metadata push', 'screenshots upload', 'video-previews upload']);
+    for (const c of login.calls) expect(c.env).toEqual({});
+    await expect(runAscForPlatforms(paths, plan, assets, client, { languages: ['tr'], env: { ASC_KEY_ID: 'only-this' } }, login.runner)).rejects.toThrow(/asc credentials: ASC_ISSUER_ID is missing/);
     // A failing asc run is an error, not a silent skip.
     await expect(runAscForPlatforms(paths, plan, assets, client, { languages: ['tr'], env }, recorder(3).runner)).rejects.toThrow(/asc metadata push failed \(asc exit 3\)/);
   });

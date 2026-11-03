@@ -10,6 +10,11 @@ import Observation
     let updates = UpdateChecker()
     /// The team's apps from App Store Connect (Settings → Account key), shown above the projects.
     let ascApps = ASCAppList()
+    /// Who App Store Connect requests run as (Vitrin's key, asc's own login, or nobody).
+    let connection = AscConnection()
+    let icons = AppIconStore()
+    /// The new app sheet.
+    var showNewApp = false
     private(set) var sessions: [String: ProjectSession] = [:]
     private(set) var cli: CLILocation?
     private(set) var cliError: String?
@@ -17,7 +22,11 @@ import Observation
     var selectedProjectID: String? { didSet { settings.lastProjectID = selectedProjectID; applyLanguage() } }
     var selectedPage: ProjectPage = .flow
     /// An App Store Connect app without a linked project folder, shown read-only; nil while a project page is open.
-    var selectedAppID: String?
+    var selectedAppID: String? { didSet { if selectedAppID != nil { showHome = false; selectedTeamPage = nil } } }
+    /// A team page (users, devices, signing, every asc command), when one is selected.
+    var selectedTeamPage: TeamPage? { didSet { if selectedTeamPage != nil { showHome = false } } }
+    /// The overview page (Genel bakış): every app and project at a glance. Shown when nothing else is selected.
+    var showHome = false
     var showLog = true
     var showClaude = false
 
@@ -36,6 +45,14 @@ import Observation
         return store.projects.first { ProjectConfigFile.bundleId(inProjectAt: $0.path) == app.bundleId }
     }
 
+    /// A project's name as people know the app: the App Store Connect name when linked, else the name the analysis
+    /// found (unless it is only the bundle id), else the folder name.
+    func displayName(for project: Project) -> String {
+        if let a = ascApp(for: project) { return a.name }
+        if let o = sessions[project.id]?.overview?.app, !o.name.isEmpty, o.name != o.bundleId { return o.name }
+        return project.name
+    }
+
     /// The App Store Connect app a project is linked to, for its row and title.
     func ascApp(for project: Project) -> ASCApp? {
         let id = sessions[project.id]?.overview?.app?.bundleId ?? ProjectConfigFile.bundleId(inProjectAt: project.path)
@@ -43,18 +60,18 @@ import Observation
     }
 
     /// A sidebar click on an app: its project when one is linked, else the read-only overview.
+    /// A sidebar click on an app: its App Store Connect page, linked project or not (the page's hero opens the
+    /// project). Jumping straight to the project hid the app's live metadata.
     func select(app: ASCApp) async {
-        if let p = linkedProject(for: app) {
-            selectedAppID = nil
-            await open(p)
-        } else {
-            selectedAppID = app.id
-        }
+        selectedTeamPage = nil
+        showHome = false
+        selectedAppID = app.id
     }
 
     /// Reads the team's apps again (launch, key change, the refresh button).
     func refreshApps() async {
-        await ascApps.refresh(cli: cli)
+        await ascApps.refresh(cli: cli, connection: connection)
+        Task { await icons.load(apps: ascApps.apps) }
         if let id = selectedAppID, ascApps.app(id) == nil, ascApps.error == nil { selectedAppID = nil }
     }
 
@@ -75,6 +92,7 @@ import Observation
 
     /// Finds the CLI and opens the selected project. Called at launch and after the CLI settings change.
     func bootstrap() async {
+        applyLanguage()
         if let path = Self.launchProject { selectedProjectID = store.add(path: path).id }
         await locateCLI()
         // The team's apps load beside the project, not after it.
@@ -105,6 +123,8 @@ import Observation
     }
 
     func open(_ project: Project) async {
+        showHome = false
+        selectedTeamPage = nil
         selectedAppID = nil
         selectedProjectID = project.id
         guard let cli, project.exists else { return }
@@ -131,6 +151,10 @@ import Observation
     /// `AppLanguage.project` follows the selected project's `ui.language`.
     func applyLanguage() {
         LanguageState.shared.apply(setting: settings.language, projectLanguage: selectedSession?.overview?.config?.language)
+        // AppKit's own words (window titles, the menus, open panels) follow this at the next launch.
+        if ProcessInfo.processInfo.environment["VITRIN_DEFAULTS_SUITE"] == nil {
+            if let code = LanguageState.shared.code { UserDefaults.standard.set([code], forKey: "AppleLanguages") } else { UserDefaults.standard.removeObject(forKey: "AppleLanguages") }
+        }
     }
 
     /// Choose a folder with NSOpenPanel.

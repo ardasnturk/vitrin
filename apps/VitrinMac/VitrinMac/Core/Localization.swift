@@ -1,29 +1,52 @@
 import Foundation
 import Observation
 
-/// The language the app talks in: the system's, English, Turkish, or the one the selected project's `ui.language` names.
+/// The language the app talks in: the system's by default (English when the app doesn't have it), one the user picks,
+/// or the one the selected project's `ui.language` names. The same languages as Remote Code.
 enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
-    case system, project, en, tr
+    case system, project
+    case en, de, es, fr, it, ja, ko, ptBR = "pt-BR", tr, zhHans = "zh-Hans"
     var id: String { rawValue }
+
+    static let languages: [AppLanguage] = allCases.filter { $0 != .system && $0 != .project }
+
+    /// The language's own name, which reads the same in every language of the app.
+    var name: String {
+        switch self {
+        case .en: return "English"
+        case .de: return "Deutsch"
+        case .es: return "Español"
+        case .fr: return "Français"
+        case .it: return "Italiano"
+        case .ja: return "日本語"
+        case .ko: return "한국어"
+        case .ptBR: return "Português (Brasil)"
+        case .tr: return "Türkçe"
+        case .zhHans: return "简体中文"
+        case .system, .project: return rawValue
+        }
+    }
 }
 
 /// Which strings table `L.t` reads. Observable so every view re-renders when the language changes at runtime.
 @MainActor @Observable final class LanguageState {
     static let shared = LanguageState()
-    /// "en", "tr" or nil for the system's choice.
+    /// One of `supported`, or nil for the system's choice.
     private(set) var code: String?
     private var bundles: [String: Bundle] = [:]
 
     func apply(setting: AppLanguage, projectLanguage: String?) {
         switch setting {
         case .system: code = nil
-        case .en: code = "en"
-        case .tr: code = "tr"
-        case .project: code = projectLanguage.flatMap { Self.supported.contains($0) ? $0 : nil }
+        case .project: code = projectLanguage.flatMap { Self.supported.contains($0) ? $0 : nil } ?? "en"
+        default: code = setting.rawValue
         }
     }
 
-    static let supported = ["en", "tr"]
+    static let supported = AppLanguage.languages.map(\.rawValue)
+
+    /// The language actually showing: the chosen one, else the one the system picked from the app's languages.
+    var current: String { code ?? Bundle.main.preferredLocalizations.first ?? "en" }
 
     var bundle: Bundle {
         guard let code else { return .main }
@@ -33,7 +56,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
         return b
     }
 
-    var locale: Locale { code.map(Locale.init(identifier:)) ?? .current }
+    var locale: Locale { Locale(identifier: current) }
 }
 
 /// `L.t("key")` — the app's words in the current language (Resources/Localizable.xcstrings).
@@ -71,8 +94,6 @@ enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
         case "drop-locales": return t("fix.dropLocales")
         case "set-primary": return t("fix.setPrimary").replacingOccurrences(of: "{locale}", with: fix.args["primaryLocale"]?.display ?? "")
         case "add-primary": return t("fix.addPrimary").replacingOccurrences(of: "{locale}", with: b.param("primary"))
-        case "use-asc": return t("fix.useAsc")
-        case "use-deliver": return t("fix.useDeliver")
         default: return fix.id
         }
     }

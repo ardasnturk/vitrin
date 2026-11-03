@@ -45,7 +45,7 @@ Playwright's Chromium is needed for `design` (`pnpm --filter @vitrin/render exec
 | `packages/validate` | Text, image, video and claim ↔ evidence rules |
 | `packages/render` | HTML screenshot templates rendered with Playwright + sharp |
 | `packages/video` | Remotion compositions and the plan → scene builder |
-| `packages/upload` | fastlane deliver/supply bridge, ASC and Google Play clients, partial-upload plan and read-back |
+| `packages/upload` | asc CLI (App Store) and fastlane supply (Google Play) bridges, ASC and Google Play clients, partial-upload plan and read-back |
 | `plugins/vitrin/` | The Claude Code plugin: `skills/vitrin/` (the `/vitrin` skill, its references and style presets, the contributor `scripts/install.sh`), `bin/vitrin` (the launcher that installs the released CLI on first use) and `.claude-plugin/plugin.json` |
 | `.claude-plugin/marketplace.json` | Makes this repository the `vitrin` plugin marketplace |
 | `scripts/pack.mjs` | `pnpm pack:release`: bundles the CLI into the publishable `@ardasnturk/vitrin` tarball with data, templates and Remotion sources |

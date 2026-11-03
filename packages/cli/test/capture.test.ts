@@ -394,15 +394,18 @@ describe('vitrin platforms / select', () => {
     expect(parseYaml(text).selection).toEqual({ platforms: ['ios', 'android'], assets: ['screenshots'] });
     expect(ctx.config.selection.platforms).toEqual(['ios', 'android']);
     await expect(selectCommand(ctx, {})).rejects.toThrow(/Nothing to select/);
+    // The removed uploader choice: `--uploader` alone changes nothing and does not fail (older callers).
+    expect(await selectCommand(ctx, { uploader: 'deliver' })).toBe(0);
+    expect(parseYaml(readFileSync(file, 'utf8')).upload).toBeUndefined();
   });
 
-  it('stores formats, store locales, the conversation language and the uploader', () => {
-    const before = '# keep\napp:\n  primaryLocale: tr\n  locales: [tr, en-US, de-DE]\nurls: {}\nupload:\n  platform: ios\n';
-    const after = parseYaml(applySelection(before, { targets: ['iphone-6.9'], locales: ['en-US', 'tr'], language: 'tr', uploader: 'asc' }));
+  it('stores formats, store locales and the conversation language, and drops a removed uploader', () => {
+    const before = '# keep\napp:\n  primaryLocale: tr\n  locales: [tr, en-US, de-DE]\nurls: {}\nupload:\n  platform: ios\n  uploader: deliver\n';
+    const after = parseYaml(applySelection(before, { targets: ['iphone-6.9'], locales: ['en-US', 'tr'], language: 'tr' }));
     expect(after.selection).toEqual({ targets: ['iphone-6.9'] });
     expect(after.app).toEqual({ primaryLocale: 'tr', locales: ['en-US', 'tr'] });
     expect(after.ui).toEqual({ language: 'tr' });
-    expect(after.upload).toEqual({ platform: 'ios', uploader: 'asc' });
+    expect(after.upload).toEqual({ platform: 'ios' });
     const reset = parseYaml(applySelection(applySelection(before, { language: 'tr' }), { language: null, targets: null }));
     expect(reset.ui).toBeUndefined();
     expect(reset.selection).toBeUndefined();
@@ -416,19 +419,19 @@ describe('vitrin platforms / select', () => {
     expect(r.samples).toEqual({ locale: 'en-US', target: 'iphone-6.9', family: 'iphone' });
     expect(r.formats.find((f) => f.target === 'iphone-6.9')).toMatchObject({ selected: true, size: '1320×2868' });
     expect(r.formats.find((f) => f.target === 'iphone-6.3')).toMatchObject({ selected: false, required: true });
-    expect(r).toMatchObject({ language: null, uploader: null });
+    expect(r).toMatchObject({ language: null, uploader: 'asc' });
   });
 
-  it('reports the uploader options from what is installed', () => {
+  it('reports the asc CLI, the only uploader, from what is installed', () => {
     const none = { asc: null, fastlane: null, ruby: null, bundler: null };
-    expect(uploaderReport(configWith(), { ...none, asc: '1.4.0' }, ['ios'])).toMatchObject({ chosen: null, recommended: 'asc', fastlaneNeededForPlay: false });
-    const fl = uploaderReport(configWith({ upload: { uploader: 'deliver' } }), { ...none, fastlane: '2.241.1', ruby: '3.3.0' }, ['ios', 'android']);
-    expect(fl).toMatchObject({ chosen: 'deliver', recommended: 'deliver', fastlaneNeededForPlay: true });
-    expect(fl.options.map((o) => [o.uploader, o.installed])).toEqual([['asc', false], ['deliver', true]]);
-    // An outdated fastlane does not count as installed.
-    expect(uploaderReport(configWith(), { ...none, fastlane: '2.200.0' }, ['ios']).options[1]!.installed).toBe(false);
-    // A tool that is not installed comes with the warning that it will be installed first (only after a yes).
-    expect(uploaderReport(configWith(), { ...none, brew: '4.4.0' }, ['ios']).options[0]!.warning).toMatch(/installed first with `brew install asc`/);
+    expect(uploaderReport(configWith(), { ...none, asc: '1.4.0' }, ['ios'])).toMatchObject({ chosen: 'asc', recommended: 'asc', fastlaneNeededForPlay: false });
+    // An old config that still says deliver reports asc too; Google Play still needs fastlane.
+    const old = uploaderReport(configWith({ upload: { uploader: 'deliver' } }), { ...none, fastlane: '2.241.1', ruby: '3.3.0' }, ['ios', 'android']);
+    expect(old).toMatchObject({ chosen: 'asc', recommended: 'asc', fastlaneNeededForPlay: true });
+    expect(old.options.map((o) => [o.uploader, o.installed, o.install])).toEqual([['asc', false, 'brew install asc']]);
+    expect(uploaderReport(configWith(), { ...none, asc: '1.4.0', ascLogin: true }, ['ios']).options[0]!.note).toMatch(/asc auth login/);
+    // A missing asc comes with the warning that it will be installed before the upload (only after a yes).
+    expect(uploaderReport(configWith(), { ...none, brew: '4.4.0' }, ['ios']).options[0]!.warning).toMatch(/installed with `brew install asc`/);
     expect(uploaderReport(configWith(), { ...none, brew: null }, ['ios']).options[0]!.warning).toMatch(/Homebrew/);
     expect(uploaderReport(configWith(), { ...none, asc: '1.4.0' }, ['ios']).options[0]!.warning).toBeUndefined();
   });

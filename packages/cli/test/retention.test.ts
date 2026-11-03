@@ -96,8 +96,8 @@ describe('selection', () => {
 async function uploaded(opts: { readBack?: string[] } = {}) {
   const fx = await makeFixture();
   const ctx = await createContext({ cwd: fx.root });
-  const { syncFastlaneMetadata } = await import('../src/approval.js');
-  await syncFastlaneMetadata(ctx);
+  const { syncStoreMetadata } = await import('../src/approval.js');
+  await syncStoreMetadata(ctx);
   // Research and render artifacts that finalize removes.
   for (const f of ['metadata/research/cache/http/abc', 'metadata/research/cache/competitor-shots/1-0.jpg', 'metadata/research/cache/vitrin-ocr-1234', 'metadata/.cache/html/tr/x.html', 'metadata/raw/tr/iphone/home.png', 'metadata/video-styles/tr/01_classic.mp4']) {
     mkdirSync(join(fx.root, f, '..'), { recursive: true });

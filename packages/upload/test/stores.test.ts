@@ -10,14 +10,11 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import {
   applePlatformsOf,
   AscClient,
-  buildDeliverFolders,
   buildPlan,
   buildPlayPlan,
   checkPlayImages,
   collectRenderedAssets,
-  deliverAcceptsPreview,
-  deliverLaneInvocation,
-  deliverPlatformFor,
+  appStorePlatformFor,
   exportPlayMetadata,
   formatPlan,
   installFastlaneTemplates,
@@ -32,8 +29,6 @@ import {
   readImageInfo,
   resolveScope,
   routeAssets,
-  runDeliverForPlatforms,
-  runLane,
   runPlayUpload,
   runSupplyLane,
   supplyLaneInvocation,
@@ -70,7 +65,7 @@ const TARGETS: RenderTarget[] = [
   target('watch-ultra', { family: 'watch', platform: 'watchos', width: 422, height: 514 }),
   target('mac-16x10', { family: 'mac', platform: 'macos', width: 2880, height: 1800 }),
   target('appletv-4k', { family: 'tv', platform: 'tvos', width: 3840, height: 2160 }),
-  target('vision', { family: 'vision', platform: 'visionos', width: 3840, height: 2160 }),
+  target('vision-pro', { family: 'vision', platform: 'visionos', width: 3840, height: 2160 }),
   target('preview-iphone', { kind: 'preview', family: 'iphone', width: 886, height: 1920, formats: ['mp4'] }),
   target('preview-mac', { kind: 'preview', family: 'mac', platform: 'macos', width: 1920, height: 1080, formats: ['mp4'] }),
   target('header', { kind: 'creative', family: 'any', width: 3840, height: 1646 }),
@@ -115,7 +110,7 @@ async function fixture(): Promise<Fixture> {
   await add(s('01', 'watch-ultra'), 'watch-ultra', '01', 422, 514);
   await add(s('01', 'mac-16x10'), 'mac-16x10', '01', 2880, 1800);
   await add(s('01', 'appletv-4k'), 'appletv-4k', '01', 3840, 2160);
-  await add(s('01', 'vision'), 'vision', '01', 3840, 2160);
+  await add(s('01', 'vision-pro'), 'vision-pro', '01', 3840, 2160);
   await add(s('02', 'play-phone'), 'play-phone', '02', 1080, 1920);
   await add(s('01', 'play-phone'), 'play-phone', '01', 1080, 1920);
   await add(join(paths.creative, 'tr', 'play-feature-graphic_feature.png'), 'play-feature-graphic', 'feature', 1024, 500);
@@ -126,11 +121,11 @@ async function fixture(): Promise<Fixture> {
     { file: touch(join(paths.appPreviews, 'tr', '01_DESKTOP.mp4')), target: 'preview-mac', locale: 'tr', id: '01' },
   ];
   const manifest: RenderManifest = { generatedAt: 'now', artDirection: 'a', images, videos };
-  // Text metadata as exportFastlaneMetadata writes it, plus a supply folder deliver must never see.
-  touch(join(paths.fastlaneMetadata, 'tr', 'name.txt'), 'Ritim\n');
-  touch(join(paths.fastlaneMetadata, 'tr', 'release_notes.txt'), 'Yeni\n');
-  touch(join(paths.fastlaneMetadata, 'copyright.txt'), '2026 X\n');
-  touch(join(paths.fastlaneMetadata, 'android', 'tr-TR', 'title.txt'), 'Ritim\n');
+  // Text metadata as exportStoreMetadata writes it, plus supply's Google Play folder.
+  touch(join(paths.storeMetadata, 'tr', 'name.txt'), 'Ritim\n');
+  touch(join(paths.storeMetadata, 'tr', 'release_notes.txt'), 'Yeni\n');
+  touch(join(paths.storeMetadata, 'copyright.txt'), '2026 X\n');
+  touch(join(paths.storeMetadata, 'android', 'tr-TR', 'title.txt'), 'Ritim\n');
   const { assets } = await collectRenderedAssets(paths, TARGETS, manifest);
   return { root, paths, manifest, assets };
 }
@@ -158,20 +153,14 @@ const listing = (over: Partial<PlayInputs['listings'][number]> = {}): PlayInputs
 // ---- Apple platforms -----------------------------------------------------------------------------
 
 describe('Apple platforms', () => {
-  it('maps platforms to deliver runs; watchOS belongs to the iOS version', () => {
-    expect(deliverPlatformFor('watchos')).toBe('ios');
-    expect(deliverPlatformFor('macos')).toBe('osx');
-    expect(deliverPlatformFor('tvos')).toBe('appletvos');
-    expect(deliverPlatformFor('visionos')).toBe('xros');
-    expect(deliverPlatformFor('android')).toBeNull();
+  it('maps platforms to App Store versions; watchOS belongs to the iOS version', () => {
+    expect(appStorePlatformFor('watchos')).toBe('ios');
+    expect(appStorePlatformFor('macos')).toBe('osx');
+    expect(appStorePlatformFor('tvos')).toBe('appletvos');
+    expect(appStorePlatformFor('visionos')).toBe('xros');
+    expect(appStorePlatformFor('android')).toBeNull();
     expect(applePlatformsOf(['android', 'visionos', 'watchos', 'ios', 'macos'])).toEqual(['ios', 'osx', 'xros']);
     expect(applePlatformsOf(['android'])).toEqual([]);
-  });
-
-  it('knows which previews deliver 2.241.1 can upload', () => {
-    expect(deliverAcceptsPreview('ios', '/x/01_IPHONE_67.mp4')).toBe(true);
-    expect(deliverAcceptsPreview('ios', '/x/01_IPAD_PRO_3GEN_129.mp4')).toBe(true);
-    expect(deliverAcceptsPreview('osx', '/x/01_DESKTOP.mp4')).toBe(false);
   });
 
   it('routes rendered files by store and platform from the manifest', async () => {
@@ -180,7 +169,7 @@ describe('Apple platforms', () => {
     expect(r.apple.ios.map((a) => a.target.id).sort()).toEqual(['iphone-6.9', 'preview-iphone', 'watch-ultra']);
     expect(r.apple.osx.map((a) => a.target.id).sort()).toEqual(['mac-16x10', 'preview-mac']);
     expect(r.apple.appletvos.map((a) => a.target.id)).toEqual(['appletv-4k']);
-    expect(r.apple.xros.map((a) => a.target.id)).toEqual(['vision']);
+    expect(r.apple.xros.map((a) => a.target.id)).toEqual(['vision-pro']);
     expect(r.appleCreatives.map((a) => a.target.id)).toEqual(['header']);
     expect(r.play.map((a) => a.target.id).sort()).toEqual(['play-feature-graphic', 'play-icon', 'play-phone', 'play-phone']);
   });
@@ -194,49 +183,11 @@ describe('Apple platforms', () => {
     expect(unknown.some((u) => u.endsWith('03_x_unknown-target.png'))).toBe(true);
   });
 
-  it('builds per-platform deliver folders with only that platform’s files', async () => {
-    const f = await fixture();
-    const ios = await buildDeliverFolders(f.paths, 'ios', f.assets, { locales: ['tr'], dropReleaseNotes: true });
-    expect(readdirSync(join(ios.screenshotsPath, 'tr')).sort()).toEqual(['01_home_iphone-6.9.png', '01_home_watch-ultra.png']);
-    expect(readdirSync(join(ios.previewsPath, 'tr'))).toEqual(['01_IPHONE_67.mp4']);
-    // supply's folder is not a language deliver knows; release notes dropped for a first release.
-    expect(existsSync(join(ios.metadataPath, 'android'))).toBe(false);
-    expect(existsSync(join(ios.metadataPath, 'tr', 'release_notes.txt'))).toBe(false);
-    expect(readFileSync(join(ios.metadataPath, 'tr', 'name.txt'), 'utf8')).toBe('Ritim\n');
-    expect(existsSync(join(ios.metadataPath, 'copyright.txt'))).toBe(true);
-
-    const mac = await buildDeliverFolders(f.paths, 'osx', f.assets, { locales: ['tr'] });
-    expect(readdirSync(join(mac.screenshotsPath, 'tr'))).toEqual(['01_home_mac-16x10.png']);
-    expect(mac.previews).toBe(0);
-    expect(mac.assetLibraryPreviews.map((a) => a.target.id)).toEqual(['preview-mac']);
-    expect(existsSync(join(mac.metadataPath, 'tr', 'release_notes.txt'))).toBe(true);
-
-    // 3840×2160 is Apple TV unless the path contains "vision".
-    const vision = await buildDeliverFolders(f.paths, 'xros', f.assets, { locales: ['tr'] });
-    expect(readdirSync(join(vision.screenshotsPath, 'tr'))).toEqual(['01_home_vision.png']);
-    const tv = await buildDeliverFolders(f.paths, 'appletvos', f.assets, { locales: ['tr'] });
-    expect(readdirSync(join(tv.screenshotsPath, 'tr'))).toEqual(['01_home_appletv-4k.png']);
-  });
-
-  it('adds “vision” to a Vision Pro file name that lacks it', async () => {
-    const f = await fixture();
-    const t = target('apv', { family: 'vision', platform: 'visionos', width: 3840, height: 2160 });
-    const file = await png(join(f.paths.screenshots, 'tr', '01_home_apv.png'), 4, 4);
-    const out = await buildDeliverFolders(f.paths, 'xros', [{ file, locale: 'tr', target: t, kind: 'screenshot', order: '01' }], { locales: ['tr'] });
-    expect(readdirSync(join(out.screenshotsPath, 'tr'))).toEqual(['01_home_apv_vision.png']);
-  });
 });
 
 // ---- lane builders -------------------------------------------------------------------------------
 
-describe('fastlane lanes', () => {
-  it('passes the platform as a lane option and the per-platform folders as env', () => {
-    const inv = deliverLaneInvocation('vitrin_upload', { bundleId: 'com.x', languages: ['tr', 'en-US'], platform: 'osx', appVersion: '1.2.0', metadataPath: '/m', screenshotsPath: '/s', previewsPath: '/p' });
-    expect(inv.command).toBe('bundle');
-    expect(inv.args).toEqual(['exec', 'fastlane', 'ios', 'vitrin_upload', 'platform:osx']);
-    expect(inv.env).toMatchObject({ VITRIN_PLATFORM: 'osx', VITRIN_LANGUAGES: 'tr,en-US', VITRIN_APP_VERSION: '1.2.0', VITRIN_METADATA_PATH: '/m', VITRIN_SCREENSHOTS_PATH: '/s', VITRIN_PREVIEWS_PATH: '/p', VITRIN_SKIP_SCREENSHOTS: '0' });
-  });
-
+describe('fastlane supply (Google Play)', () => {
   it('builds the supply invocation without putting the key content anywhere', () => {
     const inv = supplyLaneInvocation({ packageName: 'com.x.app', metadataPath: '/r/metadata/store/metadata/android', track: 'production', versionCode: 42, validateOnly: true, jsonKeyPath: '/r/secrets/k.json' });
     expect(inv.args).toEqual(['exec', 'fastlane', 'android', 'vitrin_play_upload', 'validate_only:true']);
@@ -247,51 +198,25 @@ describe('fastlane lanes', () => {
     expect(real.env.VITRIN_PLAY_VERSION_CODE).toBe('');
   });
 
-  it('runs lanes through the injected runner and maps supply errors', async () => {
+  it('runs the supply lane through the injected runner and maps its errors', async () => {
     const root = mkdtempSync(join(tmpdir(), 'vitrin-lane-'));
     touch(join(root, 'Gemfile'));
     const paths = appPaths(root);
     const ok = recorder();
-    await runLane(paths, 'vitrin_upload', { bundleId: 'com.x', languages: ['tr'], platform: 'appletvos' }, ok.runner);
-    expect(ok.calls.map((c) => c.args.join(' '))).toEqual(['check', 'exec fastlane ios vitrin_upload platform:appletvos']);
+    await runSupplyLane(paths, { packageName: 'com.x', metadataPath: '/m', track: 'production', validateOnly: true }, ok.runner);
+    expect(ok.calls.map((c) => c.args.join(' '))).toEqual(['check', 'exec fastlane android vitrin_play_upload validate_only:true']);
 
     const noRelease = recorder(1, 'Could not find release for version code \'7\' to update changelog');
     await expect(runSupplyLane(paths, { packageName: 'com.x', metadataPath: '/m', track: 'production', versionCode: 7, validateOnly: false }, noRelease.runner)).rejects.toThrow(/existing release on the “production” track/);
     const multi = recorder(1, 'More than one release found in this track.');
     await expect(runSupplyLane(paths, { packageName: 'com.x', metadataPath: '/m', track: 'production', validateOnly: false }, multi.runner)).rejects.toThrow(/versionCode/);
-    await expect(runLane(appPaths(mkdtempSync(join(tmpdir(), 'v-'))), 'x', { bundleId: 'b', languages: [], platform: 'ios' }, ok.runner)).rejects.toThrow(/No Gemfile/);
+    await expect(runSupplyLane(appPaths(mkdtempSync(join(tmpdir(), 'v-'))), { packageName: 'com.x', metadataPath: '/m', track: 'production', validateOnly: false }, ok.runner)).rejects.toThrow(/No Gemfile/);
   });
 
-  it('runs one deliver per Apple platform with an editable version', async () => {
-    const f = await fixture();
-    touch(join(f.root, 'Gemfile'));
-    const plan: UploadPlan = {
-      generatedAt: 'now',
-      bundleId: 'com.x',
-      uploader: 'deliver',
-      remoteKnown: true,
-      platforms: [
-        { platform: 'ios', ascPlatform: 'IOS', version: { id: 'v1', versionString: '1.2.0', state: 'PREPARE_FOR_SUBMISSION' } },
-        { platform: 'osx', ascPlatform: 'MAC_OS', version: { id: 'v2', versionString: '1.0.0', state: 'PREPARE_FOR_SUBMISSION' }, firstRelease: true },
-        { platform: 'xros', ascPlatform: 'VISION_OS' },
-      ],
-      items: [],
-      blockers: [],
-    };
-    const rec = recorder();
-    const done = await runDeliverForPlatforms(f.paths, plan, f.assets, { bundleId: 'com.x', languages: ['tr'] }, rec.runner);
-    expect(done.map((d) => d.platform)).toEqual(['ios', 'osx']);
-    const lanes = rec.calls.filter((c) => c.args[0] === 'exec');
-    expect(lanes.map((c) => c.args.at(-1))).toEqual(['platform:ios', 'platform:osx']);
-    expect(lanes[1]!.env).toMatchObject({ VITRIN_APP_VERSION: '1.0.0', VITRIN_SCREENSHOTS_PATH: join(f.paths.vitrin, 'deliver', 'osx', 'screenshots') });
-    expect(existsSync(join(f.paths.vitrin, 'deliver', 'osx', 'metadata', 'tr', 'release_notes.txt'))).toBe(false);
-  });
-
-  it('ships a Fastfile with platform-aware deliver lanes and a metadata-only supply lane', () => {
+  it('ships a Fastfile with only the metadata-only supply lane (App Store uploads use the asc CLI)', () => {
     const ff = readFileSync(join(TEMPLATES_DIR, 'Fastfile'), 'utf8');
-    expect(templateVersion(ff)).toBe(2);
-    expect(ff).toMatch(/lane :vitrin_upload do \|options\|/);
-    expect(ff).toContain('%w(ios osx appletvos xros)');
+    expect(templateVersion(ff)).toBe(3);
+    expect(ff).not.toMatch(/platform :ios|lane :vitrin_upload\b|deliver\(/);
     expect(ff).toContain('lane :vitrin_play_upload');
     expect(ff).toContain('skip_upload_aab: true');
     expect(ff).toContain('skip_upload_apk: true');
@@ -309,9 +234,9 @@ describe('fastlane lanes', () => {
     const out = await installFastlaneTemplates(paths);
     expect(out).toContain(join(paths.fastlane, 'Fastfile'));
     expect(readFileSync(join(paths.fastlane, 'Fastfile.bak'), 'utf8')).toContain('old');
-    expect(templateVersion(readFileSync(join(paths.fastlane, 'Fastfile'), 'utf8'))).toBe(2);
-    // A user Fastfile that already has the current lanes is left alone.
-    touch(join(paths.fastlane, 'Fastfile'), 'lane :vitrin_upload do\nend\n');
+    expect(templateVersion(readFileSync(join(paths.fastlane, 'Fastfile'), 'utf8'))).toBe(3);
+    // A user Fastfile that already has the Vitrin lane is left alone.
+    touch(join(paths.fastlane, 'Fastfile'), 'lane :vitrin_play_upload do\nend\n');
     expect(await installFastlaneTemplates(paths)).toEqual([]);
   });
 });
@@ -333,9 +258,9 @@ describe('Google Play locales and export', () => {
     const f = await fixture();
     const inputs: PlayInputs = { listings: [listing({ video: 'https://www.youtube.com/watch?v=abcdefgh' }), listing({ locale: 'ur-PK' })], app: { track: 'production', versionCode: 42 } };
     // A stale screenshot from an earlier run must disappear.
-    touch(join(f.paths.fastlaneMetadata, 'android', 'tr-TR', 'images', 'phoneScreenshots', '09.png'));
+    touch(join(f.paths.storeMetadata, 'android', 'tr-TR', 'images', 'phoneScreenshots', '09.png'));
     const out = await exportPlayMetadata(f.paths, inputs, f.assets);
-    const dir = join(f.paths.fastlaneMetadata, 'android', 'tr-TR');
+    const dir = join(f.paths.storeMetadata, 'android', 'tr-TR');
     expect(out.skipped).toEqual(['ur-PK']);
     expect(readFileSync(join(dir, 'title.txt'), 'utf8')).toBe('Ritim: Alışkanlık Takibi\n');
     expect(readFileSync(join(dir, 'short_description.txt'), 'utf8')).toContain('serilerini koru');
@@ -498,8 +423,8 @@ describe('Google Play API client and plan', () => {
     await runPlayUpload(f.paths, play, f.assets, { validateOnly: true }, rec.runner);
     const lane = rec.calls.find((c) => c.args[0] === 'exec')!;
     expect(lane.args).toContain('validate_only:true');
-    expect(lane.env).toMatchObject({ VITRIN_PLAY_JSON_KEY_PATH: keyFile, VITRIN_PLAY_METADATA_PATH: join(f.paths.fastlaneMetadata, 'android') });
-    expect(existsSync(join(f.paths.fastlaneMetadata, 'android', 'tr-TR', 'title.txt'))).toBe(true);
+    expect(lane.env).toMatchObject({ VITRIN_PLAY_JSON_KEY_PATH: keyFile, VITRIN_PLAY_METADATA_PATH: join(f.paths.storeMetadata, 'android') });
+    expect(existsSync(join(f.paths.storeMetadata, 'android', 'tr-TR', 'title.txt'))).toBe(true);
     const bad: PlayContext = { ...play, key: { from: 'GOOGLE_PLAY_JSON_KEY_PATH', problems: ['not valid JSON'] } };
     await expect(runPlayUpload(f.paths, bad, f.assets, { validateOnly: false }, rec.runner)).rejects.toThrow(/not valid JSON/);
   });
@@ -562,11 +487,11 @@ describe('multi-platform plan', () => {
     // First Mac release: no What's New.
     expect(md.some((i) => i.platform === 'osx' && i.field === 'whatsNew')).toBe(false);
     const shots = plan.items.filter((i) => i.area === 'screenshots' && i.store !== 'google-play').map((i) => `${i.platform}/${i.field}`);
-    expect(shots.sort()).toEqual(['ios/iphone-6.9', 'ios/watch-ultra', 'osx/mac-16x10', 'xros/vision']);
+    expect(shots.sort()).toEqual(['ios/iphone-6.9', 'ios/watch-ultra', 'osx/mac-16x10', 'xros/vision-pro']);
     const previews = plan.items.filter((i) => i.area === 'previews');
-    expect(previews.map((i) => `${i.platform}/${i.via}`).sort()).toEqual(['ios/deliver', 'osx/asc-api']);
-    // deliver has no Mac preview type; the classic DESKTOP preview set is replaced on its own.
-    expect(previews.find((i) => i.platform === 'osx')!.note).toMatch(/replaces only the DESKTOP preview set of tr; other display types stay untouched \(appPreviewSets API\)/);
+    expect(previews.map((i) => `${i.platform}/${i.via}`).sort()).toEqual(['ios/asc-cli', 'osx/asc-cli']);
+    // Each preview set is replaced on its own, the Mac's classic DESKTOP set included.
+    expect(previews.find((i) => i.platform === 'osx')!.note).toMatch(/replaces only the DESKTOP preview set of tr; other display types stay untouched \(asc video-previews upload --replace\)/);
     const play = plan.items.filter((i) => i.store === 'google-play');
     expect(play.every((i) => i.via === 'supply')).toBe(true);
     expect(play.find((i) => i.field === 'title')?.change).toBe('create');
@@ -593,15 +518,14 @@ describe('multi-platform plan', () => {
   });
   // ---- partial uploads (config.selection) ----
 
-  const enabled = TARGETS.filter((t) => ['iphone-6.9', 'watch-ultra', 'mac-16x10', 'vision', 'preview-iphone', 'preview-mac'].includes(t.id));
+  const enabled = TARGETS.filter((t) => ['iphone-6.9', 'watch-ultra', 'mac-16x10', 'vision-pro', 'preview-iphone', 'preview-mac'].includes(t.id));
   const shipping = ['ios', 'watchos', 'macos', 'visionos', 'android'] as const;
-  const scopeWith = (selection: VitrinConfig['selection'], uploader: 'deliver' | 'asset-library' = 'deliver') =>
-    resolveScope({ shipping: [...shipping], selection, assets: f.assets, enabledTargets: enabled, locales: ['tr'], uploader });
+  const scopeWith = (selection: VitrinConfig['selection']) => resolveScope({ shipping: [...shipping], selection, assets: f.assets, enabledTargets: enabled, locales: ['tr'] });
 
-  it('uses deliver overwrite only for complete sets of selected platforms', () => {
+  it('replaces every selected set one display type at a time, for selected platforms only', () => {
     const all = scopeWith({});
     const ios = all.apple.find((s) => s.platform === 'ios')!;
-    expect(ios).toMatchObject({ metadata: true, screenshots: 'replace-all', previews: 'replace-all', screenshotTargets: ['iphone-6.9', 'watch-ultra'] });
+    expect(ios).toMatchObject({ metadata: true, screenshots: 'per-display-type', previews: 'per-display-type', screenshotTargets: ['iphone-6.9', 'watch-ultra'] });
     expect(all.play).toMatchObject({ selected: true, metadata: true, screenshots: true, creatives: true });
 
     // "I already uploaded iPhone screenshots; now only watchOS screenshots."
@@ -612,14 +536,13 @@ describe('multi-platform plan', () => {
     expect(watch.apple.find((s) => s.platform === 'osx')!.untouched[0]).toMatch(/macos not selected/);
     expect(watch.play).toMatchObject({ selected: false });
 
-    // A locale missing one enabled target is not a complete set either.
-    const noIphone = resolveScope({ shipping: ['ios', 'watchos'], selection: {}, assets: f.assets.filter((a) => a.target.id !== 'iphone-6.9'), enabledTargets: enabled, locales: ['tr'], uploader: 'deliver' });
-    expect(noIphone.apple[0]!.screenshots).toBe('per-display-type');
-    // The Asset Library uploader never uses deliver's overwrite.
-    expect(scopeWith({}, 'asset-library').apple[0]!.screenshots).toBe('per-display-type');
+    // A locale missing one enabled target: the other sets stay as they are.
+    const noIphone = resolveScope({ shipping: ['ios', 'watchos'], selection: {}, assets: f.assets.filter((a) => a.target.id !== 'iphone-6.9'), enabledTargets: enabled, locales: ['tr'] });
+    expect(noIphone.apple[0]).toMatchObject({ screenshots: 'per-display-type', screenshotTargets: ['watch-ultra'] });
+    expect(noIphone.apple[0]!.untouched.join('\n')).toMatch(/only watch-ultra replaced; iphone-6.9 and every other display type stay untouched/);
     // "Only update the App Preview."
     const prev = scopeWith({ platforms: ['ios'], assets: ['previews'] }).apple[0]!;
-    expect(prev).toMatchObject({ metadata: false, screenshots: 'skip', previews: 'replace-all', previewTargets: ['preview-iphone'] });
+    expect(prev).toMatchObject({ metadata: false, screenshots: 'skip', previews: 'per-display-type', previewTargets: ['preview-iphone'] });
   });
 
   it('replaces only the chosen formats (selection.targets) and never overwrites the rest', () => {
@@ -644,8 +567,8 @@ describe('multi-platform plan', () => {
     expect(plan.items.filter((i) => i.area === 'metadata')).toEqual([]);
     const shots = plan.items.filter((i) => i.area === 'screenshots');
     expect(shots).toHaveLength(1);
-    expect(shots[0]).toMatchObject({ platform: 'ios', field: 'watch-ultra', via: 'asc-api' });
-    expect(shots[0]!.note).toMatch(/replaces only the APP_WATCH_ULTRA screenshot set of tr; other display types stay untouched \(appScreenshotSets API\)/);
+    expect(shots[0]).toMatchObject({ platform: 'ios', field: 'watch-ultra', via: 'asc-cli' });
+    expect(shots[0]!.note).toMatch(/replaces only the APP_WATCH_ULTRA screenshot set of tr; other display types stay untouched \(asc screenshots upload --replace\)/);
     expect(plan.items.find((i) => i.area === 'creatives')?.note).toMatch(/creatives not selected/);
     const text = formatPlan(plan);
     expect(text).toContain('[untouched · iOS]');
@@ -653,36 +576,10 @@ describe('multi-platform plan', () => {
     expect(text).toContain('[untouched · Google Play]');
     expect(text).toMatch(/iphone-6.9 and every other display type stay untouched/);
     expect(text).not.toContain('replaces EVERY');
-
-    // No deliver run at all: no text and no complete set.
-    const rec = recorder();
-    touch(join(f.root, 'Gemfile'));
-    expect(await runDeliverForPlatforms(f.paths, { ...plan, remoteKnown: false }, f.assets, { bundleId: 'com.x', languages: ['tr'] }, rec.runner)).toEqual([]);
-    expect(rec.calls.filter((c) => c.args[0] === 'exec')).toEqual([]);
   });
 
-  it('says plainly when a full run replaces every set of a locale', async () => {
-    const plan = await buildPlan({ paths: f.paths, config, bundleId: 'com.x', metadata: [meta], include: { creatives: false, cpp: false, events: false }, platforms: ['ios', 'watchos'], assets: f.assets, enabledTargets: enabled });
-    const shot = plan.items.find((i) => i.area === 'screenshots' && i.field === 'iphone-6.9')!;
-    expect(shot).toMatchObject({ via: 'deliver' });
-    expect(shot.note).toMatch(/replaces EVERY screenshot set of tr on iOS/);
-  });
-
-  it('runs deliver for text only when only metadata is selected', async () => {
-    const cfg = VitrinConfig.parse({ app: { locales: ['tr'] }, urls: {}, selection: { assets: ['metadata'] } });
-    const plan = await buildPlan({ paths: f.paths, config: cfg, bundleId: 'com.x', metadata: [meta], include: { creatives: false, cpp: false, events: false }, platforms: ['ios', 'macos'], assets: f.assets, enabledTargets: enabled });
-    touch(join(f.root, 'Gemfile'));
-    const rec = recorder();
-    await runDeliverForPlatforms(f.paths, plan, f.assets, { bundleId: 'com.x', languages: ['tr'] }, rec.runner);
-    const lanes = rec.calls.filter((c) => c.args[0] === 'exec');
-    expect(lanes.map((c) => c.args.at(-1))).toEqual(['platform:ios', 'platform:osx']);
-    for (const l of lanes) expect(l.env).toMatchObject({ VITRIN_SKIP_METADATA: '0', VITRIN_SKIP_SCREENSHOTS: '1' });
-    expect(readdirSync(join(f.paths.vitrin, 'deliver', 'ios', 'screenshots'))).toEqual([]);
-    expect(readdirSync(join(f.paths.vitrin, 'deliver', 'ios', 'app-previews'))).toEqual([]);
-  });
-
-  it('plans the asc uploader: text and every display type through asc, never deliver', async () => {
-    const cfg = VitrinConfig.parse({ app: { locales: ['tr'] }, urls: {}, upload: { uploader: 'asc' } });
+  it('plans text and every display type through asc, also for an old `uploader: deliver` config', async () => {
+    const cfg = VitrinConfig.parse({ app: { locales: ['tr'] }, urls: {}, upload: { uploader: 'deliver' } });
     const plan = await buildPlan({ paths: f.paths, config: cfg, bundleId: 'com.x', metadata: [meta], include: { creatives: false, cpp: false, events: false }, platforms: ['ios', 'watchos'], assets: f.assets, enabledTargets: enabled });
     expect(plan.uploader).toBe('asc');
     expect(plan.scope!.apple[0]).toMatchObject({ screenshots: 'per-display-type', previews: 'per-display-type' });
@@ -704,7 +601,7 @@ describe('multi-platform plan', () => {
     await runPlayUpload(f.paths, play, f.assets, { validateOnly: false, scope: sel }, rec.runner);
     const lane = rec.calls.find((c) => c.args[0] === 'exec')!;
     expect(lane.env).toMatchObject({ VITRIN_PLAY_SKIP_METADATA: '1', VITRIN_PLAY_SKIP_CHANGELOGS: '1', VITRIN_PLAY_SKIP_SCREENSHOTS: '0', VITRIN_PLAY_SKIP_IMAGES: '1' });
-    const images = join(f.paths.fastlaneMetadata, 'android', 'tr-TR', 'images');
+    const images = join(f.paths.storeMetadata, 'android', 'tr-TR', 'images');
     expect(readdirSync(images)).toEqual(['phoneScreenshots']);
 
     const sets = playImageSets(f.assets, inputs.listings);

@@ -1,4 +1,4 @@
-import { DELIVER_PREVIEW_DEVICE, ensureDir, existsSync, getTarget, localeInfo, log, run, type AppPaths } from '@vitrin/core';
+import { PREVIEW_FILE_DEVICE, ensureDir, existsSync, getTarget, localeInfo, log, run, type AppPaths } from '@vitrin/core';
 import type { AppProfile, LoopPlan, PreviewPlan, RenderManifest, VideoPlan } from '@vitrin/schemas';
 import { frameShell, lucideIcon, type ResolvedDirection } from '@vitrin/render';
 import { readdir, rm } from 'node:fs/promises';
@@ -88,7 +88,7 @@ export function lookFrom(ad: ResolvedDirection, locale: string, family: PreviewF
   };
 }
 
-/** deliver device names for preview files; core's map wins where it has an entry. */
+/** Device tokens for preview file names; core's map wins where it has an entry. */
 const PREVIEW_DEVICE_FALLBACK: Record<string, string> = { 'preview-mac': 'DESKTOP', 'preview-tv': 'APPLE_TV', 'preview-vision': 'APPLE_VISION_PRO' };
 
 export function previewTargetId(family: PreviewFamily): string {
@@ -336,7 +336,7 @@ export async function renderVideos(opts: VideoRenderOptions): Promise<VideoRende
 
   const render = async (id: string, inputProps: Record<string, unknown>, out: string, h264Level: boolean, scale = 2) => {
     const composition = await selectComposition({ serveUrl, id, inputProps });
-    // Render outside fastlane/ so a crashed render never leaves a file deliver would upload.
+    // Render outside the store folder so a crashed render never leaves a file that would be uploaded.
     const tmp = join(paths.cache, 'remotion', `${Date.now()}-${out.split('/').pop()}`);
     await ensureDir(dirname(tmp));
     await ensureDir(dirname(out));
@@ -400,7 +400,7 @@ export async function renderVideos(opts: VideoRenderOptions): Promise<VideoRende
         const props = buildPreviewProps({ plan: p, locale, look: lookFrom(ad, locale, family, hook.aspect), hookMedia: hook.ref, beats, outroMedia: outro });
         const total = previewDurationSec(props);
         if (total < 15 || total > 30) throw new Error(`App Preview ${p.id} is ${total.toFixed(1)} s long; it must be 15–30 s (reduce the number of beats).`);
-        const out = join(dir, `${p.id}_${DELIVER_PREVIEW_DEVICE[target.id] ?? PREVIEW_DEVICE_FALLBACK[target.id] ?? 'IPHONE_67'}.mp4`);
+        const out = join(dir, `${p.id}_${PREVIEW_FILE_DEVICE[target.id] ?? PREVIEW_DEVICE_FALLBACK[target.id] ?? 'IPHONE_67'}.mp4`);
         log.step(`App Preview ${p.id} (${locale}, ${family}, ${p.style}) — ${props.scenes.length} scenes, ${total.toFixed(1)} s @ ${FPS_PREVIEW} fps`);
         // H.264 High@4.0 tops out below 4K, so Vision Pro previews keep High profile without the 4.0 level.
         await render('AppPreview', props, out, family !== 'vision', renderScale(family));

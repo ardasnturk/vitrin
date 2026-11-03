@@ -762,7 +762,7 @@
         ],
         "primaryLocale": "en-US",
         "language": "en",
-        "uploader": "deliver",
+        "uploader": "asc",
         "capture": "html",
         "screens": [
             {
@@ -1151,7 +1151,7 @@
             "family": "iphone"
         },
         "language": "en",
-        "uploader": "deliver",
+        "uploader": "asc",
         "capture": "html",
         "selection": {
             "platforms": [

@@ -18,7 +18,7 @@ import {
   type ReviewRejection,
   type Store,
 } from '@vitrin/schemas';
-import { exportFastlaneMetadata, exportPlayMetadata, prepareStores } from '@vitrin/upload';
+import { exportStoreMetadata, exportPlayMetadata, prepareStores } from '@vitrin/upload';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { readdir, readFile, rm, stat } from 'node:fs/promises';
@@ -58,7 +58,7 @@ export interface Inventory {
 
 const MEDIA_RE = /\.(png|jpe?g|webp|mp4|mov|m4v)$/i;
 const VIDEO_RE = /\.(mp4|mov|m4v)$/i;
-/** Non-locale directories inside the deliver metadata folder. */
+/** Non-locale directories inside the store metadata folder. */
 const APP_LEVEL_DIRS = new Set(['review_information', 'trade_representative_contact_information']);
 /** supply's image folders → kind / family. */
 const PLAY_IMAGE_DIRS: Record<string, { kind: ReviewItemKind; family?: string }> = {
@@ -115,7 +115,7 @@ export async function uploadFiles(ctx: Ctx): Promise<string[]> {
   const image = (f: string) => /\.(png|jpe?g)$/i.test(f);
   const cpp = (await walk(p.cppScreenshots)).filter(image);
   const tests = (await walk(p.experimentScreenshots)).filter(image);
-  return [...(await walk(p.fastlaneMetadata)), ...(await walk(p.screenshots)), ...(await walk(p.appPreviews)), ...creative, ...cpp, ...tests];
+  return [...(await walk(p.storeMetadata)), ...(await walk(p.screenshots)), ...(await walk(p.appPreviews)), ...creative, ...cpp, ...tests];
 }
 
 /** Absolute paths of the JSON the upload reads text from (metadata, CPP pages, In-App Event copy). */
@@ -130,13 +130,13 @@ export async function metadataJsonFiles(ctx: Ctx): Promise<string[]> {
  * Writes metadata/store/metadata from `metadata/listing` exactly as `vitrin upload` does, so the reviewed and
  * approved text files are the ones that will be uploaded. Skipped silently while metadata is incomplete.
  */
-export async function syncFastlaneMetadata(ctx: Ctx): Promise<boolean> {
+export async function syncStoreMetadata(ctx: Ctx): Promise<boolean> {
   try {
     if (!existsSync(ctx.paths.appMetadata)) return false;
     const app = await readJsonIfExists(ctx.paths.appMetadata, AppMetadata);
     const metadata = await loadLocaleMetadata(ctx);
     if (!app || metadata.length !== ctx.config.app.locales.length) return false;
-    await exportFastlaneMetadata(ctx.paths, ctx.config, app, metadata);
+    await exportStoreMetadata(ctx.paths, ctx.config, app, metadata);
     await syncPlayMetadata(ctx);
     return true;
   } catch (err) {
@@ -206,7 +206,7 @@ export async function buildInventory(ctx: Ctx): Promise<Inventory> {
   };
 
   const under = (dir: string, f: string) => toPosix(relative(dir, f)).split('/');
-  // App Store screenshots: metadata/store/screenshots/<locale>/… (deliver uploads every image, in file-name order).
+  // App Store screenshots: metadata/store/screenshots/<locale>/… (every image is uploaded, in file-name order).
   for (const f of await walk(p.screenshots)) {
     if (!/\.(png|jpe?g)$/i.test(f)) continue;
     const locale = under(p.screenshots, f)[0];
@@ -232,16 +232,16 @@ export async function buildInventory(ctx: Ctx): Promise<Inventory> {
   }
 
   // App Store text: metadata/store/metadata/<locale>/*.txt per locale, the rest is app level.
-  const ascMeta = (await walk(p.fastlaneMetadata)).filter((f) => !f.startsWith(p.androidMetadata + sep));
+  const ascMeta = (await walk(p.storeMetadata)).filter((f) => !f.startsWith(p.androidMetadata + sep));
   const ascGroups = new Map<string, string[]>();
   for (const f of ascMeta) {
-    const parts = under(p.fastlaneMetadata, f);
+    const parts = under(p.storeMetadata, f);
     const key = parts.length > 1 && !APP_LEVEL_DIRS.has(parts[0]!) ? parts[0]! : '';
     ascGroups.set(key, [...(ascGroups.get(key) ?? []), f]);
   }
   for (const [locale, list] of [...ascGroups].sort(([a], [b]) => natural(a, b))) {
     const source = locale ? p.metadataFile(locale) : p.appMetadata;
-    items.push(await textItem(root, locale ? `metadata/app-store/${locale}` : 'metadata/app-store/app', 'app-store', ascPlatform, locale || undefined, list, join(p.fastlaneMetadata, locale), source));
+    items.push(await textItem(root, locale ? `metadata/app-store/${locale}` : 'metadata/app-store/app', 'app-store', ascPlatform, locale || undefined, list, join(p.storeMetadata, locale), source));
   }
 
   // Google Play (supply layout): metadata/store/metadata/android/<locale>/{*.txt,changelogs/*.txt,images/**}
@@ -578,7 +578,7 @@ export interface ApproveOptions {
  * With `--reject <item> --comment <text>` it records rejections instead and exits 2 for Claude to fix them.
  */
 export async function approveCommand(ctx: Ctx, opts: ApproveOptions): Promise<number> {
-  await syncFastlaneMetadata(ctx);
+  await syncStoreMetadata(ctx);
   const inv = await buildInventory(ctx);
   if (opts.reject?.length) {
     if (!opts.comment?.trim()) throw new NeedsInput('--reject needs --comment "<what the user wants changed>".');

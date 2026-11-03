@@ -2,7 +2,7 @@ import Foundation
 import Observation
 
 /// The app's own preferences (UserDefaults). Nothing here is a secret: keys stay in each project's `.env`.
-/// `VITRIN_DEFAULTS_SUITE` names a separate suite (the UI tests), `VITRIN_LANGUAGE` fixes the language (en, tr).
+/// `VITRIN_DEFAULTS_SUITE` names a separate suite (the UI tests), `VITRIN_LANGUAGE` fixes the language.
 @MainActor @Observable final class AppSettings {
     static let shared = AppSettings()
     private let d = ProcessInfo.processInfo.environment["VITRIN_DEFAULTS_SUITE"].flatMap { UserDefaults(suiteName: $0) } ?? UserDefaults.standard
@@ -26,11 +26,13 @@ import Observation
     var claudeModel: String { didSet { d.set(claudeModel, forKey: "claudeModel") } }
     var lastUpdateCheck: Date? { didSet { d.set(lastUpdateCheck, forKey: "lastUpdateCheck") } }
     var lastProjectID: String? { didSet { d.set(lastProjectID, forKey: "lastProjectID") } }
+    /// The welcome tour ran to the end (or was skipped). The UI tests start with it done.
+    var onboardingDone: Bool { didSet { d.set(onboardingDone, forKey: "onboardingDone") } }
 
     private init() {
         let env = ProcessInfo.processInfo.environment
         let testing = env["VITRIN_UITEST"] == "1"
-        language = env["VITRIN_LANGUAGE"].flatMap(AppLanguage.init(rawValue:)) ?? AppLanguage(rawValue: d.string(forKey: "language") ?? "") ?? .project
+        language = env["VITRIN_LANGUAGE"].flatMap(AppLanguage.init(rawValue:)) ?? AppLanguage(rawValue: d.string(forKey: "language") ?? "") ?? .system
         keepInMenuBar = d.object(forKey: "keepInMenuBar") as? Bool ?? !testing
         showMenuBarExtra = d.object(forKey: "showMenuBarExtra") as? Bool ?? !testing
         // A test run never calls GitHub.
@@ -43,5 +45,6 @@ import Observation
         claudeModel = d.string(forKey: "claudeModel") ?? ""
         lastUpdateCheck = d.object(forKey: "lastUpdateCheck") as? Date
         lastProjectID = d.string(forKey: "lastProjectID")
+        onboardingDone = d.object(forKey: "onboardingDone") as? Bool ?? testing
     }
 }

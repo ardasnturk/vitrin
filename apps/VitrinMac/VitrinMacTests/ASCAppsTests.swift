@@ -19,7 +19,7 @@ import XCTest
         // The sidebar shows the iOS version first.
         XCTAssertEqual(ritim.current?.version, "2.0.0")
         XCTAssertEqual(ritim.current?.state, "PREPARE_FOR_SUBMISSION")
-        XCTAssertEqual(ritim.versions[1].createdAt, "2026-10-01T10:00:00Z")
+        XCTAssertEqual(ritim.versions[1].platform, "MAC_OS")
         XCTAssertEqual(ritim.ascURL.absoluteString, "https://appstoreconnect.apple.com/apps/6447000002/distribution")
         // No version yet: nothing to show, nothing crashes.
         let acorn = r.apps[0]
@@ -28,7 +28,7 @@ import XCTest
         // A platform other than iOS, with a state the app does not know.
         let zed = r.apps[2]
         XCTAssertEqual(zed.current?.platform, "VISION_OS")
-        XCTAssertNil(zed.current?.createdAt)
+        XCTAssertEqual(zed.current?.state, "SOMETHING_NEW")
     }
 
     func testUnknownKeysAndStatesSurvive() throws {
@@ -91,14 +91,66 @@ import XCTest
         XCTAssertEqual(store.environment().count, 3)
     }
 
-    func testAppListWithoutAKeyIsEmptyAndQuiet() async throws {
-        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("vitrin-cred-empty-\(UUID().uuidString)", isDirectory: true)
-        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: dir) }
-        let list = ASCAppList()
-        await list.refresh(cli: nil, credentials: ASCCredentials(base: dir))
-        XCTAssertEqual(list.apps, [])
-        XCTAssertNil(list.error)
-        XCTAssertFalse(list.loading)
+    /// The list comes from asc's raw `GET /v1/apps` with the versions included: newest version number per platform,
+    /// iOS first, names sorted; an app without versions stays in the list.
+    func testAppListFromTheJSONAPIDocument() throws {
+        let doc = try JSONDecoder().decode(JSONValue.self, from: Data(#"""
+        {"data":[
+          {"type":"apps","id":"2","attributes":{"name":"Zed","bundleId":"com.z","sku":"Z","primaryLocale":"tr"},"relationships":{"appStoreVersions":{"data":[{"type":"appStoreVersions","id":"a"},{"type":"appStoreVersions","id":"b"},{"type":"appStoreVersions","id":"c"}]}}},
+          {"type":"apps","id":"1","attributes":{"name":"Acorn","bundleId":"com.a","sku":"A","primaryLocale":"en-US"},"relationships":{"appStoreVersions":{"data":[]}}}
+        ],"included":[
+          {"type":"appStoreVersions","id":"a","attributes":{"platform":"IOS","versionString":"1.9","appVersionState":"READY_FOR_DISTRIBUTION"}},
+          {"type":"appStoreVersions","id":"b","attributes":{"platform":"IOS","versionString":"1.10","appVersionState":"PREPARE_FOR_SUBMISSION"}},
+          {"type":"appStoreVersions","id":"c","attributes":{"platform":"MAC_OS","versionString":"2.0","appStoreState":"IN_REVIEW"}}
+        ]}
+        """#.utf8))
+        let apps = ASCAppList.apps(from: doc)
+        XCTAssertEqual(apps.map(\.name), ["Acorn", "Zed"])
+        XCTAssertEqual(apps[0].versions, [])
+        XCTAssertEqual(apps[1].versions.map(\.version), ["1.10", "2.0"])
+        XCTAssertEqual(apps[1].current?.state, "PREPARE_FOR_SUBMISSION")
+        XCTAssertEqual(apps[1].versions[1].state, "IN_REVIEW")
+        XCTAssertEqual(apps[1].platforms, ["IOS", "MAC_OS"])
+        XCTAssertEqual(ASCAppList.compareVersions("1.0", "1.0.0"), 0)
+        XCTAssertEqual(ASCAppList.compareVersions("2.0", "1.99.1"), 1)
+    }
+
+    /// asc's help layout, parsed into the command palette's groups, subcommands and flags.
+    func testAscHelpParsing() {
+        let root = AscHelp.parse("""
+        DESCRIPTION
+          asc is a CLI.
+
+        USAGE
+          asc <subcommand> [flags]
+
+        APP MANAGEMENT COMMANDS
+          apps:      List and manage apps.
+          versions:  Manage App Store versions.
+
+        FLAGS
+          --debug        Enable debug logging (default: false)
+        """)
+        XCTAssertEqual(root.description, "asc is a CLI.")
+        XCTAssertEqual(root.groups.map(\.title), ["APP MANAGEMENT COMMANDS"])
+        XCTAssertEqual(root.subcommands.map(\.name), ["apps", "versions"])
+        let leaf = AscHelp.parse("""
+        DESCRIPTION
+          Create a response.
+
+        USAGE
+          asc reviews respond [flags]
+
+        FLAGS
+          --output       Output format: json, table, markdown (default: json)
+          --response     Response body text (required)
+          --pretty       Pretty-print JSON output (default: false)
+        """)
+        XCTAssertEqual(leaf.usage, "asc reviews respond [flags]")
+        XCTAssertEqual(leaf.flags.map(\.name), ["output", "response", "pretty"])
+        XCTAssertTrue(leaf.flags[1].required)
+        XCTAssertTrue(leaf.flags[2].isBool)
+        XCTAssertEqual(leaf.flags[0].defaultValue, "json")
+        XCTAssertFalse(leaf.flags[0].isBool)
     }
 }

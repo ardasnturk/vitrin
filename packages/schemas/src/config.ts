@@ -6,9 +6,20 @@ import { PlatformEnum } from './targets.js';
 export const AssetKindEnum = z.enum(['metadata', 'screenshots', 'previews', 'creatives', 'events']);
 export type AssetKind = z.infer<typeof AssetKindEnum>;
 
-/** Ways App Store content is uploaded (Google Play always uses fastlane supply). */
-export const UploaderEnum = z.enum(['deliver', 'asset-library', 'asc']);
+/**
+ * How App Store content is uploaded: always the `asc` CLI (rorkai/App-Store-Connect-CLI). Google Play is separate
+ * (fastlane supply, see packages/upload/src/supply.ts).
+ */
+export const UploaderEnum = z.enum(['asc']);
 export type Uploader = z.infer<typeof UploaderEnum>;
+
+/**
+ * Uploader values older configs may still carry. They were removed in 1.3 (fastlane deliver and the App Asset
+ * Library-only mode); they still load so an old vitrin.config.yaml keeps working, behave like `asc`, and the CLI
+ * warns once when it reads one (core loadConfig).
+ */
+export const LegacyUploaderEnum = z.enum(['deliver', 'asset-library']);
+export type LegacyUploader = z.infer<typeof LegacyUploaderEnum>;
 
 export const CaptureScreen = z.object({
   id: z.string().regex(/^[a-z0-9-]+$/),
@@ -175,12 +186,11 @@ export const VitrinConfig = z.object({
   upload: z
     .object({
       /**
-       * deliver: fastlane deliver for text and complete sets; partial sets per display type through the
-       * ASC API. asset-library: media through the App Asset Library. asc: the `asc` CLI (rorkai/App-Store-Connect-CLI,
-       * `brew install asc`, no Ruby) for text and per-display-type media.
-       * Unset until the user chooses (`vitrin uploader` shows what is installed); behaves like deliver until then.
+       * Always `asc` (the `asc` CLI, `brew install asc`): text through `asc metadata push`, each display type through
+       * `asc screenshots|video-previews upload --replace`. Unset means asc. The removed values `deliver` and
+       * `asset-library` still parse (old configs) and behave like asc.
        */
-      uploader: UploaderEnum.optional(),
+      uploader: z.union([UploaderEnum, LegacyUploaderEnum]).optional(),
       platform: z.enum(['ios', 'osx', 'appletvos', 'xros']).default('ios'),
       appVersion: z.string().optional(),
       /** `vitrin doctor` also runs `asc validate --app <id>` (submission readiness) when the asc CLI is installed. */
@@ -190,10 +200,13 @@ export const VitrinConfig = z.object({
 });
 export type VitrinConfig = z.infer<typeof VitrinConfig>;
 
-/**
- * The uploader in effect. Unset (the user has not chosen yet) behaves like `deliver`; `vitrin upload` asks for a
- * choice before it uploads anything (`vitrin uploader`, `vitrin select --uploader`).
- */
-export function uploaderOf(config: Pick<VitrinConfig, 'upload'>): Uploader {
-  return config.upload.uploader ?? 'deliver';
+/** The uploader in effect: always `asc` (unset and the removed `deliver` / `asset-library` values included). */
+export function uploaderOf(_config?: Pick<VitrinConfig, 'upload'>): Uploader {
+  return 'asc';
+}
+
+/** The removed uploader value an old config still names (`deliver`, `asset-library`), or undefined. */
+export function legacyUploaderOf(config: Pick<VitrinConfig, 'upload'>): LegacyUploader | undefined {
+  const u = config.upload.uploader;
+  return u && u !== 'asc' ? u : undefined;
 }

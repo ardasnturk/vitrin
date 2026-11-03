@@ -1,7 +1,7 @@
 import { ensureDir, existsSync, log, writeJson } from '@vitrin/core';
 import { copyFile, lstat, readdir, readFile, rm } from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
-import { buildInventory, readApproval, syncFastlaneMetadata, hashFile, type InventoryItem } from './approval.js';
+import { buildInventory, readApproval, syncStoreMetadata, hashFile, type InventoryItem } from './approval.js';
 import { closeBrief, writeBrief } from './briefs.js';
 import { EXIT, NeedsInput, type Ctx } from './context.js';
 
@@ -99,7 +99,7 @@ export async function exportProjectMetadata(ctx: Ctx): Promise<{ files: string[]
   const outRoot = insideProject(ctx.root, 'metadata');
   const manifestFile = join(outRoot, 'manifest.json');
   const prev = await readProjectManifest(manifestFile);
-  await syncFastlaneMetadata(ctx);
+  await syncStoreMetadata(ctx);
   const inv = await buildInventory(ctx);
   const text: KeptFile[] = [];
   for (const item of inv.items.filter((i) => i.kind === 'metadata')) {

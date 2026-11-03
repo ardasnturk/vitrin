@@ -8,16 +8,34 @@ import SwiftUI
 /// time a user clicked "Let Claude do it".
 struct MainWindow: View {
     @Environment(AppModel.self) private var model
+    @Environment(AppSettings.self) private var settings
     @Environment(LanguageState.self) private var language
     @State private var claudeWidth: CGFloat = 400
+    @State private var windowWidth: CGFloat = 1280
+
+    /// The Claude column never leaves the page less than 560 points (with the sidebar's ~260): it narrows to 300,
+    /// and below that the window is simply too small for both.
+    private var claudeColumnWidth: CGFloat { min(claudeWidth, max(300, windowWidth - 260 - 560)) }
 
     var body: some View {
+        // The welcome tour owns the window until it is done (or skipped); Help → "Show the welcome tour" brings it back.
+        if !settings.onboardingDone {
+            OnboardingView()
+                .navigationTitle("Vitrin")
+        } else {
+            main
+        }
+    }
+
+    private var main: some View {
         NavigationSplitView {
             Sidebar()
                 .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 340)
         } detail: {
             HStack(spacing: 0) {
-                detail.frame(maxWidth: .infinity, maxHeight: .infinity)
+                // minWidth 0 and clipped: a page that asks for more width than is left never pushes the sidebar
+                // off the window; the Claude column gives way first (see claudeColumnWidth).
+                detail.frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity).clipped().brandWindowBackground()
                 if model.showClaude {
                     // A drag handle on the divider: the column is 320–560 wide, the page keeps the rest.
                     Rectangle().fill(Color(nsColor: .separatorColor)).frame(width: 1)
@@ -27,30 +45,36 @@ struct MainWindow: View {
                     Group {
                         if let s = model.selectedSession { ClaudePanel(session: s) } else { EmptyHint(text: L.t("projects.selectOne"), symbol: "sparkles") }
                     }
-                    .frame(width: claudeWidth)
+                    .frame(width: claudeColumnWidth)
                     .frame(maxHeight: .infinity)
-                    .background(Color(nsColor: .windowBackgroundColor))
+                    .background(.regularMaterial)
                     .transaction { $0.animation = nil }
                     .accessibilityIdentifier("claude.column")
                 }
             }
         }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { windowWidth = $0 }
+        .sheet(isPresented: Binding(get: { model.showNewApp }, set: { model.showNewApp = $0 })) { NewAppSheet { model.showNewApp = false } }
         .toolbar { toolbar }
-        .navigationTitle(model.selectedApp?.name ?? model.selectedProject?.name ?? "Vitrin")
-        .navigationSubtitle(model.selectedApp?.bundleId ?? model.selectedSession?.overview?.app?.bundleId ?? "")
+        .navigationTitle(model.selectedTeamPage.map { L.t($0.titleKey) } ?? (model.showHome ? "Vitrin" : (model.selectedApp?.name ?? model.selectedProject.map { model.displayName(for: $0) } ?? "Vitrin")))
+        .navigationSubtitle(model.showHome || model.selectedTeamPage != nil ? "" : (model.selectedApp?.bundleId ?? model.selectedSession?.overview?.app?.bundleId ?? ""))
         .onChange(of: model.selectedSession?.overview?.config?.language) { model.applyLanguage() }
         .onChange(of: model.settings.language) { model.applyLanguage() }
     }
 
     @ViewBuilder private var detail: some View {
-        if let app = model.selectedApp {
+        if let t = model.selectedTeamPage {
+            TeamView(page: t)
+        } else if model.showHome || (model.selectedApp == nil && model.selectedProject == nil) {
+            HomeView()
+        } else if let app = model.selectedApp {
             AppOverviewView(app: app)
         } else if model.cli == nil && !model.locating && model.store.projects.isEmpty == false {
             CLIMissingView()
         } else if let project = model.selectedProject {
             ProjectDetail(project: project, session: model.session(for: project))
         } else {
-            WelcomeView()
+            HomeView()
         }
     }
 
@@ -118,6 +142,9 @@ struct ProjectDetail: View {
                 case .visuals: VisualsView(session: session, overview: o)
                 case .review: ReviewView(session: session, overview: o)
                 case .upload: UploadView(session: session, overview: o)
+                case .asc:
+                    if let app = model.ascApp(for: project) { AppOverviewView(app: app) }
+                    else { EmptyHint(text: L.t("apps.notLinked"), symbol: "storefront") }
                 }
             }
         } else {
@@ -148,7 +175,7 @@ struct StartFailedView: View {
             }
             HStack {
                 Button(L.t("common.retry")) { Task { if let cli = model.cli { await session.restart(cli: cli) } } }.buttonStyle(.borderedProminent)
-                SettingsLink { Text(L.t("settings.title")) }
+                SettingsButton { Text(L.t("settings.title")) }
             }
         }
         .padding(24)
@@ -161,7 +188,6 @@ struct InitOfferView: View {
     var session: ProjectSession
     var overview: Overview
     @State private var language = "en"
-    @State private var uploader = "asc"
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -172,13 +198,9 @@ struct InitOfferView: View {
                         Text("English").tag("en")
                         Text("Türkçe").tag("tr")
                     }.frame(maxWidth: 360)
-                    Picker(L.t("init.uploader"), selection: $uploader) {
-                        Text("asc CLI").tag("asc")
-                        Text("fastlane deliver").tag("deliver")
-                    }.frame(maxWidth: 360)
                     Text(L.t("init.hint")).font(.callout).foregroundStyle(.secondary)
-                    Button(L.t("init.run")) { Task { await session.run("init", args: ["language": .string(language), "uploader": .string(uploader)]) } }
-                        .buttonStyle(.borderedProminent).disabled(session.isBusy).cliHelp("vitrin init --language \(language) --uploader \(uploader)")
+                    Button(L.t("init.run")) { Task { await session.run("init", args: ["language": .string(language)]) } }
+                        .buttonStyle(.borderedProminent).disabled(session.isBusy).cliHelp("vitrin init --language \(language)")
                 }
                 Text(session.project.path).font(.caption.monospaced()).foregroundStyle(.tertiary)
             }

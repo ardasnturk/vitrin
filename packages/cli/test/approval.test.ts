@@ -71,8 +71,8 @@ describe('inventory, approval and change detection', () => {
   });
 
   it('exports and covers the App Store text files from metadata/listing', async () => {
-    const { syncFastlaneMetadata } = await import('../src/approval.js');
-    expect(await syncFastlaneMetadata(ctx)).toBe(true);
+    const { syncStoreMetadata } = await import('../src/approval.js');
+    expect(await syncStoreMetadata(ctx)).toBe(true);
     const inv = await buildInventory(ctx);
     const en = inv.items.find((i) => i.id === 'metadata/app-store/en-US')!;
     expect(en.fields?.find((f) => f.key === 'name')?.value).toBe('Ritim: Habit Tracker');

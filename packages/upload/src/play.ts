@@ -32,7 +32,7 @@ export function playMetadataDir(paths: AppPaths): string {
 
 /** supply's metadata root: `metadata/store/metadata/android/`. */
 export function playExportDir(paths: AppPaths): string {
-  return join(paths.fastlaneMetadata, 'android');
+  return join(paths.storeMetadata, 'android');
 }
 
 export interface PlayInputs {

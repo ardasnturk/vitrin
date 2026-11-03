@@ -41,9 +41,9 @@ export function Upload() {
       });
   }, [state.job, doctor, planJob]);
 
-  const uploader = o.config?.uploader ?? null;
-  const tool = uploader === 'asc' ? o.tools.asc : uploader ? o.tools.fastlane : null;
-  const uploaderOk = Boolean(uploader && tool);
+  // App Store: always the asc CLI. An Android-only app needs fastlane (supply) instead.
+  const apple = !o.app?.platforms.length || o.app.platforms.some((p) => p !== 'android');
+  const uploaderOk = Boolean(apple ? o.tools.asc : o.tools.fastlane);
   const keysOk = o.missingKeys.length === 0;
   const approved = Boolean(o.approval?.valid);
   const planOk = planJob?.status === 'ok';
@@ -63,15 +63,14 @@ export function Upload() {
       <div className="checklist">
         <Step n={1} ok={uploaderOk} title={t('uploadStepUploader')}>
           <div className="stack tight">
-            <Radio name="upload-uploader" checked={uploader === 'asc'} disabled={busy} onChange={() => run('select', { uploader: 'asc' })} hint={t('uploaderAscHint')}>
-              asc CLI {o.tools.asc ? <Pill tone="ok">{`${t('installed')} ${o.tools.asc}`}</Pill> : <Pill tone="warn">{t('missing')}</Pill>}
-            </Radio>
-            <Radio name="upload-uploader" checked={uploader === 'deliver'} disabled={busy} onChange={() => run('select', { uploader: 'deliver' })} hint={t('uploaderDeliverHint')}>
-              fastlane deliver {o.tools.fastlane ? <Pill tone="ok">{`${t('installed')} ${o.tools.fastlane}`}</Pill> : <Pill tone="warn">{t('missing')}</Pill>}
-            </Radio>
+            {apple && (
+              <div>
+                asc CLI {o.tools.asc ? <Pill tone="ok">{`${t('installed')} ${o.tools.asc}`}</Pill> : <Pill tone="warn">{t('missing')}</Pill>}
+                <div className="dim small">{t('uploaderAscHint')}</div>
+              </div>
+            )}
           </div>
-          {!uploader && <div className="text-err small">{t('blockerUploaderUnset')}</div>}
-          {uploader && !tool && <CopyCode text={uploader === 'asc' ? 'brew install asc' : 'bundle install'} />}
+          {!uploaderOk && <CopyCode text={apple ? 'brew install asc' : 'bundle install'} />}
         </Step>
 
         <Step

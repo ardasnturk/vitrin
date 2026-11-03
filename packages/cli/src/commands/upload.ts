@@ -1,26 +1,33 @@
 import { existsSync, log, readJson, readJsonIfExists, selectedPlatforms, writeJson } from '@vitrin/core';
-import { AppMetadata, CppSuggestions, ExperimentPlan, ShotList, uploaderOf, type Experiment } from '@vitrin/schemas';
+import { AppMetadata, CppSuggestions, ExperimentPlan, ShotList, type Experiment } from '@vitrin/schemas';
 import {
+  ascClientFor,
+  ascEnv,
+  ascHasOwnAuth,
   AscClient,
+  ascSubmitInvocation,
+  ascVersion,
+  ASC_INSTALL_HINT,
+  ASC_PLATFORM,
+  isEditableVersion,
   buildPlan,
   createCustomProductPage,
   createExperiment,
   createInAppEvent,
   credentialsFromEnv,
-  exportFastlaneMetadata,
+  exportStoreMetadata,
   formatPlan,
   installFastlaneTemplates,
   placeCustomProductPageMedia,
   placeEventMedia,
   prepareStores,
   readBack,
-  runDeliverForPlatforms,
-  runLane,
   runAscForPlatforms,
   runPlayUpload,
   uploadPerDisplayType,
   uploadVersionCreatives,
 } from '@vitrin/upload';
+import { exec } from '@vitrin/core';
 import { validateAll, validatePlayText } from '@vitrin/validate';
 import { rm } from 'node:fs/promises';
 import { join, relative } from 'node:path';
@@ -34,7 +41,8 @@ import { loadLocaleMetadata, printIssues } from './pipeline.js';
 export interface UploadOptions {
   dryRun?: boolean;
   yes?: boolean;
-  uploader?: 'deliver' | 'asset-library' | 'asc';
+  /** Removed: App Store uploads always use the asc CLI. `asc` is accepted; anything else is refused. */
+  uploader?: string;
   creatives?: boolean;
   cpp?: boolean;
   events?: boolean;
@@ -62,27 +70,27 @@ async function confirm(question: string): Promise<boolean> {
 }
 
 export async function uploadCommand(ctx: Ctx, opts: UploadOptions): Promise<number> {
-  if (opts.uploader && !['deliver', 'asset-library', 'asc'].includes(opts.uploader)) throw new NeedsInput(`Unknown uploader “${opts.uploader}”: use deliver, asset-library or asc.`);
-  if (opts.uploader) ctx.config.upload.uploader = opts.uploader;
+  if (opts.uploader && opts.uploader !== 'asc') throw new NeedsInput(`--uploader ${opts.uploader} was removed: App Store uploads always use the asc CLI (${ASC_INSTALL_HINT}).`);
   const profile = await loadProfile(ctx);
   const shipping = selectedPlatforms(ctx.config, profile).platforms;
   const bundleId = bundleIdOf(ctx, profile);
   const metadata = await loadLocaleMetadata(ctx);
   if (!existsSync(ctx.paths.appMetadata) || metadata.length !== ctx.config.app.locales.length) throw new NeedsInput('Metadata is missing; run `vitrin write` first.');
   const app = await readJson(ctx.paths.appMetadata, AppMetadata);
-  await exportFastlaneMetadata(ctx.paths, ctx.config, app, metadata);
+  await exportStoreMetadata(ctx.paths, ctx.config, app, metadata);
   // Approval gate: a real upload sends only the exact files the user reviewed and approved (metadata/approval.json).
-  // Checked after the export so the text files compared are the ones deliver would read. --yes never skips this.
+  // Checked after the export so the text files compared are the ones the upload reads. --yes never skips this.
   if (!opts.dryRun) await requireApproval(ctx);
   else {
     const approval = await checkApproval(ctx);
     if (!approval.ok) log.warn(`Not approved for upload yet: ${approval.reason} (a real upload needs \`vitrin review\` + the user's approval).`);
   }
-  // The user picks fastlane or the asc CLI (`vitrin uploader` shows what is installed); never assume one for them.
-  if (!ctx.config.upload.uploader && !opts.dryRun && shipping.some((p) => p !== 'android')) {
-    throw new NeedsInput('No uploader chosen for App Store Connect yet.', ['`vitrin uploader` shows whether fastlane and the asc CLI are installed; ask the user, then `vitrin select --uploader asc|deliver`.']);
+  // App Store: the asc CLI, always. Its absence stops a real upload here, before anything is sent.
+  if (!opts.dryRun && shipping.some((p) => p !== 'android') && !(await ascVersion())) {
+    throw new NeedsInput('The asc CLI is not installed; every App Store upload uses it.', [`Ask the user, then install it: ${ASC_INSTALL_HINT}`]);
   }
-  if (uploaderOf(ctx.config) !== 'asc' || shipping.includes('android')) {
+  // Google Play only: fastlane supply's Gemfile and Fastfile.
+  if (shipping.includes('android')) {
     for (const f of await installFastlaneTemplates(ctx.paths)) log.ok(`Wrote ${relative(ctx.root, f)}`);
   }
 
@@ -111,11 +119,15 @@ export async function uploadCommand(ctx: Ctx, opts: UploadOptions): Promise<numb
   }
 
   // Early warning vs. late gate: a dry run works without keys (remote state unknown); a real upload does not.
-  const missing = missingUploadKeys(ctx.env, stores.platforms);
+  // Without a Vitrin ASC key, asc's own login (`asc auth login`) is used, for the asc CLI and for Vitrin's API calls.
+  const ascLogin = hasApple && ascEnv(ctx.env, ctx.root).source === 'asc-login' && (await ascHasOwnAuth());
+  const missing = missingUploadKeys(ctx.env, stores.platforms, { ascLogin });
   let client: AscClient | undefined;
   if (!missing.length && hasApple) {
     try {
-      client = new AscClient(credentialsFromEnv(process.env));
+      const found = await ascClientFor(ctx.env, ctx.root, () => new AscClient(credentialsFromEnv(process.env)));
+      client = found.client;
+      if (found.source === 'asc-login') log.dim('No ASC key in Vitrin: using the asc CLI login (asc auth status).');
     } catch (err) {
       if (!opts.dryRun) throw err;
       log.warn((err as Error).message);
@@ -157,8 +169,8 @@ export async function uploadCommand(ctx: Ctx, opts: UploadOptions): Promise<numb
         log.warn(`Google Play validate_only: ${(err as Error).message}`);
       }
     }
-    // asc uploader: asc's own dry run of the text (and, with a key, of each --replace) changes nothing.
-    if (plan.uploader === 'asc' && plan.appId && !plan.blockers.length) {
+    // asc's own dry run of the text (and of each --replace) changes nothing.
+    if (plan.appId && !plan.blockers.length && (await ascVersion())) {
       try {
         await runAscForPlatforms(ctx.paths, plan, stores.assets, client, { languages: ctx.config.app.locales, env: ctx.env, dryRun: true, skipScreenshots: opts.skipScreenshots });
       } catch (err) {
@@ -189,17 +201,15 @@ export async function uploadCommand(ctx: Ctx, opts: UploadOptions): Promise<numb
 
   const languages = ctx.config.app.locales;
   if (plan.firstRelease) {
-    for (const l of languages) await rm(join(ctx.paths.fastlaneMetadata, l, 'release_notes.txt'), { force: true });
+    for (const l of languages) await rm(join(ctx.paths.storeMetadata, l, 'release_notes.txt'), { force: true });
     log.dim('First release: App Store Connect has no “What’s New” field yet, so release_notes.txt is not uploaded.');
   }
-  // One deliver run per selected Apple platform (iOS incl. Apple Watch, macOS, tvOS, visionOS) with complete sets
-  // only; partial sets are replaced one display type at a time (classic sets API, App Asset Library for iPhone Duo).
-  // With uploader asc, the asc CLI does text and every classic display type instead of deliver.
+  // Per selected App Store version (iOS incl. Apple Watch, macOS, tvOS, visionOS): the asc CLI uploads the text and
+  // replaces each selected classic display type; iPhone Duo sets go through the App Asset Library.
   if (hasApple) {
-    if (plan.uploader === 'asc') await runAscForPlatforms(ctx.paths, plan, stores.assets, client, { languages, env: ctx.env, skipScreenshots: opts.skipScreenshots });
-    else await runDeliverForPlatforms(ctx.paths, plan, stores.assets, { bundleId, languages, skipScreenshots: opts.skipScreenshots });
+    await runAscForPlatforms(ctx.paths, plan, stores.assets, client, { languages, env: ctx.env, skipScreenshots: opts.skipScreenshots });
     if (!opts.skipScreenshots && client) {
-      const n = await uploadPerDisplayType(client, plan, stores.assets, languages, { classic: plan.uploader === 'asc' ? 'skip' : 'api' });
+      const n = await uploadPerDisplayType(client, plan, stores.assets, languages, { classic: 'skip' });
       if (n) log.ok(`${n} files uploaded; only the selected display types were replaced.`);
     }
   }
@@ -267,7 +277,22 @@ export async function submitCommand(ctx: Ctx, opts: { confirm?: string }): Promi
   }
   const doctor = await runDoctor(ctx);
   if (doctor.exitCode !== EXIT.OK) return doctor.exitCode;
-  await runLane(ctx.paths, 'vitrin_submit', { bundleId, languages: ctx.config.app.locales, appVersion: ctx.config.upload.appVersion, platform: ctx.config.upload.platform });
+  // asc review submit: attaches the newest App Store eligible build of the editable version and submits it.
+  const auth = ascEnv(ctx.env, ctx.root);
+  if (auth.problems.length) throw new NeedsInput(`asc credentials: ${auth.problems.join('; ')}`);
+  const { client } = await ascClientFor(ctx.env, ctx.root, () => new AscClient(credentialsFromEnv(process.env)));
+  if (!client) throw new NeedsInput('No ASC key in Vitrin and no asc login (asc auth login).');
+  const app = await client.findApp(bundleId);
+  if (!app) throw new NeedsInput(`No app record for ${bundleId} in App Store Connect.`);
+  const platform = ASC_PLATFORM[ctx.config.upload.platform] as 'IOS';
+  const version = (await client.appStoreVersions(app.id, platform)).find(isEditableVersion);
+  if (!version) throw new NeedsInput(`No editable App Store version (${platform}) to submit.`);
+  if (ctx.config.upload.appVersion && ctx.config.upload.appVersion !== version.attributes.versionString) {
+    throw new NeedsInput(`vitrin.config.yaml upload.appVersion (${ctx.config.upload.appVersion}) does not match the editable version in ASC (${version.attributes.versionString}).`);
+  }
+  const inv = ascSubmitInvocation({ appId: app.id, versionId: version.id, platform }, auth.env);
+  const res = await exec(inv.command, inv.args, { cwd: ctx.root, env: inv.env, stream: true, timeoutMs: 600_000 });
+  if (res.code !== 0) throw new Error(`asc review submit failed (exit ${res.code}). See the details above; \`asc review doctor --app ${app.id}\` explains what is missing.`);
   await ctx.state.mark('submit', new Date().toISOString());
   log.ok('Submitted for review.');
   return EXIT.OK;

@@ -89,7 +89,6 @@ const BLOCKER_TEXT: Record<Blocker['code'], UiKey> = {
   'primary-locale': 'blockerPrimaryLocale',
   'ffmpeg-missing': 'blockerFfmpegMissing',
   'claude-missing': 'blockerClaudeMissing',
-  'uploader-unset': 'blockerUploaderUnset',
   'uploader-missing': 'blockerUploaderMissing',
   'keys-missing': 'blockerKeysMissing',
   'design-choice': 'blockerDesignChoice',
@@ -111,10 +110,6 @@ function fixLabel(fix: Blocker['fixes'][number], b: Blocker): string {
       return t('fixSetPrimary', { locale: String(fix.args.primaryLocale) });
     case 'add-primary':
       return t('fixAddPrimary', { locale: String(b.params.primary) });
-    case 'use-asc':
-      return t('fixUseAsc');
-    case 'use-deliver':
-      return t('fixUseDeliver');
     default:
       return fix.id;
   }

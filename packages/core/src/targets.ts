@@ -80,11 +80,11 @@ export function enabledPlatforms(targets: RenderTarget[]): Platform[] {
 }
 
 /**
- * File-name token of each App Preview: its ASC API 4.5.1 `PreviewType` (deliver infers the device from it).
+ * File-name token of each App Preview: its ASC API 4.5.1 `PreviewType` (validate infers the device family from it).
  * 886×1920 covers every modern iPhone class and is uploaded as IPHONE_67 (the classic enum has no 6.9" type).
  * Mirrors `previewType` in data/asc-display-types.json.
  */
-export const DELIVER_PREVIEW_DEVICE: Record<string, string> = {
+export const PREVIEW_FILE_DEVICE: Record<string, string> = {
   'preview-iphone': 'IPHONE_67',
   'preview-ipad': 'IPAD_PRO_3GEN_129',
   'preview-mac': 'DESKTOP',

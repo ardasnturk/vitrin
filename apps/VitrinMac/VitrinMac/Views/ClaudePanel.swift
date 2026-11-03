@@ -164,7 +164,7 @@ struct ClaudeModelMenu: View {
             }
             .pickerStyle(.inline)
             Divider()
-            SettingsLink { Text(L.t("settings.claudeModelMore")) }
+            SettingsButton { Text(L.t("settings.claudeModelMore")) }
         } label: {
             Label(ClaudeModel.label(settings.claudeModel), systemImage: "cpu").font(.caption).foregroundStyle(.secondary)
         }

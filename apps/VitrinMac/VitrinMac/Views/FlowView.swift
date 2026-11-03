@@ -51,7 +51,7 @@ struct FlowView: View {
             Spacer()
             if let app = overview.app {
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text(app.name).font(.headline)
+                    Text(model.displayName(for: session.project)).font(.headline)
                     Text([app.bundleId, app.version.map { "v\($0)" }, app.platforms.joined(separator: ", ")].compactMap { $0 }.joined(separator: " · ")).font(.caption).foregroundStyle(.secondary)
                 }
             }
@@ -104,7 +104,6 @@ struct FlowView: View {
                 Text(L.t("summary.tools")).foregroundStyle(.secondary).font(.callout)
                 FlowLayout(spacing: 6) {
                     ToolPill("asc", overview.tools.asc)
-                    ToolPill("fastlane", overview.tools.fastlane)
                     ToolPill("ffmpeg", overview.tools.ffmpeg)
                     ToolPill("claude", overview.tools.claude)
                 }
@@ -321,7 +320,7 @@ struct BlockerCard: View {
                     }
                     if let install = blocker.params["install"]?.stringValue { CopyCode(text: install) }
                     if blocker.code == "keys-missing" {
-                        SettingsLink { Text(L.t("flow.accountSettings")) }.controlSize(.small).accessibilityIdentifier("flow.accountSettings")
+                        SettingsButton { Text(L.t("flow.accountSettings")) }.controlSize(.small).accessibilityIdentifier("flow.accountSettings")
                     } else if blocker.fixes.isEmpty, blocker.params["install"] == nil, blocker.stage != "upload" {
                         Button(L.t("flow.goToPage")) { model.selectedPage = Pipeline.page(for: blocker.stage) }.controlSize(.small)
                     }
@@ -423,7 +422,10 @@ struct FlowLayout: Layout {
     var spacing: CGFloat = 6
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         let rows = layout(proposal: proposal, subviews: subviews)
-        return CGSize(width: proposal.width ?? rows.width, height: rows.height)
+        // An unbounded proposal (a parent measuring its maximum) gets the width the rows use, never infinity: an
+        // infinite answer made the whole Visuals page lay out off-screen.
+        let w = proposal.width.map { $0.isFinite ? $0 : rows.width } ?? rows.width
+        return CGSize(width: w, height: rows.height)
     }
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
         var x = bounds.minX, y = bounds.minY, rowH: CGFloat = 0

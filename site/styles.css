@@ -295,3 +295,7 @@ details p { color: var(--muted); margin: 12px 0 0; }
 /* Studio */
 .studio-shot { margin: 28px 0 0; }
 .studio-shot img { display: block; width: 100%; height: auto; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45); }
+
+/* Vitrin for Mac */
+#mac .cards { margin-top: 28px; }
+#mac .cards + .section-lead { margin: 24px 0 0; }

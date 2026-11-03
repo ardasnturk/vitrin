@@ -94,9 +94,8 @@ Source: the **App Store Connect API OpenAPI specification 4.5.1** (`info.version
 
 ### How Vitrin uploads (packages/upload)
 
-- **Complete sets** (every enabled target of the version and locale): fastlane deliver with overwrite, unchanged.
-- **One display type** (partial runs, and Mac/TV/Vision previews deliver has no type for): `screenshot-sets.ts` — find the set of that localization and type (`filter[screenshotDisplayType]` / `filter[previewType]`, refusing if the response holds another type), create it if missing, delete only its items, reserve → upload operations → commit with MD5 → poll, then set the order (`PATCH …/relationships/appScreenshots|appPreviews`). Limits (10 screenshots, 3 previews) and every file are checked before anything is deleted. Other display types and locales are never read or written.
-- **App Asset Library** only where the classic API has no type: iPhone Duo screenshots, product page header and search creatives (`--creatives`); or every set with `upload.uploader: asset-library`. `asset-library.ts` resolves the `placementGroup` from refData (platform + displayClassId), deletes only placements whose `placementType` **and** `placementGroup` match (refusing if the filtered list contains anything else), uploads with the right `category`, places and requests the order. Header, search and event creatives use `DEFAULT_PROFILE` when refData lists no group for them (the value asc sends).
+- **Every set, one display type at a time** through the asc CLI: `asc screenshots|video-previews upload --replace` (see “asc as the only App Store uploader” below). Vitrin's own classic client, `screenshot-sets.ts`, does the same and stays available (`uploadPerDisplayType({ classic: 'api' })`): find the set of that localization and type (`filter[screenshotDisplayType]` / `filter[previewType]`, refusing if the response holds another type), create it if missing, delete only its items, reserve → upload operations → commit with MD5 → poll, then set the order (`PATCH …/relationships/appScreenshots|appPreviews`). Limits (10 screenshots, 3 previews) and every file are checked before anything is deleted. Other display types and locales are never read or written.
+- **App Asset Library** only where the classic API has no type: iPhone Duo screenshots, product page header and search creatives (`--creatives`). `asset-library.ts` resolves the `placementGroup` from refData (platform + displayClassId), deletes only placements whose `placementType` **and** `placementGroup` match (refusing if the filtered list contains anything else), uploads with the right `category`, places and requests the order. Header, search and event creatives use `DEFAULT_PROFILE` when refData lists no group for them (the value asc sends).
 - `vitrin doctor` saves refData to `metadata/.cache/refdata.json` and checks that every screenshot/preview mapping has a placement group, that the target sizes are among the class's `screenDimensions`, and that refData has no display class the spec does not list.
 
 ### Open points (not settled by the spec)
@@ -105,9 +104,11 @@ Source: the **App Store Connect API OpenAPI specification 4.5.1** (`info.version
 2. **`placementGroup` ids** are runtime data (refData), not an enum. asc documents `IPHONE_DUO_PROFILE` and `DEFAULT_PROFILE`; Vitrin never hard-codes a device group.
 3. **iPhone Duo in the classic API:** not in 4.5.1's `ScreenshotDisplayType`/`PreviewType`. asc accepts `APP_IPHONE_DUO` / `IPHONE_DUO` as device types anyway (unverified against the spec); Vitrin uses the Asset Library for Duo in every uploader. Whether a Duo App Preview has its own placement group is unknown (Vitrin renders no Duo preview).
 4. **Processing states:** which `AppAssetLibraryAssetState` a finished `APP_SCREENSHOTS_AND_PREVIEWS` image reports first (`COMPLETE` or `PREPARE_FOR_SUBMISSION`); Vitrin accepts either. asc waits for `PREPARE_FOR_SUBMISSION` on creative images.
-5. **Deprecation timeline** of the classic set endpoints: the release notes deprecate them, the spec still lists them. If Apple starts rejecting them, `fastlane.ts` points to `--uploader=asset-library`.
+5. **Deprecation timeline** of the classic set endpoints: the release notes deprecate them, the spec still lists them, and asc uses them. If Apple starts rejecting them, the per-display-type sets have to move to the App Asset Library (`asset-library.ts` already handles Duo that way).
 
 ## fastlane
+
+Historical (research for the deliver uploader, removed on November 3, 2026). The per-locale `.txt` layout below is still the layout of `metadata/store/metadata`, which the asc export reads.
 
 - `app_store_connect_api_key(key_id:, issuer_id:, key_filepath: | key_content:, is_key_content_base64:, duration: ≤1200, in_house:)`.
 - deliver metadata files: `<locale>/{name,subtitle,privacy_url,description,keywords,release_notes,support_url,marketing_url,promotional_text}.txt`; root: `copyright.txt`, `primary_category.txt`, `secondary_category.txt`, subcategory files; `review_information/{first_name,last_name,phone_number,email_address,demo_user,demo_password,notes}.txt`.
@@ -138,6 +139,8 @@ Source: the **App Store Connect API OpenAPI specification 4.5.1** (`info.version
 - https://developer.android.com/google-play/resources/icon-design-specifications (verified) · https://support.google.com/googleplay/android-developer/answer/9866151 (unreachable, unverified)
 
 ## fastlane per platform, partial uploads and Google Play (October 26, 2026)
+
+Historical for the App Store part: deliver was removed on November 3, 2026 (see the last section). The Google Play (supply) part is current.
 
 docs.fastlane.tools and support.google.com were not reachable from the build session (proxy policy), so everything below was read from the **fastlane 2.241.1 gem source** (downloaded from rubygems.org) and from Google's **Android Publisher v3 discovery document** (`https://androidpublisher.googleapis.com/$discovery/rest?version=v3`). Implementation: `packages/upload/src/{platforms,scope,stores,play,play-client}.ts`, `fastlane/Fastfile` (`# vitrin-template: 2`).
 
@@ -172,6 +175,8 @@ Sources: rubygems.org fastlane-2.241.1.gem (`deliver/lib/deliver/{options,app_sc
 
 ## asc as an optional uploader (October 26, 2026)
 
+Superseded on November 3, 2026: asc is now the only App Store uploader (last section). The command details below are current.
+
 `upload.uploader: asc` in `vitrin.config.yaml` (or `vitrin upload --uploader=asc`) uploads to App Store Connect with the [`asc` CLI](https://github.com/rorkai/App-Store-Connect-CLI) (MIT, `brew install asc`) instead of fastlane deliver, so Apple uploads need no Ruby. fastlane deliver stays the default; Google Play still uses supply. Read from asc's `commands/*.mdx`, `authentication.mdx` and Go source; implementation in `packages/upload/src/asc-cli.ts` (pure command builders, tested with a recorded runner — the binary is never run in tests).
 
 - **Text:** `asc metadata push --app <id> --version <v> --platform IOS|MAC_OS|TV_OS|VISION_OS --dir metadata/asc/<platform>/metadata` (`--dry-run` during `vitrin upload --dry-run`). Layout (`internal/cli/metadata/foundation.go`; the docs' tree says `versions/`, the code reads `version/`): `app-info/<locale>.json` (`name`, `subtitle`, `privacyPolicyUrl`) and `version/<version>/<locale>.json` (`description`, `keywords`, `marketingUrl`, `promotionalText`, `supportUrl`, `whatsNew`), generated from the fastlane export. A missing field leaves the remote value; an emptied `subtitle`/`promotionalText`/`privacyPolicyUrl` is written as `null` (asc's only clearable fields; the push then adds `--confirm`, which never enables deletes — that is `--allow-deletes`, which Vitrin never passes). App info is pushed with the first platform only. asc's metadata push does not cover categories, copyright or review information; the plan says so.
@@ -179,3 +184,14 @@ Sources: rubygems.org fastlane-2.241.1.gem (`deliver/lib/deliver/{options,app_sc
 - **Auth:** asc's documented environment credential — `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_TYPE=team` and one of `ASC_PRIVATE_KEY_PATH` / `ASC_PRIVATE_KEY_B64` — built from Vitrin's `.env` (`ASC_KEY_PATH` → absolute `ASC_PRIVATE_KEY_PATH`, `ASC_KEY_CONTENT_BASE64` → `ASC_PRIVATE_KEY_B64`); `ASC_PROFILE` and the other key sources are cleared so a stored profile cannot win (authentication.mdx resolution matrix). Values only go into the child environment and are registered for log masking.
 - **doctor:** with `uploader: asc`, `asc version` must succeed (fix: `brew install asc`), and Ruby/Bundler/fastlane failures become warnings for apps without Android. With `upload.ascValidate: true`, doctor also runs `asc validate --app <id> --platform <p>` (submission readiness: build, metadata, screenshots, age rating, pricing, review contact); a non-zero exit is a warning.
 - Not verified on a real account: asc's exit codes for partial failures (it documents `0`/`1` and `10–99` for HTTP errors), the exact `asc version` output format (`asc --version` prints `v1.2.3 (commit: …)`), and whether an empty `ASC_PROFILE`/`ASC_PRIVATE_KEY` counts as unset for asc.
+
+## asc as the only App Store uploader (November 3, 2026)
+
+fastlane deliver and the App-Asset-Library-only mode were removed; every App Store upload uses the asc CLI (checked against asc 5.17.1: `asc auth --help`, `asc auth status --help`, `asc api --help`, `asc versions create --help`, `asc review submit --help`). Google Play is unchanged (fastlane supply, `fastlane/Fastfile` `# vitrin-template: 3`, which no longer has App Store lanes).
+
+- **Config:** `upload.uploader` is `asc` or unset. An old `deliver` / `asset-library` still parses, behaves like asc, and `loadConfig` warns once per file; `vitrin select` deletes the line. `vitrin uploader --json` keeps its shape and lists only asc; `--uploader` on `init`, `select` and `upload` is hidden and accepts only `asc` (`init`/`select` warn about other values, `upload` refuses them).
+- **Plan:** every selected set is replaced one display type at a time (`ReplaceMode` is `per-display-type` or `skip`); there is no overwrite of a whole locale any more.
+- **Auth:** a Vitrin key (`ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_PATH` | `ASC_KEY_CONTENT_BASE64`) is mapped to asc's environment credential as before. With none of these set, Vitrin overrides nothing and asc resolves its own credential (`--profile`/`ASC_PROFILE`, then the keychain or `.asc/config.json` profile from `asc auth login`). `asc auth status --output json` (`credentials[]`, `environmentCredentialsComplete`) tells whether one exists; then doctor and the Studio do not ask for the ASC keys, and Vitrin's own API calls go through `asc api <METHOD> <path> --allow-unknown-path [--confirm --body-file -]` (`AscCliClient`), which prints Apple's JSON envelope and accepts full `links.next` URLs. A half-filled Vitrin key is an error.
+- **Versions and submit:** `vitrin doctor --create-version <v>` runs `asc versions create --app <id> --version <v> --platform <p> --if-exists skip`; `vitrin submit` runs `asc review submit --app <id> --version-id <id> --platform <p> --latest --confirm` (attaches the newest eligible build of that version).
+- **Not covered by asc metadata push:** categories, copyright and review information (they were uploaded by deliver before). They stay as they are in App Store Connect.
+
