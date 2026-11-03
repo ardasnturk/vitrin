@@ -97,6 +97,8 @@ function check(s: Schema, value: unknown, path = '$', strict = true): string[] {
 const { privateKey } = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
 const creds = { keyId: 'KEY1234567', issuerId: '69a6de7e-0000-0000-0000-000000000000', privateKey: privateKey.export({ type: 'pkcs8', format: 'pem' }).toString() };
 const fast = { intervalMs: 0, sleep: async () => {} };
+/** Retries without waiting: the PUT-failure tests exercise the retry loop, not the clock. */
+const noWait = { sleep: async () => {}, maxAttempts: 2 };
 
 interface Call {
   method: string;
@@ -347,6 +349,32 @@ describe('classic screenshot and preview sets', () => {
     expect(calls.some((c) => c.method === 'DELETE')).toBe(false);
   });
 
+  it('says what the set holds when an upload fails after the deletes (the classic API cannot add beside a full set)', async () => {
+    let n = 0;
+    const { client, calls } = mockAsc((c) => {
+      if (c.method === 'GET' && c.path.startsWith('/v1/appStoreVersionLocalizations/loc1/appScreenshotSets')) return { data: [{ type: 'appScreenshotSets', id: 'set-w', attributes: { screenshotDisplayType: 'APP_WATCH_ULTRA' } }] };
+      if (c.method === 'GET' && c.path.startsWith('/v1/appScreenshotSets/set-w/appScreenshots')) return { data: [{ type: 'appScreenshots', id: 'old1', attributes: {} }, { type: 'appScreenshots', id: 'old2', attributes: {} }] };
+      if (c.method === 'POST' && c.path === '/v1/appScreenshots') return { data: { type: 'appScreenshots', id: `new${++n}`, attributes: { uploadOperations: op(`https://upload.example/${n}`, 4) } } };
+      if (c.method === 'GET' && c.path.startsWith('/v1/appScreenshots/new')) return { data: { type: 'appScreenshots', id: 'x', attributes: { assetDeliveryState: { state: 'COMPLETE' } } } };
+      if (c.method === 'PATCH') return { data: { type: 'appScreenshots', id: 'x', attributes: {} } };
+      return undefined;
+    });
+    // The first PUT succeeds; every PUT of the second file is refused with a final status.
+    const puts: string[] = [];
+    const uploadFetch = (async (url: string) => {
+      puts.push(String(url));
+      return new Response(null, { status: url.endsWith('/1') ? 200 : 403 });
+    }) as typeof fetch;
+    const media = new ClassicMediaClient(client, { uploadFetch, poll: fast, retry: noWait });
+    const err = await media.replaceScreenshotSet('loc1', 'APP_WATCH_ULTRA', [a, b]).catch((e: unknown) => e as Error);
+    expect(err.message).toMatch(/APP_WATCH_ULTRA: Could not upload part of 02_list_watch-ultra\.png @0 \(403\)\. The set's 2 old screenshots were removed and 1 of 2 new ones are in it; run the upload again/);
+    // What is left in ASC: both old items deleted, the first new one committed, no order set.
+    expect(calls.filter((c) => c.method === 'DELETE').map((c) => c.path)).toEqual(['/v1/appScreenshots/old1', '/v1/appScreenshots/old2']);
+    expect(calls.filter((c) => c.method === 'PATCH').map((c) => c.path)).toEqual(['/v1/appScreenshots/new1']);
+    expect(puts).toEqual(['https://upload.example/1', 'https://upload.example/2']);
+    expect(calls.some((c) => c.path.includes('/relationships/'))).toBe(false);
+  });
+
   it('reports a failed screenshot instead of waiting forever', async () => {
     const { client } = mockAsc((c) => {
       if (c.method === 'GET' && c.path.includes('appScreenshotSets')) return { data: [] };
@@ -402,13 +430,14 @@ describe('App Asset Library (spec-shaped)', () => {
     const files = [tmpFile(dir, '01_a_duo-outer.png', 'ONE'), tmpFile(dir, '01_a_duo-inner.png', 'TWO')];
     const up = uploads();
     let n = 0;
+    let placed = 0;
     const { client, calls } = mockAsc((c) => {
       if (c.path === '/v1/appAssetLibraryRefData') return REF;
       if (c.path === '/v1/apps/1/assetLibrary') return { data: { type: 'appAssetLibraries', id: 'lib1' } };
       if (c.method === 'GET' && c.path.startsWith('/v1/appStoreVersionLocalizations/loc1/placements')) return { data: [{ type: 'appAssetLibraryPlacements', id: 'old', attributes: { placementType: 'APP_SCREENSHOT', placementGroup: 'IPHONE_DUO_PROFILE', mediaType: 'IMAGE' } }] };
       if (c.method === 'POST' && c.path === '/v1/appAssetLibraryImages') return { data: { type: 'appAssetLibraryImages', id: `img${++n}`, attributes: { state: 'AWAITING_UPLOAD', uploadOperations: op(`https://u/${n}`, 3) } } };
       if (c.method === 'GET' && c.path.startsWith('/v1/appAssetLibraryImages/')) return { data: { type: 'appAssetLibraryImages', id: 'x', attributes: { state: 'COMPLETE' } } };
-      if (c.method === 'POST' && c.path === '/v1/appAssetLibraryPlacements') return { data: { type: 'appAssetLibraryPlacements', id: `pl${n}`, attributes: {} } };
+      if (c.method === 'POST' && c.path === '/v1/appAssetLibraryPlacements') return { data: { type: 'appAssetLibraryPlacements', id: `pl${++placed}`, attributes: {} } };
       if (c.method === 'POST' && c.path === '/v1/appAssetLibraryPlacementOrderingRequests') return { data: { type: 'appAssetLibraryPlacementOrderingRequests', id: 'o1' } };
       if (c.method === 'PATCH') return { data: { type: 'appAssetLibraryImages', id: 'x', attributes: { state: 'UPLOAD_COMPLETE' } } };
       return undefined;
@@ -419,6 +448,12 @@ describe('App Asset Library (spec-shaped)', () => {
     const list = calls.find((c) => c.path.includes('/placements?'))!;
     expect(list.path).toContain('filter[placementType]=APP_SCREENSHOT&filter[placementGroup]=IPHONE_DUO_PROFILE');
     expect(calls.filter((c) => c.method === 'DELETE').map((c) => c.path)).toEqual(['/v1/appAssetLibraryPlacements/old']);
+    // Order: list the old placements, upload and process every file, delete the old placements, place, order.
+    const at = (pred: (c: Call) => boolean) => calls.findIndex(pred);
+    const lastCommit = calls.map((c, i) => (c.method === 'PATCH' ? i : -1)).reduce((m, i) => Math.max(m, i), -1);
+    expect(at((c) => c.path.includes('/placements?'))).toBeLessThan(at((c) => c.path === '/v1/appAssetLibraryImages'));
+    expect(lastCommit).toBeLessThan(at((c) => c.method === 'DELETE'));
+    expect(at((c) => c.method === 'DELETE')).toBeLessThan(at((c) => c.path === '/v1/appAssetLibraryPlacements'));
     const bodies: Record<string, string> = {
       'POST /v1/appAssetLibraryImages': 'AppAssetLibraryImageCreateRequest',
       'POST /v1/appAssetLibraryPlacements': 'AppAssetLibraryPlacementCreateRequest',
@@ -433,6 +468,53 @@ describe('App Asset Library (spec-shaped)', () => {
     expect(calls.find((c) => c.path === '/v1/appAssetLibraryPlacements')!.body).toEqual(placementCreateBody({ type: 'appStoreVersionLocalizations', id: 'loc1' }, { kind: 'image', id: 'img1' }, 'APP_SCREENSHOT', 'IPHONE_DUO_PROFILE'));
     expect(calls.at(-1)!.body).toEqual(orderingRequestBody({ type: 'appStoreVersionLocalizations', id: 'loc1' }, 'IPHONE_DUO_PROFILE', ['pl1', 'pl2']));
     expect(up.puts.map((p) => p.size)).toEqual([3, 3]);
+  });
+
+  it('uploads before it deletes: a missing file or a failed upload leaves the old placements in place', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'vitrin-al-keep-'));
+    const files = [tmpFile(dir, '01_a_duo-outer.png', 'ONE'), tmpFile(dir, '01_a_duo-inner.png', 'TWO')];
+    const route = (c: Call) => {
+      if (c.path === '/v1/appAssetLibraryRefData') return REF;
+      if (c.method === 'GET' && c.path.startsWith('/v1/appStoreVersionLocalizations/loc1/placements')) return { data: [{ type: 'appAssetLibraryPlacements', id: 'old', attributes: { placementType: 'APP_SCREENSHOT', placementGroup: 'IPHONE_DUO_PROFILE' } }] };
+      if (c.method === 'POST' && c.path === '/v1/appAssetLibraryImages') return { data: { type: 'appAssetLibraryImages', id: 'img', attributes: { state: 'AWAITING_UPLOAD', uploadOperations: op('https://u/1', 3) } } };
+      return { data: { type: 'appAssetLibraryImages', id: 'x', attributes: { state: 'COMPLETE' } } };
+    };
+    const owner = { type: 'appStoreVersionLocalizations' as const, id: 'loc1' };
+    // A file that cannot be read fails before any request is made.
+    const missing = mockAsc(route);
+    await expect(new AssetLibraryClient(missing.client, { poll: fast }).replaceSet('lib1', owner, duo, [{ file: files[0]!, kind: 'image' }, { file: join(dir, 'missing.png'), kind: 'image' }])).rejects.toThrow(/ENOENT/);
+    expect(missing.calls.filter((c) => c.method !== 'GET' || !c.path.includes('RefData'))).toEqual([]);
+    // Every PUT of the second file fails: nothing has been deleted or placed, the first upload is in the library.
+    let puts = 0;
+    const uploadFetch = (async () => new Response(null, { status: ++puts === 1 ? 200 : 502 })) as typeof fetch;
+    const failing = mockAsc(route);
+    const lib = new AssetLibraryClient(failing.client, { uploadFetch, poll: fast, retry: noWait });
+    await expect(lib.replaceSet('lib1', owner, duo, files.map((file) => ({ file, kind: 'image' as const })))).rejects.toThrow(/Could not upload part of 01_a_duo-inner\.png @0 \(502\) after 2 attempts/);
+    expect(puts).toBe(3);
+    expect(failing.calls.some((c) => c.method === 'DELETE')).toBe(false);
+    expect(failing.calls.some((c) => c.path === '/v1/appAssetLibraryPlacements')).toBe(false);
+    expect(failing.calls.filter((c) => c.method === 'PATCH')).toHaveLength(1);
+  });
+
+  it('says what is left when a placement fails after the deletes', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'vitrin-al-place-'));
+    const files = [tmpFile(dir, '01_a_duo-outer.png', 'ONE'), tmpFile(dir, '01_a_duo-inner.png', 'TWO')];
+    let placed = 0;
+    const { client, calls } = mockAsc((c) => {
+      if (c.path === '/v1/appAssetLibraryRefData') return REF;
+      if (c.method === 'GET' && c.path.startsWith('/v1/appStoreVersionLocalizations/loc1/placements')) return { data: [{ type: 'appAssetLibraryPlacements', id: 'old', attributes: { placementType: 'APP_SCREENSHOT', placementGroup: 'IPHONE_DUO_PROFILE' } }] };
+      if (c.method === 'POST' && c.path === '/v1/appAssetLibraryImages') return { data: { type: 'appAssetLibraryImages', id: 'img', attributes: { state: 'AWAITING_UPLOAD', uploadOperations: op('https://u/1', 3) } } };
+      if (c.method === 'POST' && c.path === '/v1/appAssetLibraryPlacements') {
+        if (++placed === 2) return new Response(JSON.stringify({ errors: [{ code: 'STATE_ERROR', detail: 'placement limit reached' }] }), { status: 409 });
+        return { data: { type: 'appAssetLibraryPlacements', id: `pl${placed}`, attributes: {} } };
+      }
+      return { data: { type: 'appAssetLibraryImages', id: 'x', attributes: { state: 'COMPLETE' } } };
+    });
+    const lib = new AssetLibraryClient(client, { uploadFetch: uploads().fetchImpl, poll: fast, retry: noWait });
+    const err = await lib.replaceSet('lib1', { type: 'appStoreVersionLocalizations', id: 'loc1' }, duo, files.map((file) => ({ file, kind: 'image' as const }))).catch((e: unknown) => e as Error);
+    expect(err.message).toMatch(/APP_SCREENSHOT\/IPHONE_DUO_PROFILE: ASC API 409 \/v1\/appAssetLibraryPlacements: placement limit reached The 1 old placement\(s\) were removed and 1 of 2 new ones placed/);
+    expect(calls.filter((c) => c.method === 'DELETE').map((c) => c.path)).toEqual(['/v1/appAssetLibraryPlacements/old']);
+    expect(calls.some((c) => c.path === '/v1/appAssetLibraryPlacementOrderingRequests')).toBe(false);
   });
 
   it('refuses to delete when the filtered list carries another type or group', async () => {

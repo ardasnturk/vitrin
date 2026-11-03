@@ -95,6 +95,17 @@ export class PlayApiError extends Error {
   }
 }
 
+/** `error.message` of a Google API error body; a non-JSON body (an HTML 502/503 page) gives its first 300 characters. */
+export function playErrorDetail(text: string): string {
+  const fallback = text.trim().slice(0, 300) || '(empty body)';
+  try {
+    const json = JSON.parse(text) as { error?: { message?: unknown } };
+    return typeof json?.error?.message === 'string' ? json.error.message : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export interface PlayRemoteListing {
   language: string;
   title?: string;
@@ -155,9 +166,13 @@ export class PlayClient {
     const res = await this.fetchImpl(`${API}/${path}`, { method, headers: { Authorization: `Bearer ${await this.auth()}` } });
     if (res.status === 204) return undefined as T;
     const text = await res.text();
-    const json = text ? (JSON.parse(text) as Record<string, unknown>) : {};
-    if (!res.ok) throw new PlayApiError(res.status, path, String((json.error as { message?: string } | undefined)?.message ?? text.slice(0, 300)));
-    return json as T;
+    if (!res.ok) throw new PlayApiError(res.status, path, playErrorDetail(text));
+    if (!text.trim()) return {} as T;
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      throw new PlayApiError(res.status, path, `response is not JSON: ${text.trim().slice(0, 300)}`);
+    }
   }
 
   /** Opens an edit, runs `fn`, and always deletes the edit (nothing is committed). */
