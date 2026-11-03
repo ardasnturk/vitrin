@@ -61,6 +61,43 @@ describe('answering a question in the Studio', () => {
     rmSync(bin, { recursive: true, force: true });
   });
 
+  it('passes the chosen model to Claude Code, falls back to ui.claudeModel, and refuses other spellings', async () => {
+    const args = () => readFileSync(join(bin, 'args.txt'), 'utf8').split('\n');
+    const settle = async () => {
+      for (let i = 0; i < 50; i++) {
+        const c = (await (await fetch(new URL('/api/claude', server.url))).json()) as { running: string | null };
+        if (!c.running) return;
+        await new Promise((r) => setTimeout(r, 100));
+      }
+    };
+    expect((await post('/api/claude', { stage: 'design', model: 'opus; rm -rf /' })).status).toBe(400);
+    expect((await post('/api/claude', { stage: 'design', model: 'opus' })).status).toBe(202);
+    await settle();
+    let a = args();
+    expect(a[a.indexOf('--model') + 1]).toBe('opus');
+    // No model in the request and none in the config: Claude Code's own default.
+    expect((await post('/api/claude', { stage: 'design' })).status).toBe(202);
+    await settle();
+    expect(args()).not.toContain('--model');
+    // ui.claudeModel in vitrin.config.yaml is the Studio's default; the request still wins.
+    const config = join(dir, 'vitrin.config.yaml');
+    const before = readFileSync(config, 'utf8');
+    writeFileSync(config, before + '  claudeModel: sonnet\n');
+    try {
+      expect((await post('/api/claude', { stage: 'design' })).status).toBe(202);
+      await settle();
+      a = args();
+      expect(a[a.indexOf('--model') + 1]).toBe('sonnet');
+      expect((await post('/api/claude', { stage: 'design', model: 'claude-opus-5-5' })).status).toBe(202);
+      await settle();
+      a = args();
+      expect(a[a.indexOf('--model') + 1]).toBe('claude-opus-5-5');
+    } finally {
+      writeFileSync(config, before);
+    }
+    expect((await post('/api/claude/reset', {})).status).toBe(200);
+  }, 30_000);
+
   it('shows the question as the next step', async () => {
     const o = await buildOverview(dir);
     expect(o.questions.map((q) => q.id)).toEqual(['design-style', 'install-ffmpeg']);

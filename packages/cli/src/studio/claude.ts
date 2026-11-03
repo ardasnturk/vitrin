@@ -127,8 +127,8 @@ export class ClaudeRunner extends EventEmitter {
     return this.current;
   }
 
-  /** Starts `claude -p` with the prompt; `fresh` drops the conversation so far. */
-  async start(prompt: string, opts: { fresh?: boolean; language?: string | null; label?: RunLabel } = {}): Promise<ClaudeRun> {
+  /** Starts `claude -p` with the prompt; `fresh` drops the conversation so far; `model` is passed as `--model` (an alias or a full name). */
+  async start(prompt: string, opts: { fresh?: boolean; language?: string | null; label?: RunLabel; model?: string | null } = {}): Promise<ClaudeRun> {
     if (this.current) throw Object.assign(new Error('Claude is still working.'), { status: 409 });
     if (!(await this.available())) throw Object.assign(new Error('Claude Code (`claude`) is not installed or not on PATH.'), { status: 424 });
     const run: ClaudeRun = { id: randomUUID().slice(0, 8), prompt, label: opts.label ?? { kind: 'prompt', text: prompt }, startedAt: new Date().toISOString(), status: 'running', events: [] };
@@ -136,6 +136,7 @@ export class ClaudeRunner extends EventEmitter {
     if (this.runs.length > 30) this.runs.splice(0, this.runs.length - 30);
     this.current = run;
     const args = ['-p', prompt, '--output-format', 'stream-json', '--verbose', '--permission-mode', 'acceptEdits', '--allowedTools', ALLOWED_TOOLS.join(','), '--disallowedTools', DISALLOWED_TOOLS.join(','), '--append-system-prompt', systemPrompt(opts.language)];
+    if (opts.model) args.push('--model', opts.model);
     if (!opts.fresh && this.sessionId) args.push('--resume', this.sessionId);
     // A Studio started from inside Claude Code must not look like a nested session to the child.
     const env = { ...process.env };

@@ -17,21 +17,25 @@ struct LogPanel: View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
                 Image(systemName: "terminal").foregroundStyle(.secondary)
-                if let j = session.job {
-                    ProgressView().controlSize(.small)
-                    Text(L.job(j)).font(.callout.weight(.medium))
-                    Text(L.date(j.startedAt)).font(.caption).foregroundStyle(.secondary)
-                } else if let f = session.finishedJob {
-                    Pill(L.t("job.\(f.status)"), Tone.ofJob(f.status))
-                    Text(L.job(f)).font(.callout)
-                    if let m = f.message { Text(m).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
-                } else {
-                    Text(L.t("log.idle")).font(.callout).foregroundStyle(.secondary)
+                // The status truncates and the controls keep their size: a narrow page (the Claude column open) never wraps the bar.
+                Group {
+                    if let j = session.job {
+                        ProgressView().controlSize(.small)
+                        Text(L.job(j)).font(.callout.weight(.medium))
+                        Text(L.date(j.startedAt)).font(.caption).foregroundStyle(.secondary)
+                    } else if let f = session.finishedJob {
+                        Pill(L.t("job.\(f.status)"), Tone.ofJob(f.status))
+                        Text(L.job(f)).font(.callout)
+                        if let m = f.message { Text(m).font(.caption).foregroundStyle(.secondary) }
+                    } else {
+                        Text(L.t("log.idle")).font(.callout).foregroundStyle(.secondary)
+                    }
                 }
-                Spacer()
-                Toggle(L.t("log.errorsOnly"), isOn: $errorsOnly).toggleStyle(.checkbox).controlSize(.small)
-                Toggle(L.t("log.autoScroll"), isOn: $autoScroll).toggleStyle(.checkbox).controlSize(.small)
-                TextField(L.t("log.filter"), text: $filter).textFieldStyle(.roundedBorder).controlSize(.small).frame(width: 180)
+                .lineLimit(1).truncationMode(.tail).layoutPriority(-1)
+                Spacer(minLength: 4)
+                Toggle(L.t("log.errorsOnly"), isOn: $errorsOnly).toggleStyle(.checkbox).controlSize(.small).fixedSize()
+                Toggle(L.t("log.autoScroll"), isOn: $autoScroll).toggleStyle(.checkbox).controlSize(.small).fixedSize()
+                TextField(L.t("log.filter"), text: $filter).textFieldStyle(.roundedBorder).controlSize(.small).frame(minWidth: 70, idealWidth: 180, maxWidth: 180)
                 Button { copyAll() } label: { Image(systemName: "doc.on.doc") }.buttonStyle(.borderless).help(L.t("log.copy"))
                 Button { session.clearLogs() } label: { Image(systemName: "trash") }.buttonStyle(.borderless).help(L.t("log.clear"))
             }

@@ -193,6 +193,8 @@ class RemotionStudio {
 
 /** The brief a stage writes, where the name differs (capture writes screens.md). */
 const STAGE_BRIEF: Record<string, string> = { capture: 'screens' };
+/** A Claude Code model alias (`opus`) or full name (`claude-opus-5-5`), as `claude --model` takes it. */
+const CLAUDE_MODEL = /^[A-Za-z0-9._:-]{1,64}$/;
 
 export async function startStudioServer(root: string, opts: { port?: number; host?: string } = {}): Promise<StudioServer> {
   const host = opts.host ?? '127.0.0.1';
@@ -262,6 +264,16 @@ export async function startStudioServer(root: string, opts: { port?: number; hos
     }
   }
 
+  /** The model a run uses: the request's (a driving program's choice), else ui.claudeModel from the config, else Claude Code's default. */
+  function claudeModel(requested: unknown): string | null {
+    if (typeof requested === 'string' && CLAUDE_MODEL.test(requested)) return requested;
+    try {
+      return loadConfig(appPaths(root).config).ui?.claudeModel ?? null;
+    } catch {
+      return null;
+    }
+  }
+
   /** The review gallery's state and decisions, the contract report.html's buttons use (same as `vitrin review --serve`). */
   async function reviewState() {
     const ctx = await createContext({ cwd: root });
@@ -315,7 +327,10 @@ export async function startStudioServer(root: string, opts: { port?: number; hos
           if (!prompt) return sendJson(res, 400, { error: 'prompt or stage is required.' });
           // A brief is a task of its own: it starts a new conversation instead of resuming the last one's long context.
           const fresh = body.fresh === true || (typeof body.prompt !== 'string' && typeof body.stage === 'string');
-          const run = await claude.start(prompt, { fresh, language: uiLanguage(), label });
+          if (body.model !== undefined && body.model !== null && body.model !== '' && !(typeof body.model === 'string' && CLAUDE_MODEL.test(body.model))) {
+            return sendJson(res, 400, { error: 'model must be a Claude Code model alias or name (letters, digits, . _ : -).' });
+          }
+          const run = await claude.start(prompt, { fresh, language: uiLanguage(), label, model: claudeModel(body.model) });
           return sendJson(res, 202, { id: run.id, startedAt: run.startedAt });
         }
         if (path === '/api/claude/reset' && method === 'POST') {
@@ -332,7 +347,7 @@ export async function startStudioServer(root: string, opts: { port?: number; hos
           if (!answer) return sendJson(res, 400, { error: 'answer is required.' });
           const brief = q.stage ? `metadata/briefs/${STAGE_BRIEF[q.stage] ?? q.stage}.md` : undefined;
           // The answer continues the conversation that asked, when this Studio still has it; the prompt stands alone otherwise.
-          const run = await claude.start(answerPrompt(q, answer, brief && existsSync(join(root, brief)) ? brief : undefined), { language: uiLanguage(), label: { kind: 'answer', question: q.question, answer } });
+          const run = await claude.start(answerPrompt(q, answer, brief && existsSync(join(root, brief)) ? brief : undefined), { language: uiLanguage(), label: { kind: 'answer', question: q.question, answer }, model: claudeModel(body.model) });
           const rest = data.questions.filter((x) => x.id !== q.id);
           if (rest.length) await writeJson(file, { questions: rest });
           else await rm(file, { force: true });

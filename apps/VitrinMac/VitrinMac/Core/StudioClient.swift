@@ -82,17 +82,17 @@ struct StudioClient: Sendable {
         _ = try await request("PUT", "/api/file", body: Body(path: path, text: text), as: OK.self)
     }
     func claude() async throws -> ClaudeInfo { try await request("GET", "/api/claude", as: ClaudeInfo.self) }
-    func askClaude(prompt: String? = nil, stage: String? = nil, extra: String? = nil, fresh: Bool? = nil) async throws {
-        struct Body: Encodable { var prompt: String?; var stage: String?; var extra: String?; var fresh: Bool? }
+    func askClaude(prompt: String? = nil, stage: String? = nil, extra: String? = nil, fresh: Bool? = nil, model: String? = nil) async throws {
+        struct Body: Encodable { var prompt: String?; var stage: String?; var extra: String?; var fresh: Bool?; var model: String? }
         struct Started: Decodable { var id: String }
-        _ = try await request("POST", "/api/claude", body: Body(prompt: prompt, stage: stage, extra: extra, fresh: fresh), as: Started.self)
+        _ = try await request("POST", "/api/claude", body: Body(prompt: prompt, stage: stage, extra: extra, fresh: fresh, model: model), as: Started.self)
     }
     func cancelClaude() async throws { _ = try await request("POST", "/api/claude/cancel", body: [String: String](), as: Empty.self) }
     func resetClaude() async throws { _ = try await request("POST", "/api/claude/reset", body: [String: String](), as: OK.self) }
-    func answer(question id: String, answer: String) async throws {
-        struct Body: Encodable { var id: String; var answer: String }
+    func answer(question id: String, answer: String, model: String? = nil) async throws {
+        struct Body: Encodable { var id: String; var answer: String; var model: String? }
         struct Started: Decodable { var id: String }
-        _ = try await request("POST", "/api/questions/answer", body: Body(id: id, answer: answer), as: Started.self)
+        _ = try await request("POST", "/api/questions/answer", body: Body(id: id, answer: answer, model: model), as: Started.self)
     }
     func review() async throws -> ReviewState { try await request("GET", "/api/review", as: ReviewState.self) }
     func approve(overallHash: String) async throws {

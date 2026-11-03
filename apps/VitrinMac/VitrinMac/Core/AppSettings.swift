@@ -21,6 +21,9 @@ import Observation
     var vitrinCheckout: String { didSet { d.set(vitrinCheckout, forKey: "vitrinCheckout") } }
     /// Show the CLI command behind each button.
     var developerMode: Bool { didSet { d.set(developerMode, forKey: "developerMode") } }
+    /// The Claude Code model the briefs run with (`claude --model`): an alias (fable, opus, sonnet, haiku) or a full
+    /// name; empty = Claude Code's own default. Sent with every run, so a change applies to the next one.
+    var claudeModel: String { didSet { d.set(claudeModel, forKey: "claudeModel") } }
     var lastUpdateCheck: Date? { didSet { d.set(lastUpdateCheck, forKey: "lastUpdateCheck") } }
     var lastProjectID: String? { didSet { d.set(lastProjectID, forKey: "lastProjectID") } }
 
@@ -37,6 +40,7 @@ import Observation
         cliPath = d.string(forKey: "cliPath") ?? ""
         vitrinCheckout = d.string(forKey: "vitrinCheckout") ?? ProcessInfo.processInfo.environment["VITRIN_DEV"] ?? ""
         developerMode = d.bool(forKey: "developerMode")
+        claudeModel = d.string(forKey: "claudeModel") ?? ""
         lastUpdateCheck = d.object(forKey: "lastUpdateCheck") as? Date
         lastProjectID = d.string(forKey: "lastProjectID")
     }

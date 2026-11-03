@@ -6,8 +6,10 @@ struct FlowView: View {
     @Environment(AppModel.self) private var model
     var session: ProjectSession
     var overview: Overview
-    @State private var brief: (name: String, text: String)?
-    @State private var showBrief = false
+    /// The brief shown in the sheet. `sheet(item:)`, not `isPresented` + `if let`: the latter built an empty sheet
+    /// (no content, no close button) when the state was set in the same turn as the flag.
+    struct Brief: Identifiable { var name: String; var text: String; var id: String { name } }
+    @State private var brief: Brief?
     @State private var width: CGFloat = 1000
 
     var body: some View {
@@ -35,10 +37,8 @@ struct FlowView: View {
             .padding(20)
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
-        .sheet(isPresented: $showBrief) {
-            if let brief {
-                BriefSheet(name: brief.name, text: brief.text, session: session) { showBrief = false }
-            }
+        .sheet(item: $brief) { b in
+            BriefSheet(name: b.name, text: b.text, session: session) { brief = nil }
         }
     }
 
@@ -117,8 +117,7 @@ struct FlowView: View {
         Task {
             do {
                 let f = try await session.readFile("metadata/briefs/\(name).md")
-                brief = (name, f.text)
-                showBrief = true
+                brief = Brief(name: name, text: f.text)
             } catch {
                 session.report(error)
             }
@@ -321,7 +320,9 @@ struct BlockerCard: View {
                             .buttonStyle(primary && i == 0 ? AnyButtonStyle(.borderedProminent) : AnyButtonStyle(.bordered)).controlSize(.small).disabled(session.isBusy)
                     }
                     if let install = blocker.params["install"]?.stringValue { CopyCode(text: install) }
-                    if blocker.fixes.isEmpty, blocker.params["install"] == nil, blocker.stage != "upload" {
+                    if blocker.code == "keys-missing" {
+                        SettingsLink { Text(L.t("flow.accountSettings")) }.controlSize(.small).accessibilityIdentifier("flow.accountSettings")
+                    } else if blocker.fixes.isEmpty, blocker.params["install"] == nil, blocker.stage != "upload" {
                         Button(L.t("flow.goToPage")) { model.selectedPage = Pipeline.page(for: blocker.stage) }.controlSize(.small)
                     }
                 }
@@ -395,19 +396,25 @@ struct BriefSheet: View {
     var close: () -> Void
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("\(name).md").font(.headline)
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(L.t("flow.briefTitle").replacingOccurrences(of: "{stage}", with: L.stage(name))).font(.headline)
+                    Text(L.t("flow.briefIntro")).font(.callout).foregroundStyle(.secondary)
+                }
                 Spacer()
                 if let o = session.overview { ClaudeButton(session: session, overview: o, stage: name) }
-                Button(L.t("common.close")) { close() }
+                Button(L.t("common.close")) { close() }.keyboardShortcut(.cancelAction).accessibilityIdentifier("brief.close")
             }
             ScrollView {
-                Text(text).font(.callout.monospaced()).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
+                Text(text).font(.callout.monospaced()).textSelection(.enabled).padding(10).frame(maxWidth: .infinity, alignment: .leading)
             }
             .background(RoundedRectangle(cornerRadius: 6).fill(Color(nsColor: .textBackgroundColor)))
+            Text("metadata/briefs/\(name).md").font(.caption.monospaced()).foregroundStyle(.tertiary)
         }
         .padding(16)
-        .frame(minWidth: 640, minHeight: 480)
+        .frame(minWidth: 680, idealWidth: 760, minHeight: 520, idealHeight: 640)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("brief.sheet")
     }
 }
 

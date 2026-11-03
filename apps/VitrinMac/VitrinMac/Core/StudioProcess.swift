@@ -24,7 +24,8 @@ import Observation
     var handshake: StudioHandshake? { if case .running(let h) = state { return h }; return nil }
     var isRunning: Bool { handshake != nil }
 
-    func start(root: String, cli: CLILocation) async throws -> StudioHandshake {
+    /// `extraEnv`: variables for this Studio and everything it runs (the account's ASC key).
+    func start(root: String, cli: CLILocation, extraEnv: [String: String] = [:]) async throws -> StudioHandshake {
         if let h = handshake { return h }
         state = .starting
         output = []
@@ -38,6 +39,7 @@ import Observation
         env["FORCE_COLOR"] = "0"
         env["NO_COLOR"] = "1"
         env["BROWSER"] = "none"
+        for (k, v) in extraEnv { env[k] = v }
         let p = Process()
         p.executableURL = URL(fileURLWithPath: cli.executable)
         p.arguments = cli.leadingArguments + ["--cwd", root, "studio", "--no-open", "--port", "0", "--token-file", file.path]

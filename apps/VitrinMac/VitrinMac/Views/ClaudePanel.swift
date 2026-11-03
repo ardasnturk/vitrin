@@ -2,6 +2,7 @@ import SwiftUI
 
 /// The Claude inspector: the user's Claude Code running the creative stages inside the project, and a prompt field.
 struct ClaudePanel: View {
+    @Environment(AppSettings.self) private var settings
     var session: ProjectSession
     @State private var prompt = ""
     @State private var expanded: Set<String> = []
@@ -12,6 +13,7 @@ struct ClaudePanel: View {
         VStack(spacing: 0) {
             HStack {
                 Label("Claude", systemImage: "sparkles").font(.headline).accessibilityIdentifier("claude.title")
+                ClaudeModelMenu().accessibilityIdentifier("claude.model")
                 Spacer()
                 if session.claudeRunning {
                     ProgressView().controlSize(.small)
@@ -69,6 +71,9 @@ struct RunView: View {
     var expanded: Bool
     var toggle: () -> Void
 
+    /// The model Claude Code reported in its init line (the alias resolved to a full name).
+    private var model: String? { run.events.first(where: { $0.type == "init" })?.model }
+
     private var title: String {
         guard let l = run.label else { return run.prompt }
         switch l.kind {
@@ -89,6 +94,7 @@ struct RunView: View {
                 }
             }
             .buttonStyle(.plain)
+            if let model { Text(ClaudeModel.shortName(model)).font(.caption2.monospaced()).foregroundStyle(.tertiary) }
             if expanded {
                 ForEach(Array(run.events.enumerated()), id: \.offset) { _, e in EventView(event: e) }
             }
@@ -123,5 +129,47 @@ struct EventView: View {
         default:
             EmptyView()
         }
+    }
+}
+
+/// The Claude Code models the app offers by alias; anything else is typed in Settings.
+@MainActor enum ClaudeModel {
+    static let aliases: [(alias: String, label: String)] = [("fable", "Fable"), ("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku")]
+
+    /// "claude-opus-5-5" → "opus 5.5"; an alias or an unknown name stays as it is.
+    static func shortName(_ model: String) -> String {
+        let parts = model.split(separator: "-").map(String.init)
+        guard parts.count >= 3, parts[0] == "claude" else { return model }
+        let version = parts.dropFirst(2).filter { Int($0) != nil }.joined(separator: ".")
+        return version.isEmpty ? parts[1] : "\(parts[1]) \(version)"
+    }
+
+    static func label(_ setting: String) -> String {
+        let s = setting.trimmingCharacters(in: .whitespacesAndNewlines)
+        if s.isEmpty { return L.t("settings.claudeModelDefault") }
+        return aliases.first(where: { $0.alias == s })?.label ?? s
+    }
+}
+
+/// A compact menu for Settings → Claude model, in the Claude column's header.
+struct ClaudeModelMenu: View {
+    @Environment(AppSettings.self) private var settings
+    var body: some View {
+        @Bindable var settings = settings
+        Menu {
+            Picker(L.t("claude.model"), selection: $settings.claudeModel) {
+                Text(L.t("settings.claudeModelDefault")).tag("")
+                ForEach(ClaudeModel.aliases, id: \.alias) { Text($0.label).tag($0.alias) }
+                if !settings.claudeModel.isEmpty, !ClaudeModel.aliases.contains(where: { $0.alias == settings.claudeModel }) { Text(settings.claudeModel).tag(settings.claudeModel) }
+            }
+            .pickerStyle(.inline)
+            Divider()
+            SettingsLink { Text(L.t("settings.claudeModelMore")) }
+        } label: {
+            Label(ClaudeModel.label(settings.claudeModel), systemImage: "cpu").font(.caption).foregroundStyle(.secondary)
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+        .help(L.t("settings.claudeModelHint"))
     }
 }

@@ -966,13 +966,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Brief"
+            "value": "Read the brief"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Brief"
+            "value": "Brief’i oku"
           }
         }
       }
@@ -1894,13 +1894,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Missing in .env: {keys}"
+            "value": "App Store Connect key missing: {keys}. Add it once in Settings → Account, or to the project’s .env."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": ".env içinde eksik: {keys}"
+            "value": "App Store Connect anahtarı eksik: {keys}. Ayarlar → Hesap’tan bir kez ekleyin ya da projenin .env dosyasına yazın."
           }
         }
       }
@@ -5405,6 +5405,390 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vitrin’den çık"
+          }
+        }
+      }
+    },
+    "flow.briefTitle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brief: {stage}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brief: {stage}"
+          }
+        }
+      }
+    },
+    "flow.briefIntro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What Claude is asked to do for this stage. Doing it yourself? Follow these steps, then run the stage again."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu aşama için Claude’a verilen görev. Kendiniz yapacaksanız bu adımları izleyin, sonra aşamayı yeniden çalıştırın."
+          }
+        }
+      }
+    },
+    "flow.accountSettings": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account settings…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hesap ayarları…"
+          }
+        }
+      }
+    },
+    "settings.account": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hesap"
+          }
+        }
+      }
+    },
+    "settings.accountIntro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One App Store Connect API key for every project. A project whose own .env names a key keeps using that one."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tüm projeler için tek bir App Store Connect API anahtarı. Kendi .env dosyasında anahtar olan proje onu kullanmaya devam eder."
+          }
+        }
+      }
+    },
+    "settings.keyId": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key ID"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key ID"
+          }
+        }
+      }
+    },
+    "settings.issuerId": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Issuer ID"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Issuer ID"
+          }
+        }
+      }
+    },
+    "settings.p8": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Private key (.p8)"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Özel anahtar (.p8)"
+          }
+        }
+      }
+    },
+    "settings.chooseP8": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seç…"
+          }
+        }
+      }
+    },
+    "settings.saveKey": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save key"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anahtarı kaydet"
+          }
+        }
+      }
+    },
+    "settings.removeKey": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove key"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anahtarı kaldır"
+          }
+        }
+      }
+    },
+    "settings.keySaved": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stored under Application Support/Vitrin with owner-only permissions. Open projects restart their Studio to pick it up."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Application Support/Vitrin altında, yalnızca sahibinin okuyabileceği izinlerle saklanıyor. Açık projelerin Studio’su yeni anahtarla yeniden başlar."
+          }
+        }
+      }
+    },
+    "settings.keyNone": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No file chosen"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosya seçilmedi"
+          }
+        }
+      }
+    },
+    "settings.keyInvalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key ID, Issuer ID and the .p8 file are all needed."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key ID, Issuer ID ve .p8 dosyasının üçü de gerekli."
+          }
+        }
+      }
+    },
+    "settings.keyNotP8": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That file is not a private key (.p8)."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu dosya bir özel anahtar (.p8) değil."
+          }
+        }
+      }
+    },
+    "settings.keyHint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store Connect → Users and Access → Integrations → App Store Connect API. The key needs the App Manager role; the .p8 downloads only once."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store Connect → Kullanıcılar ve Erişim → Entegrasyonlar → App Store Connect API. Anahtar App Manager rolünde olmalı; .p8 yalnızca bir kez indirilir."
+          }
+        }
+      }
+    },
+    "settings.openASC": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open App Store Connect keys…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store Connect anahtarlarını aç…"
+          }
+        }
+      }
+    },
+    "settings.claudeModel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude model"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude modeli"
+          }
+        }
+      }
+    },
+    "settings.claudeModelDefault": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code default"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code varsayılanı"
+          }
+        }
+      }
+    },
+    "settings.claudeModelCustom": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Başka…"
+          }
+        }
+      }
+    },
+    "settings.claudeModelName": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Model name"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Model adı"
+          }
+        }
+      }
+    },
+    "settings.claudeModelMore": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More models…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diğer modeller…"
+          }
+        }
+      }
+    },
+    "settings.claudeModelHint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passed to Claude Code as --model for every run: an alias (fable, opus, sonnet, haiku) or a full name. The Claude column shows the model each run used."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her çalıştırmada Claude Code’a --model olarak verilir: bir takma ad (fable, opus, sonnet, haiku) ya da tam ad. Claude sütunu her çalıştırmanın kullandığı modeli gösterir."
+          }
+        }
+      }
+    },
+    "claude.model": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Model"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Model"
           }
         }
       }

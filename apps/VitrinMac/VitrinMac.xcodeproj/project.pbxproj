@@ -43,10 +43,12 @@
 		C61AE32ABCE80180B0097811 /* ClaudePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E08221597DCFE63E90E24A /* ClaudePanel.swift */; };
 		D0D070489197641D4988E7FE /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26B23332E85855232EE83F71 /* MenuBarView.swift */; };
 		DFF1255023D4187934EA1D3C /* ListingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3255B591A29D8456D604343C /* ListingView.swift */; };
+		E0163925EE209BE04BF6E4C5 /* CredentialsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E1B5EF1079BAFCD67698F97 /* CredentialsTests.swift */; };
 		E33A0D024F9E3BB8F6E78B2C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 35DF5D01E1CD8589A8C793F4 /* Assets.xcassets */; };
 		E8254E33EAAE1294E05AAF77 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 017A34E4C1024DA1FBE3F5CF /* UpdateChecker.swift */; };
 		EE7F39DE57B3D619CC9D499A /* JSONValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B74D68F1B0BD20A23DC2231D /* JSONValueTests.swift */; };
 		F0EF0B60BBCD4062BD01892D /* FlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37D3AC9D274A37B09528BCFB /* FlowView.swift */; };
+		F8807D81811939B7F66851F9 /* Credentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBE13B7B4C070E9A2003F7A0 /* Credentials.swift */; };
 		F9D9D34D2E981B414D2A1E6E /* Limits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40D651EA0B55D06E8A246136 /* Limits.swift */; };
 /* End PBXBuildFile section */
 
@@ -92,6 +94,7 @@
 		4ED1D2139A67069C8A5DB50F /* Notifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifier.swift; sourceTree = "<group>"; };
 		5BB048CF9E3B96B7FFB1A78B /* OverviewDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverviewDecodingTests.swift; sourceTree = "<group>"; };
 		5E276ADD36183CB2534CD55D /* MainWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindow.swift; sourceTree = "<group>"; };
+		6E1B5EF1079BAFCD67698F97 /* CredentialsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialsTests.swift; sourceTree = "<group>"; };
 		73A615B339C608275E0690C8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		76F172094DDF61E930A998AA /* Sidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sidebar.swift; sourceTree = "<group>"; };
 		82A0DAF979334D56AA86F2E6 /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
@@ -105,6 +108,7 @@
 		C6D51CAE05B7F00B658B2BA0 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		CC082A50AEAD3C99A7E712AF /* CLILocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLILocator.swift; sourceTree = "<group>"; };
 		D80D0930CA2A98024CA41616 /* JSONValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONValue.swift; sourceTree = "<group>"; };
+		DBE13B7B4C070E9A2003F7A0 /* Credentials.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Credentials.swift; sourceTree = "<group>"; };
 		DCA965F2A1B2BD937DF2F274 /* VitrinMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VitrinMac.entitlements; sourceTree = "<group>"; };
 		DD81F75037B0B7F90876B7F5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E00C664CD3439D58B7606489 /* ResearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResearchView.swift; sourceTree = "<group>"; };
@@ -141,6 +145,7 @@
 			isa = PBXGroup;
 			children = (
 				243B1910F2E467A1998BAAAD /* Fixtures */,
+				6E1B5EF1079BAFCD67698F97 /* CredentialsTests.swift */,
 				B74D68F1B0BD20A23DC2231D /* JSONValueTests.swift */,
 				5BB048CF9E3B96B7FFB1A78B /* OverviewDecodingTests.swift */,
 				49ED2DE5B9BA4D66A3D616C6 /* SSEParserTests.swift */,
@@ -226,6 +231,7 @@
 				C6D51CAE05B7F00B658B2BA0 /* AppSettings.swift */,
 				CC082A50AEAD3C99A7E712AF /* CLILocator.swift */,
 				881DDD917D5CD5A33E79CB97 /* CLIRunner.swift */,
+				DBE13B7B4C070E9A2003F7A0 /* Credentials.swift */,
 				D80D0930CA2A98024CA41616 /* JSONValue.swift */,
 				40D651EA0B55D06E8A246136 /* Limits.swift */,
 				82A0DAF979334D56AA86F2E6 /* Localization.swift */,
@@ -367,6 +373,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E0163925EE209BE04BF6E4C5 /* CredentialsTests.swift in Sources */,
 				EE7F39DE57B3D619CC9D499A /* JSONValueTests.swift in Sources */,
 				5A47CC0DEB0E271DE00C1852 /* OverviewDecodingTests.swift in Sources */,
 				8ADFBB8EB97D74D673427D90 /* SSEParserTests.swift in Sources */,
@@ -387,6 +394,7 @@
 				90CD6BA696AC79413B12B512 /* CLIRunner.swift in Sources */,
 				C61AE32ABCE80180B0097811 /* ClaudePanel.swift in Sources */,
 				6E7D7FF75ADCF7C949E05D36 /* Components.swift in Sources */,
+				F8807D81811939B7F66851F9 /* Credentials.swift in Sources */,
 				F0EF0B60BBCD4062BD01892D /* FlowView.swift in Sources */,
 				2B8A0AC239FDD1B3427417A5 /* JSONValue.swift in Sources */,
 				F9D9D34D2E981B414D2A1E6E /* Limits.swift in Sources */,

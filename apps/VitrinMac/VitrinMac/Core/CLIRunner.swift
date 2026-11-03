@@ -65,18 +65,19 @@ struct CLIRunner: Sendable {
     enum Outcome: Sendable { case ok, failed, needsInput }
     var location: CLILocation
 
-    func run(_ args: [String], cwd: String? = nil, timeout: TimeInterval = 300) async throws -> (outcome: Outcome, result: ProcessResult) {
+    func run(_ args: [String], cwd: String? = nil, timeout: TimeInterval = 300, extraEnv: [String: String] = [:]) async throws -> (outcome: Outcome, result: ProcessResult) {
         var env = await ShellEnvironment.environment()
         env["FORCE_COLOR"] = "0"
         env["NO_COLOR"] = "1"
+        for (k, v) in extraEnv { env[k] = v }
         let r = try await ProcessRunner.run(location.executable, location.leadingArguments + args, environment: env, cwd: cwd, timeout: timeout)
         let outcome: Outcome = r.code == 0 ? .ok : r.code == 2 ? .needsInput : .failed
         return (outcome, r)
     }
 
     /// `vitrin <cmd> --json` decoded; the JSON block is the last object on stdout (warnings go to stderr).
-    func json<T: Decodable>(_ args: [String], as type: T.Type, cwd: String? = nil, timeout: TimeInterval = 300) async throws -> (outcome: Outcome, value: T?, result: ProcessResult) {
-        let (outcome, r) = try await run(args + ["--json"], cwd: cwd, timeout: timeout)
+    func json<T: Decodable>(_ args: [String], as type: T.Type, cwd: String? = nil, timeout: TimeInterval = 300, extraEnv: [String: String] = [:]) async throws -> (outcome: Outcome, value: T?, result: ProcessResult) {
+        let (outcome, r) = try await run(args + ["--json"], cwd: cwd, timeout: timeout, extraEnv: extraEnv)
         guard let start = r.stdout.firstIndex(of: "{") ?? r.stdout.firstIndex(of: "[") else { return (outcome, nil, r) }
         let data = Data(r.stdout[start...].utf8)
         return (outcome, try? JSONDecoder().decode(T.self, from: data), r)

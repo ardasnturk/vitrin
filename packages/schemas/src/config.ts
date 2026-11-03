@@ -69,7 +69,13 @@ export const VitrinConfig = z.object({
    * The language Vitrin talks to the user in: the skill's questions and summaries and the review gallery.
    * BCP 47 tag (en, tr, de, pt-BR …). Unset = English until the user is asked. Store copy follows app.locales instead.
    */
-  ui: z.object({ language: z.string().regex(/^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$/).optional() }).default({}),
+  ui: z
+    .object({
+      language: z.string().regex(/^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$/).optional(),
+      /** The Claude Code model the Studio runs the briefs with (`claude --model`): an alias such as `opus` or a full name. Unset = Claude Code's default. */
+      claudeModel: z.string().regex(/^[A-Za-z0-9._:-]{1,64}$/).optional(),
+    })
+    .default({}),
   storefronts: z.array(z.string().length(2)).default(['us']),
   urls: z.object({
     support: z.string().url().optional(),

@@ -49,7 +49,7 @@ import Observation
         let task = Task { [self] in
             loadError = nil
             do {
-                let h = try await process.start(root: project.path, cli: cli)
+                let h = try await process.start(root: project.path, cli: cli, extraEnv: ASCCredentials.shared.environment(forProject: project.path))
                 client = StudioClient(handshake: h)
                 await refresh()
                 subscribe()
@@ -237,12 +237,18 @@ import Observation
     func askClaude(stage: String? = nil, prompt: String? = nil, extra: String? = nil, fresh: Bool? = nil) async {
         guard let client else { return }
         do {
-            try await client.askClaude(prompt: prompt, stage: stage, extra: extra, fresh: fresh)
+            try await client.askClaude(prompt: prompt, stage: stage, extra: extra, fresh: fresh, model: Self.chosenModel)
             claudeRunning = true
             if let c = try? await client.claude() { claudeRuns = c.runs }
         } catch {
             report(error)
         }
+    }
+
+    /// Settings → Claude model, empty = Claude Code's default (the Studio then falls back to ui.claudeModel in the config).
+    private static var chosenModel: String? {
+        let m = AppSettings.shared.claudeModel.trimmingCharacters(in: .whitespacesAndNewlines)
+        return m.isEmpty ? nil : m
     }
 
     func cancelClaude() async {
@@ -261,7 +267,7 @@ import Observation
     func answer(_ q: StudioQuestion, _ answer: String) async {
         guard let client else { return }
         do {
-            try await client.answer(question: q.id, answer: answer)
+            try await client.answer(question: q.id, answer: answer, model: Self.chosenModel)
             toast(L.t("toast.answerSent"), .ok)
             claudeRunning = true
             scheduleRefresh()

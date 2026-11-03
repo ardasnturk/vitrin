@@ -9,6 +9,7 @@ import SwiftUI
 struct MainWindow: View {
     @Environment(AppModel.self) private var model
     @Environment(LanguageState.self) private var language
+    @State private var claudeWidth: CGFloat = 400
 
     var body: some View {
         NavigationSplitView {
@@ -18,11 +19,15 @@ struct MainWindow: View {
             HStack(spacing: 0) {
                 detail.frame(maxWidth: .infinity, maxHeight: .infinity)
                 if model.showClaude {
-                    Divider()
+                    // A drag handle on the divider: the column is 320–560 wide, the page keeps the rest.
+                    Rectangle().fill(Color(nsColor: .separatorColor)).frame(width: 1)
+                        .overlay(Rectangle().fill(.clear).frame(width: 7).contentShape(Rectangle()))
+                        .gesture(DragGesture(minimumDistance: 1).onChanged { v in claudeWidth = min(max(320, claudeWidth - v.translation.width), 560) })
+                        .onHover { inside in if inside { NSCursor.resizeLeftRight.push() } else { NSCursor.pop() } }
                     Group {
                         if let s = model.selectedSession { ClaudePanel(session: s) } else { EmptyHint(text: L.t("projects.selectOne"), symbol: "sparkles") }
                     }
-                    .frame(width: 360)
+                    .frame(width: claudeWidth)
                     .frame(maxHeight: .infinity)
                     .background(Color(nsColor: .windowBackgroundColor))
                     .transaction { $0.animation = nil }
@@ -50,21 +55,11 @@ struct MainWindow: View {
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
             if let s = model.selectedSession {
-                if let j = s.job {
-                    HStack(spacing: 6) {
-                        ProgressView().controlSize(.small)
-                        Text(L.job(j)).font(.callout)
-                    }
-                }
-                if s.claudeRunning {
-                    HStack(spacing: 6) {
-                        ProgressView().controlSize(.small)
-                        Text(L.t("claude.busy")).font(.callout)
-                    }
-                }
+                // What runs is said where it runs: the job in the log bar, Claude in its column; the toolbar only hints.
+                if s.job != nil || s.claudeRunning { ProgressView().controlSize(.small).help(s.job.map { L.job($0) } ?? L.t("claude.busy")) }
                 Button { Task { await s.refresh() } } label: { Image(systemName: "arrow.clockwise") }.help(L.t("common.refresh")).disabled(!s.isReady).accessibilityIdentifier("toolbar.refresh")
-                Button { model.showLog.toggle() } label: { Image(systemName: "terminal") }.help(L.t("log.toggle")).accessibilityIdentifier("toolbar.log")
-                Button { model.showClaude.toggle() } label: { Image(systemName: "sparkles") }.help(L.t("claude.toggle")).accessibilityIdentifier("toolbar.claude")
+                Button { model.showLog.toggle() } label: { Image(systemName: "terminal").symbolVariant(model.showLog ? .fill : .none) }.help(L.t("log.toggle")).accessibilityIdentifier("toolbar.log")
+                Button { model.showClaude.toggle() } label: { Image(systemName: "sparkles").symbolVariant(model.showClaude ? .fill : .none) }.help(L.t("claude.toggle")).accessibilityIdentifier("toolbar.claude")
                 if let url = s.url {
                     Button { NSWorkspace.shared.open(url) } label: { Image(systemName: "safari") }.help(L.t("project.openStudio")).accessibilityIdentifier("toolbar.studio")
                 }

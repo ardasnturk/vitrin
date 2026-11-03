@@ -18,10 +18,7 @@ struct Project: Codable, Hashable, Identifiable, Sendable {
     private let file: URL
 
     init() {
-        let base = ProcessInfo.processInfo.environment["VITRIN_APP_SUPPORT"].map { URL(fileURLWithPath: $0, isDirectory: true) }
-            ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Vitrin", isDirectory: true)
-        try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
-        file = base.appendingPathComponent("projects.json")
+        file = AppSupport.base.appendingPathComponent("projects.json")
         if let data = try? Data(contentsOf: file), let list = try? JSONDecoder().decode([Project].self, from: data) { projects = list }
     }
 

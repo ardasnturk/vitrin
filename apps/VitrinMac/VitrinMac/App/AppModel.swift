@@ -32,6 +32,12 @@ import Observation
         return s
     }
 
+    /// After the account key changed: every running Studio restarts, so its environment carries the new key.
+    func restartSessions() async {
+        guard let cli else { return }
+        for s in sessions.values where s.isReady || s.loadError != nil { await s.restart(cli: cli) }
+    }
+
     /// Finds the CLI and opens the selected project. Called at launch and after the CLI settings change.
     func bootstrap() async {
         if let path = Self.launchProject { selectedProjectID = store.add(path: path).id }
