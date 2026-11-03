@@ -2,7 +2,12 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## Unreleased
+## 2.0.0 — 2026-11-04
+
+Vitrin for Mac becomes an App Store Connect panel, and the asc CLI becomes the one App Store uploader.
+
+### Removed
+- **Breaking: fastlane deliver.** `vitrin upload` to the App Store runs through the asc CLI only; `uploader: deliver` in `vitrin.config.yaml` warns and behaves like `asc`. Google Play still uses fastlane supply.
 
 ### Added
 - **Vitrin for Mac: every asc command on the page it belongs to, and the live store text in projects.** The flat "All commands" list is gone. Each app tab ends with the rest of asc for that place (release and review, store text and declarations, screenshots and product pages, builds, TestFlight, reviews, pricing and purchases, analytics, and a More tab for App Clips, Game Center, marketplace and the like), and the Team section gained Reports & finance, Automation, Apple Ads and Account pages. Every asc command group appears in exactly one place; the app fills in the app and the version being prepared. Only the local tooling stays out (sign-in, docs, local Xcode builds, raw API and schema access, completion, telemetry). A project linked to an app gets an App Store Connect page, a click on an app always opens its App Store Connect page, and the Store text page imports the app's live text from App Store Connect into `metadata/listing/` after a confirmation. The new Screenshots tab counts the screenshot sets of the version in App Store Connect.
@@ -18,17 +23,13 @@ All notable changes to this project are documented in this file. The format is b
 - **Vitrin for Mac: one App Store Connect key for every project, a Claude model picker, and a brief you can read.** Settings → Account takes the key id, the issuer id and the .p8 once; the .p8 is copied under `~/Library/Application Support/Vitrin/keys/` and the ids next to it, both owner-only (0600), and every Studio the app starts gets them as `ASC_KEY_ID`, `ASC_ISSUER_ID` and `ASC_KEY_PATH` — except for a project whose own `.env` sets `ASC_KEY_ID`, which keeps its key. The "missing in .env" blocker now points at that tab. Settings → General (and the Claude column's header) choose the Claude Code model the briefs run with — an alias (fable, opus, sonnet, haiku) or a full name — and each run's row shows the model Claude Code reported. "Read the brief" opens a sheet with the stage's brief (it opened empty and could not be closed: `sheet(isPresented:)` with an `if let` inside built the sheet before the state arrived; it is `sheet(item:)` now, and Escape closes it). The Claude column can be dragged to 320–560 points wide; the toolbar no longer squeezes a "Claude is working" capsule next to its buttons (the column and the log bar say it).
 - **`vitrin studio`: the Claude model is a request field and a config key.** `POST /api/claude` and `POST /api/questions/answer` take `model` (an alias or a full name, letters, digits, `. _ : -`; anything else is 400), passed to Claude Code as `--model`; without it the Studio uses `ui.claudeModel` from `vitrin.config.yaml`, and without that Claude Code's own default.
 - **`vitrin studio --token-file <path>` and `vitrin studio --json`** hand the Studio's URL, port and session token to a program that drives it (the macOS app): the file is written for its owner only (0600) and atomically, and removed when the Studio stops.
-
 - Vitrin for Mac: asc's commands read as features. Every tab loads what matters by itself (App Review readiness, submission history, store settings, screenshots as images, builds with their groups, TestFlight groups, testers, feedback and crashes, prices with what you keep, weekly insights, Game Center), and the other commands sit in closed cards: what only reads opens in place and runs by itself, asking for a build or a group from a picker when it needs one; what changes something is a button with a short form. No command lines, no JSON.
-- Vitrin for Mac: App Store Connect's codes in words, in English and Turkish: languages, countries, categories, states, field names, form fields. Commands, with their titles, come from `Resources/asc-commands.json`; `apps/VitrinMac/docs/asc-komutlari.md` lists which of asc's 1315 commands could not be run yet.
+- Vitrin for Mac: App Store Connect's codes in words: languages, countries, categories, states, field names, form fields. Commands, with their titles, come from `Resources/asc-commands.json`; `apps/VitrinMac/docs/asc-komutlari.md` lists which of asc's 1315 commands could not be run yet.
 - Vitrin for Mac: app icons, from each app's newest build.
-
 - Vitrin for Mac: Apple Ads connects inside the app: it makes the key pair, shows the public key to paste, takes the three ids (pasting Apple's block fills them) and signs in. asc installs with a button through Homebrew.
 - Vitrin for Mac: when a key's role forbids something, the app says so and walks through getting one, with the form to add it; Analytics starts Apple's reports with a button. Every tab has a sentence on what it is for, and titles and cards have an ⓘ. "More in App Store Connect" is closed until opened.
-
 - Vitrin for Mac: follows the system language, with the languages of Remote Code: English, German, Spanish, French, Italian, Japanese, Korean, Brazilian Portuguese, Turkish and Simplified Chinese. A system language the app doesn't have falls back to English.
 - Vitrin for Mac: the menu bar panel shows app icons, rejected apps first, and opens an app or Settings in front.
-
 - Vitrin for Mac: create a new app on App Store Connect, from the sidebar or the overview. Apple only allows this through an Apple Account, so the app signs in with the email, password and two-factor code (the password stays with asc in the keychain) and runs `asc web apps create`. The same sign-in creates an Admin API key in one step and shows the App Store Connect analytics dashboards for keys that can't read reports.
 
 ### Fixed

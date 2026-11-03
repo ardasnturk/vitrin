@@ -35,7 +35,7 @@
     "url": "https://vitrin.ardasnturk.com/",
     "codeRepository": "https://github.com/ardasnturk/vitrin",
     "license": "https://opensource.org/licenses/MIT",
-    "softwareVersion": "1.2.0",
+    "softwareVersion": "2.0.0",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
   }
   </script>
@@ -56,6 +56,7 @@
           <li><a href="#design">Design</a></li>
           <li><a href="#review">Review</a></li>
           <li><a href="#studio">Studio</a></li>
+          <li><a href="#mac">Mac app</a></li>
           <li><a href="#start">Install</a></li>
           <li><a href="#faq">FAQ</a></li>
         </ul>
@@ -72,7 +73,7 @@
     <section class="hero" id="top">
       <div class="wrap hero-grid">
         <div class="hero-copy">
-          <p class="eyebrow"><span class="pill-new">0.4</span> Open source · MIT · Claude Code plugin</p>
+          <p class="eyebrow"><span class="pill-new">2.0</span> Open source · MIT · Claude Code plugin · Mac app</p>
           <h1>Your store listing, <span class="accent">built from your code.</span></h1>
           <p class="lead">Vitrin reads your app project — Swift, Flutter, React Native, Expo or Android — studies the competition and produces ASO-ready metadata, screenshots and App Previews for the App Store and Google Play. You choose what to make, approve every item, and only then does it upload.</p>
           <div class="cta">
@@ -130,7 +131,7 @@
           <li>
             <span class="step-n">4</span>
             <h3>Review &amp; upload</h3>
-            <p>Validates against the stores' rules, shows everything in a review gallery, and uploads exactly what you approved with the asc CLI or fastlane and the store APIs. Then it reads back what the store saved.</p>
+            <p>Validates against the stores' rules, shows everything in a review gallery, and uploads exactly what you approved with the asc CLI, fastlane supply for Google Play, and the store APIs. Then it reads back what the store saved.</p>
           </li>
         </ol>
       </div>
@@ -169,8 +170,8 @@
           </article>
           <article class="choice">
             <p class="choice-k">Upload &amp; after</p>
-            <h3>Your tool, your call</h3>
-            <p>Once you approved a design, choose the asc CLI or fastlane — a missing tool is installed only after you agree. After the upload, Vitrin asks whether to delete the research data. Nothing happens without your “yes”.</p>
+            <h3>Nothing without your yes</h3>
+            <p>The asc CLI uploads to the App Store and fastlane supply to Google Play; a missing tool is installed only after you agree. After the upload, Vitrin asks whether to delete the research data. Nothing happens without your “yes”.</p>
           </article>
         </div>
       </div>
@@ -362,6 +363,36 @@
       </div>
     </section>
 
+    <!-- Vitrin for Mac -->
+    <section id="mac" aria-labelledby="mac-title">
+      <div class="wrap">
+        <h2 id="mac-title" class="section-title">Vitrin for Mac: App Store Connect in one app</h2>
+        <p class="section-lead">A native Mac app on top of the same pipeline. Connect once, and every app on your team opens with its release status, store text, screenshots, builds, TestFlight, reviews, prices and analytics, read through the <a href="https://github.com/rorkai/App-Store-Connect-CLI">asc CLI</a>. Your projects sit next to them, with the whole Vitrin flow.</p>
+        <figure class="studio-shot">
+          <img src="assets/mac-panel.webp" alt="Vitrin for Mac: an app's page with its icon, version and state, tabs for status, store text, screenshots, builds, TestFlight, reviews, purchases, analytics and more, and the app's live App Store screenshots" width="1600" height="904" loading="lazy">
+        </figure>
+        <div class="cards">
+          <article class="card">
+            <h3>Commands become features</h3>
+            <p>asc's 1,300 commands sit on the tab they belong to. What reads loads by itself and shows as lists and cards, never JSON; what changes something is a button with a short form. Language codes, categories and states read as words.</p>
+          </article>
+          <article class="card">
+            <h3>Create apps and keys</h3>
+            <p>Sign in with your Apple Account to create a new app, make an Admin API key in one step, and see the App Store Connect analytics dashboards. Your password stays in the keychain.</p>
+          </article>
+          <article class="card">
+            <h3>Release from your desk</h3>
+            <p>Why a version can't be submitted, what App Review sees, the submission history, then submit, release or phase it. Apple Ads connects inside the app too, and the menu bar shows which apps need you.</p>
+          </article>
+          <article class="card">
+            <h3>In your language</h3>
+            <p>English, German, Spanish, French, Italian, Japanese, Korean, Brazilian Portuguese, Turkish and Simplified Chinese, following your system. Every section explains itself with an info button.</p>
+          </article>
+        </div>
+        <p class="section-lead">The connection is optional: projects work without it. macOS 15 or newer; for now you <a href="https://github.com/ardasnturk/vitrin/tree/main/apps/VitrinMac">build the app from source</a>.</p>
+      </div>
+    </section>
+
     <!-- Validation -->
     <section id="rules" aria-labelledby="validate-title">
       <div class="wrap split">
@@ -431,7 +462,7 @@
     <section id="start" aria-labelledby="start-title">
       <div class="wrap">
         <h2 id="start-title" class="section-title">Install in one line</h2>
-        <p class="section-lead">Vitrin is a Claude Code plugin. Requires macOS, Node.js 22+ and <a href="https://claude.com/claude-code">Claude Code</a>; ffmpeg, plus the asc CLI or Ruby + Bundler with fastlane for App Store uploads, the Flutter SDK or Android SDK when your app needs them. <code>vitrin doctor</code> checks them and tells you what is missing.</p>
+        <p class="section-lead">Vitrin is a Claude Code plugin. Requires macOS, Node.js 22+ and <a href="https://claude.com/claude-code">Claude Code</a>; ffmpeg, the asc CLI for App Store uploads, Ruby + Bundler with fastlane only for Google Play, the Flutter SDK or Android SDK when your app needs them. <code>vitrin doctor</code> checks them and tells you what is missing.</p>
         <ol class="quick">
           <li>
             <h3>Install the plugin</h3>
@@ -444,7 +475,7 @@
             <h3>Open your app in Claude Code</h3>
             <div class="code"><pre><code>cd path/to/YourApp
 claude</code></pre><button class="copy" type="button" data-copy="cd path/to/YourApp &amp;&amp; claude" aria-label="Copy commands">Copy</button></div>
-            <p>No clone of Vitrin needed. It first asks which language to talk in (English by default). On a new repo it asks before creating <code>vitrin.config.yaml</code>, the <code>.gitignore</code> block and the <code>metadata/</code> folder, where everything it generates lives; fastlane files only if you choose fastlane. Keys are asked for at the upload and go in <code>.env</code> — never in the chat.</p>
+            <p>No clone of Vitrin needed. It first asks which language to talk in (English by default). On a new repo it asks before creating <code>vitrin.config.yaml</code>, the <code>.gitignore</code> block and the <code>metadata/</code> folder, where everything it generates lives; fastlane files only for Google Play. Keys are asked for at the upload and go in <code>.env</code> — never in the chat.</p>
           </li>
           <li>
             <h3>Type /vitrin</h3>
@@ -462,6 +493,10 @@ claude</code></pre><button class="copy" type="button" data-copy="cd path/to/Your
         <details>
           <summary>Does it work with Flutter, React Native or Android apps?</summary>
           <p>Yes. Swift/SwiftUI apps are the primary case; Flutter, React Native, Expo and native Android projects are detected automatically; their screens are recreated from the code (Swift, Kotlin/Compose, Dart or JavaScript) without a build, or built with their own tools and captured in simulators or an Android emulator if you prefer. Vitrin produces App Store content for iPhone, iPad, iPhone Duo, Mac, Apple Watch, Apple TV and Vision Pro, and Google Play listings with phone and tablet screenshots, the feature graphic and the icon. It runs on macOS.</p>
+        </details>
+        <details>
+          <summary>Is there a Mac app?</summary>
+          <p>Yes. Vitrin for Mac runs the same flow in a native window and manages your team's apps on App Store Connect: release status, store text, screenshots, builds, TestFlight, reviews, prices and analytics, ten languages included. It needs macOS 15 or newer and, for now, <a href="https://github.com/ardasnturk/vitrin/tree/main/apps/VitrinMac">a build from source</a>.</p>
         </details>
         <details>
           <summary>How do I install it? Do I have to clone the repo?</summary>
@@ -508,7 +543,7 @@ claude</code></pre><button class="copy" type="button" data-copy="cd path/to/Your
       <div class="brand">
         <img src="assets/logo.svg" alt="" width="24" height="24">
         <span>Vitrin</span>
-        <a class="version" href="https://github.com/ardasnturk/vitrin/blob/main/CHANGELOG.md">v1.2.0</a>
+        <a class="version" href="https://github.com/ardasnturk/vitrin/blob/main/CHANGELOG.md">v2.0.0</a>
       </div>
       <ul class="footer-links">
         <li><a href="https://github.com/ardasnturk/vitrin">GitHub</a></li>

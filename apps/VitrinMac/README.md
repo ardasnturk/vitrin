@@ -4,10 +4,20 @@ A native macOS app over the Vitrin pipeline: add a mobile app's repository, run 
 Claude's questions, edit the store text, look at the screenshots and App Previews, review and approve, and upload to
 App Store Connect, all from one window. It keeps running in the menu bar and checks GitHub for new releases.
 
-With the App Store Connect key entered once (Settings → Account), the sidebar starts with the team's apps, read from
-the API through `vitrin asc apps --json`: no project folder is needed to see what is on the team, which version each
-app is at and in what state. An app whose bundle id matches a local project's `vitrin.config.yaml` opens that
-project; any other opens a read-only overview with a button that links a folder.
+It also manages App Store Connect, through the [asc CLI](https://github.com/rorkai/App-Store-Connect-CLI). Connecting is
+optional, either with a key entered once (Settings → Account) or with asc's own login. Then the sidebar lists the
+team's apps with their icons, and each app has tabs for its status, store text, screenshots, builds, TestFlight,
+reviews, purchases, analytics and the rest; team pages cover users, devices, signing, reports, automation, Apple Ads
+and the account. What only reads loads by itself and shows in words, what changes something is a button with a short
+form, and every asc command sits behind "More in App Store Connect" on the tab it belongs to
+(`VitrinMac/Resources/asc-commands.json`, refreshed by `scripts/asc-catalog.py`; `docs/asc-komutlari.md` lists what
+could not be run on a real account).
+
+Apple's API can't create an app, so that goes through an Apple Account sign-in (`asc web`), which also makes an Admin
+API key in one step and shows the App Store Connect analytics dashboards. The password stays with asc in the keychain.
+
+The app follows the system language, in English, German, Spanish, French, Italian, Japanese, Korean, Brazilian
+Portuguese, Turkish and Simplified Chinese, falling back to English.
 
 ![Flow](docs/screenshots/flow.jpg)
 
@@ -15,14 +25,14 @@ project; any other opens a read-only overview with a button that links a folder.
 
 - macOS 15 or newer, Xcode 16 or newer (built with Xcode 27.1, Swift 6, strict concurrency).
 - [XcodeGen](https://github.com/yonaslab/XcodeGen) to regenerate the project (`brew install xcodegen`).
-- The Vitrin CLI, Vitrin **1.3 or newer** (`vitrin studio --token-file`), and Node.js 22+ to run it. The app looks for it in this order:
+- The Vitrin CLI, Vitrin **2.0 or newer** (`vitrin studio --token-file`), and Node.js 22+ to run it. The app looks for it in this order:
   1. the path set in Settings → Vitrin CLI (a `bin.js` or a `vitrin` executable),
   2. the Claude Code plugin install (`${VITRIN_HOME:-~/.local/share/vitrin}/<version>/node_modules/@ardasnturk/vitrin/dist/bin.js`, newest version),
   3. `vitrin` on the login shell's PATH (`npm install -g @ardasnturk/vitrin`),
   4. a developer checkout (Settings → Vitrin checkout, or `VITRIN_DEV`): `packages/cli/dist/bin.js` after `pnpm build`.
 
   A candidate counts only when its `studio --help` knows `--token-file`; older installs are skipped and named in the error.
-- Optional, as for the CLI: `claude` for the creative stages, `ffmpeg` for videos, `asc` or fastlane for the upload.
+- Optional, as for the CLI: `claude` for the creative stages, `ffmpeg` for videos, `asc` for App Store Connect and the upload (Homebrew installs it from the app), fastlane only for Google Play.
 
 ## Build
 
@@ -74,7 +84,7 @@ server and removes the file; the app sends it when a project is closed, when it 
 - **Review**: the gallery (`report.html`, sandboxed) with the summary, the overall hash, *Approve all* behind a confirmation, and *Reject…* with a comment per item for Claude.
 - **Account** (Settings → Account): the App Store Connect API key, once for every project. The .p8 is copied to `~/Library/Application Support/Vitrin/keys/` with owner-only permissions, the ids next to it in `credentials.json`; each Studio the app starts gets them as `ASC_KEY_ID`, `ASC_ISSUER_ID` and `ASC_KEY_PATH`. A project whose own `.env` sets `ASC_KEY_ID` keeps its key (the CLI reads the environment first, then `.env`, so the app stays out of the way). Saving or removing the key restarts the open Studios.
 - **Claude model** (Settings → General, or the menu in the Claude column's header): the model the briefs run with, sent as `model` with every `/api/claude` call and passed to Claude Code as `--model`. Empty = Claude Code's default (the Studio then falls back to `ui.claudeModel` in `vitrin.config.yaml`). Each run's row shows the model Claude Code reported.
-- **Upload**: uploader (asc CLI or fastlane deliver) → keys by name only, values never leave `.env` → approved content → dry-run plan (`upload-plan.json` as a table, the log behind a disclosure) → *Upload now*, which asks you to type the app name and still passes the CLI's approval hash gate; then read-back, finalize (keep or delete the research data) and submit (type the bundle id).
+- **Upload**: asc CLI → keys by name only, values never leave `.env` → approved content → dry-run plan (`upload-plan.json` as a table, the log behind a disclosure) → *Upload now*, which asks you to type the app name and still passes the CLI's approval hash gate; then read-back, finalize (keep or delete the research data) and submit (type the bundle id).
 
 The gallery's own approve and reject buttons are inert inside the app (they post to a parent page that is not there); the app's buttons record the decision with the session token.
 
