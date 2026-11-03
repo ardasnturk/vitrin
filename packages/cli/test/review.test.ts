@@ -91,7 +91,11 @@ describe('review server', () => {
     expect(root.status).toBe(302);
     const page = await fetch(new URL('/metadata/report.html', server.url));
     expect(page.status).toBe(200);
-    expect(await page.text()).toContain('Approve everything');
+    const text = await page.text();
+    expect(text).toContain('Approve everything');
+    // The page gets the session token its buttons send back; nothing else served does.
+    expect(text).toContain(`<meta name="vitrin-token" content="${server.token}">`);
+    expect(page.headers.get('cache-control')).toBe('no-store');
     const img = await fetch(new URL('/metadata/store/screenshots/en-US/01_shot1_iphone-6.3.png', server.url));
     expect(img.status).toBe(200);
     expect(img.headers.get('content-type')).toBe('image/png');
@@ -118,20 +122,25 @@ describe('review server', () => {
     expect(await resolveServedFile(fx.root, '/metadata/store/screenshots/en-US/01_shot1_iphone-6.3.png')).toBeDefined();
   });
 
-  it('requires JSON, the same origin and the current hash before approving', async () => {
+  it('requires the session token, JSON, the same origin and the current hash before approving', async () => {
     const url = new URL('/api/approve', server.url);
-    expect((await fetch(url, { method: 'POST', body: 'x', headers: { 'content-type': 'text/plain' } })).status).toBe(415);
-    expect((await fetch(url, { method: 'POST', body: '{}', headers: { 'content-type': 'application/json', origin: 'https://evil.example' } })).status).toBe(403);
-    const stale = await fetch(url, { method: 'POST', body: JSON.stringify({ overallHash: '0'.repeat(64) }), headers: { 'content-type': 'application/json' } });
+    const json = { 'content-type': 'application/json', 'x-vitrin-token': server.token };
+    // Without the token (another page, a script in a served file, curl) nothing is recorded, whatever the body.
+    expect((await fetch(url, { method: 'POST', body: '{}', headers: { 'content-type': 'application/json' } })).status).toBe(403);
+    expect((await fetch(url, { method: 'POST', body: '{}', headers: { 'content-type': 'application/json', 'x-vitrin-token': 'x'.repeat(server.token.length) } })).status).toBe(403);
+    expect((await fetch(url, { method: 'POST', body: 'x', headers: { ...json, 'content-type': 'text/plain' } })).status).toBe(415);
+    expect((await fetch(url, { method: 'POST', body: '{}', headers: { ...json, origin: 'https://evil.example' } })).status).toBe(403);
+    const stale = await fetch(url, { method: 'POST', body: JSON.stringify({ overallHash: '0'.repeat(64) }), headers: json });
     expect(stale.status).toBe(409);
     expect(existsSync(ctx.paths.approval)).toBe(false);
   });
 
   it('approve writes approval.json for exactly the served content and resolves the decision', async () => {
     // The symlink from the previous test changed the set; the page must be reloaded first.
+    const json = { 'content-type': 'application/json', 'x-vitrin-token': server.token };
     const { overallHash } = await (await fetch(new URL('/api/state', server.url))).json();
-    let res = await fetch(new URL('/api/approve', server.url), { method: 'POST', body: JSON.stringify({ overallHash }), headers: { 'content-type': 'application/json' } });
-    if (res.status === 409) res = await fetch(new URL('/api/approve', server.url), { method: 'POST', body: JSON.stringify({ overallHash: (await res.json()).overallHash }), headers: { 'content-type': 'application/json' } });
+    let res = await fetch(new URL('/api/approve', server.url), { method: 'POST', body: JSON.stringify({ overallHash }), headers: json });
+    if (res.status === 409) res = await fetch(new URL('/api/approve', server.url), { method: 'POST', body: JSON.stringify({ overallHash: (await res.json()).overallHash }), headers: json });
     expect(res.status).toBe(200);
     const approval = ApprovalManifest.parse(JSON.parse(readFileSync(ctx.paths.approval, 'utf8')));
     expect(approval).toMatchObject({ status: 'approved', via: 'review-server' });
@@ -145,7 +154,7 @@ describe('review server', () => {
     const s2 = await startReviewServer(ctx2, { port: 0 });
     try {
       const { overallHash } = await (await fetch(new URL('/api/state', s2.url))).json();
-      const post = (body: unknown) => fetch(new URL('/api/reject', s2.url), { method: 'POST', body: JSON.stringify(body), headers: { 'content-type': 'application/json' } });
+      const post = (body: unknown) => fetch(new URL('/api/reject', s2.url), { method: 'POST', body: JSON.stringify(body), headers: { 'content-type': 'application/json', 'x-vitrin-token': s2.token } });
       expect((await post({ overallHash, rejections: [{ item: 'metadata/store/screenshots/tr/01_shot1_iphone-6.3.png', comment: ' ' }] })).status).toBe(400);
       expect((await post({ overallHash, rejections: [{ item: 'does-not-exist', comment: 'x' }] })).status).toBe(400);
       const res = await post({ overallHash, rejections: [{ item: 'metadata/store/screenshots/tr/01_shot1_iphone-6.3.png', comment: 'Use the dark variant' }, { item: 'cpp/students', comment: 'Drop this page' }] });

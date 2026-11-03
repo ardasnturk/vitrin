@@ -486,8 +486,12 @@ const VITRIN = ${boot};
   // Fill in durations that the render manifest did not record.
   document.querySelectorAll('figure.video').forEach((f) => { const v = $('video', f), d = $('.js-duration', f); if (v && d) v.addEventListener('loadedmetadata', () => (d.textContent = v.duration.toFixed(1) + ' s')); });
 
-  // Decision buttons exist only when served by \`vitrin review --serve\`.
+  // Decision buttons exist only when served by \`vitrin review --serve\` (the page posts with its session token)
+  // or inside Vitrin Studio (the page runs sandboxed there and hands the decision to the Studio with postMessage).
   if (!location.protocol.startsWith('http')) return;
+  const embedded = window.parent !== window;
+  const meta = document.querySelector('meta[name="vitrin-token"]');
+  const token = meta ? meta.getAttribute('content') : '';
   const rejected = new Map();
   const approve = $('#approve'), send = $('#send-rej'), text = $('#act-text');
   const refresh = () => {
@@ -497,12 +501,12 @@ const VITRIN = ${boot};
     text.textContent = rejected.size ? t('markedForChanges', { n: rejected.size }) : t('lookThrough');
   };
   const post = async (url, body) => {
-    const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json', 'x-vitrin-token': token }, body: JSON.stringify(body) });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(j.error || r.statusText);
     return j;
   };
-  fetch('/api/state').then((r) => r.ok ? r.json() : Promise.reject()).then(() => {
+  const enable = () => {
     document.body.classList.add('serve');
     approve.hidden = false;
     refresh();
@@ -513,6 +517,7 @@ const VITRIN = ${boot};
       refresh();
     }));
     approve.addEventListener('click', async () => {
+      if (embedded) return void window.parent.postMessage({ type: 'vitrin-approve', overallHash: VITRIN.hash }, '*');
       if (!confirm(t('confirmApprove', { n: VITRIN.items }))) return;
       try { const j = await post('/api/approve', { overallHash: VITRIN.hash }); text.textContent = t('approvedClose', { hash: j.overallHash.slice(0, 12) }); approve.disabled = true; }
       catch (e) { alert(t('notApprovedError', { error: e.message })); }
@@ -520,10 +525,17 @@ const VITRIN = ${boot};
     send.addEventListener('click', async () => {
       const rejections = [...rejected].map(([item, ta]) => ({ item, comment: ta.value.trim() }));
       if (rejections.some((r) => !r.comment)) { alert(t('commentEach')); return; }
+      if (embedded) {
+        window.parent.postMessage({ type: 'vitrin-reject', overallHash: VITRIN.hash, rejections }, '*');
+        text.textContent = t('sentRejections', { n: rejections.length }); send.disabled = true; approve.disabled = true;
+        return;
+      }
       try { await post('/api/reject', { overallHash: VITRIN.hash, rejections }); text.textContent = t('sentRejections', { n: rejections.length }); send.disabled = true; approve.disabled = true; }
       catch (e) { alert(t('notSent', { error: e.message })); }
     });
-  }).catch(() => {});
+  };
+  if (embedded) enable();
+  else fetch('/api/state').then((r) => r.ok ? r.json() : Promise.reject()).then(enable).catch(() => {});
 })();
 </script>
 </body></html>`;

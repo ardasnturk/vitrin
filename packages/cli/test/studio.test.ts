@@ -122,15 +122,31 @@ describe('Studio server', () => {
     expect(partial.status).toBe(206);
   });
 
-  it('refuses writes from another origin and JSON that is not JSON', async () => {
-    const put = (body: string, origin?: string) => fetch(new URL('/api/file', server.url), { method: 'PUT', headers: { 'content-type': 'application/json', ...(origin ? { origin } : {}) }, body });
-    expect((await put('{"path":"metadata/shots.json","text":"{}"}', 'https://evil.example')).status).toBe(403);
+  it('refuses writes without the session token, from another origin, and JSON that is not JSON', async () => {
+    const put = (body: string, headers: Record<string, string> = {}) => fetch(new URL('/api/file', server.url), { method: 'PUT', headers: { 'content-type': 'application/json', 'x-vitrin-token': server.token, ...headers }, body });
+    // The token lives only in the Studio's own page: a script in a served HTML file, another site or curl has none.
+    expect((await fetch(new URL('/api/file', server.url), { method: 'PUT', headers: { 'content-type': 'application/json' }, body: '{"path":"metadata/shots.json","text":"{}"}' })).status).toBe(403);
+    expect((await put('{"path":"metadata/shots.json","text":"{}"}', { 'x-vitrin-token': 'nope' })).status).toBe(403);
+    expect((await fetch(new URL('/api/remotion', server.url), { method: 'DELETE' })).status).toBe(403);
+    expect((await put('{"path":"metadata/shots.json","text":"{}"}', { origin: 'https://evil.example' })).status).toBe(403);
     expect((await put('nope')).status).toBe(400);
     expect((await put('{"path":"metadata/validation.json","text":"{}"}')).status).toBe(403);
   });
 
+  it('sandboxes the HTML it serves from metadata/, so a script there has no origin and no API', async () => {
+    const page = await get('/files/metadata/report.html');
+    expect(page.status).toBe(200);
+    expect(page.headers.get('content-security-policy')).toBe('sandbox allow-scripts allow-forms allow-popups allow-modals');
+    expect(await page.text()).not.toContain(server.token);
+    const screen = await get('/files/metadata/screens/home.html');
+    expect(screen.status).toBe(200);
+    expect(screen.headers.get('content-security-policy')).toContain('sandbox');
+    const png = (await (await get('/api/overview')).json()) as { screenshots: Record<string, Array<{ path: string }>> };
+    expect((await get(`/files/${png.screenshots['en-US']![0]!.path}`)).headers.get('content-security-policy')).toBeNull();
+  });
+
   it('starts one job at a time and reports it on the jobs list', async () => {
-    const res = await fetch(new URL('/api/jobs', server.url), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ command: 'nope' }) });
+    const res = await fetch(new URL('/api/jobs', server.url), { method: 'POST', headers: { 'content-type': 'application/json', 'x-vitrin-token': server.token }, body: JSON.stringify({ command: 'nope' }) });
     expect(res.status).toBe(202);
     const { id } = (await res.json()) as { id: string };
     for (let i = 0; i < 50; i++) {
@@ -144,18 +160,24 @@ describe('Studio server', () => {
     }
   }, 30_000);
 
-  it.skipIf(!existsSync(UI))('serves the built UI for every app route', async () => {
+  it.skipIf(!existsSync(UI))('serves the built UI with the session token for every app route', async () => {
     const index = await get('/');
     expect(index.status).toBe(200);
-    expect(await index.text()).toContain('Vitrin Studio');
-    expect((await get('/design')).status).toBe(200);
+    expect(index.headers.get('cache-control')).toBe('no-store');
+    const html = await index.text();
+    expect(html).toContain('Vitrin Studio');
+    expect(html).toContain(`<meta name="vitrin-token" content="${server.token}">`);
+    const route = await get('/design');
+    expect(route.status).toBe(200);
+    expect(await route.text()).toContain(server.token);
     expect((await get('/studio.js')).headers.get('content-type')).toContain('javascript');
+    expect(await (await get('/studio.js')).text()).not.toContain(server.token);
   });
 
-  it('refuses a decision while a stage runs, before touching the inventory', async () => {
+  it('refuses a decision that is not JSON, before touching the inventory', async () => {
     // (The review contract itself — hash check, approve, reject — is the review server's code, tested there;
     // running it here would rewrite the example's report.html.)
-    const res = await fetch(new URL('/api/approve', server.url), { method: 'POST', headers: { 'content-type': 'application/json' }, body: 'not json' });
+    const res = await fetch(new URL('/api/approve', server.url), { method: 'POST', headers: { 'content-type': 'application/json', 'x-vitrin-token': server.token }, body: 'not json' });
     expect(res.status).toBe(400);
   });
 });

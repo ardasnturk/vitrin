@@ -8,10 +8,13 @@ import { buildInventory, checkApproval, recordApproval, recordRejections, summar
 import { EXIT, NeedsInput, type Ctx } from './context.js';
 import { buildReport } from './report.js';
 import { i18nFile, loadUiText, UI_EN } from './i18n.js';
+import { newSessionToken, TOKEN_HEADER, tokenMatches, withSessionToken } from './local-token.js';
 
 /**
  * `vitrin review --serve`: serves the review gallery on 127.0.0.1 with approve / reject buttons.
  * Approve writes `metadata/approval.json`; rejections write `metadata/review-feedback.json` and `briefs/review.md`.
+ * A decision needs the session token the server puts into report.html (see local-token.ts), so only the page it
+ * served can send one.
  */
 
 export type ReviewDecision = { kind: 'approved'; overallHash: string } | { kind: 'rejected'; count: number };
@@ -21,6 +24,8 @@ export interface ReviewServer {
   port: number;
   /** Resolves once the user approved or sent rejections. */
   decision: Promise<ReviewDecision>;
+  /** The session token a POST must send in the `x-vitrin-token` header. */
+  token: string;
   close(): Promise<void>;
 }
 
@@ -141,6 +146,7 @@ export async function startReviewServer(ctx: Ctx, opts: { port?: number; host?: 
   const decision = new Promise<ReviewDecision>((r) => (resolveDecision = r));
   let port = 0;
   let busy = false;
+  const token = newSessionToken();
 
   const allowedHost = (h?: string) => h === `127.0.0.1:${port}` || h === `localhost:${port}` || (host !== '127.0.0.1' && h === `${host}:${port}`);
 
@@ -154,6 +160,7 @@ export async function startReviewServer(ctx: Ctx, opts: { port?: number; host?: 
         // CSRF guard: other sites cannot send JSON here without a preflight, and their Origin would differ.
         const origin = req.headers.origin;
         if (origin && !allowedHost(origin.replace(/^https?:\/\//, ''))) return sendJson(res, 403, { error: 'Forbidden origin.' });
+        if (!tokenMatches(req.headers[TOKEN_HEADER], token)) return sendJson(res, 403, { error: 'This request did not come from the review page (missing or wrong session token); reload the page.' });
         if (!(req.headers['content-type'] ?? '').startsWith('application/json')) return sendJson(res, 415, { error: 'Expected application/json.' });
         if (busy) return sendJson(res, 409, { error: 'Another decision is being recorded.' });
         busy = true;
@@ -204,6 +211,12 @@ export async function startReviewServer(ctx: Ctx, opts: { port?: number; host?: 
       }
       const file = await resolveServedFile(ctx.root, path, profileIcon ? [profileIcon] : []);
       if (!file) return sendJson(res, 404, { error: 'Not found.' });
+      if (path === '/metadata/report.html') {
+        // The gallery is Vitrin's own page: it gets the token its buttons send back.
+        const html = withSessionToken(await readFile(file, 'utf8'), token);
+        res.writeHead(200, { 'content-type': TYPES['.html']!, 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', 'content-length': Buffer.byteLength(html) });
+        return void res.end(req.method === 'HEAD' ? undefined : html);
+      }
       await sendFile(req, res, file);
     } catch (err) {
       const status = (err as { status?: number }).status ?? (err instanceof NeedsInput ? 409 : 500);
@@ -221,6 +234,7 @@ export async function startReviewServer(ctx: Ctx, opts: { port?: number; host?: 
     url: `http://${host === '127.0.0.1' ? '127.0.0.1' : host}:${port}/`,
     port,
     decision,
+    token,
     close: () =>
       new Promise<void>((ok) => {
         server.closeAllConnections?.();

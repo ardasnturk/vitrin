@@ -14,14 +14,17 @@ import { answerPrompt, briefPrompt, ClaudeRunner, type RunLabel } from './claude
 import { EditableError, readEditable, resolveEditable, writeEditable } from './files.js';
 import { JobRunner } from './jobs.js';
 import { buildOverview } from './overview.js';
+import { newSessionToken, SANDBOX_CSP, TOKEN_HEADER, tokenMatches, withSessionToken } from '../local-token.js';
 
 /**
  * `vitrin studio`: the whole Vitrin flow in a local web UI on 127.0.0.1 — stages, editors, previews, the review
  * gallery, approval and upload, plus a panel that runs the user's Claude Code for the creative stages.
  *
  * Security model (same as the review server): the server answers only requests addressed to itself (DNS-rebinding
- * guard), JSON writes need a same-origin Origin, only metadata/ (and the app icon) is ever served, and `.env`, `.p8`
- * files and `secrets/` are never readable. Secret values never reach the browser: the logger masks them.
+ * guard); every request that changes something needs a same-origin Origin and the session token the server put into
+ * its own index.html (see local-token.ts); only metadata/ (and the app icon) is ever served, HTML and SVG files from
+ * there run sandboxed (no origin, no access to the API or to the Studio's page), and `.env`, `.p8` files and
+ * `secrets/` are never readable. Secret values never reach the browser: the logger masks them.
  */
 
 const TYPES: Record<string, string> = {
@@ -104,10 +107,10 @@ async function readBody(req: IncomingMessage): Promise<Record<string, unknown>> 
   }
 }
 
-async function sendFile(req: IncomingMessage, res: ServerResponse, file: string, cache = 'no-cache'): Promise<void> {
+async function sendFile(req: IncomingMessage, res: ServerResponse, file: string, cache = 'no-cache', extra: Record<string, string> = {}): Promise<void> {
   const st = await stat(file);
   const type = TYPES[extname(file).toLowerCase()] ?? 'application/octet-stream';
-  const headers: Record<string, string | number> = { 'content-type': type, 'accept-ranges': 'bytes', 'cache-control': cache, 'x-content-type-options': 'nosniff' };
+  const headers: Record<string, string | number> = { 'content-type': type, 'accept-ranges': 'bytes', 'cache-control': cache, 'x-content-type-options': 'nosniff', ...extra };
   const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range ?? '');
   if (range && (range[1] || range[2])) {
     let start = range[1] ? Number(range[1]) : Math.max(0, st.size - Number(range[2]));
@@ -131,6 +134,8 @@ async function sendFile(req: IncomingMessage, res: ServerResponse, file: string,
 export interface StudioServer {
   url: string;
   port: number;
+  /** The session token every POST, PUT and DELETE must send in the `x-vitrin-token` header. */
+  token: string;
   close(): Promise<void>;
 }
 
@@ -194,6 +199,7 @@ export async function startStudioServer(root: string, opts: { port?: number; hos
   const ui = studioUiDir();
   const jobs = new JobRunner(root);
   const claude = new ClaudeRunner(root);
+  const token = newSessionToken();
   let port = 0;
 
   // Server-sent events: log lines, job and Claude state, file changes and Remotion Studio.
@@ -276,6 +282,7 @@ export async function startStudioServer(root: string, opts: { port?: number; hos
       if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
         const origin = req.headers.origin;
         if (origin && !allowedHost(origin.replace(/^https?:\/\//, ''))) return sendJson(res, 403, { error: 'Forbidden origin.' });
+        if (!tokenMatches(req.headers[TOKEN_HEADER], token)) return sendJson(res, 403, { error: 'This request did not come from the Studio page (missing or wrong session token); reload the Studio.', code: 'token' });
         if (method !== 'DELETE' && !(req.headers['content-type'] ?? '').startsWith('application/json')) return sendJson(res, 415, { error: 'Expected application/json.' });
         const body = method === 'DELETE' ? {} : await readBody(req);
 
@@ -414,14 +421,23 @@ export async function startStudioServer(root: string, opts: { port?: number; hos
         }
         const file = await servedFile(root, rel, await iconPath());
         if (!file) return sendJson(res, 404, { error: 'Not found.' });
-        return sendFile(req, res, file);
+        // Claude's and the user's HTML (screens, bespoke layouts, the store preview, the gallery) runs sandboxed.
+        const sandbox: Record<string, string> = /\.(html|svg)$/i.test(file) ? { 'content-security-policy': SANDBOX_CSP } : {};
+        return sendFile(req, res, file, 'no-cache', sandbox);
       }
-      // The UI: index.html for every route the single-page app owns, assets by name.
+      // The UI: index.html (with the session token) for every route the single-page app owns, assets by name.
       if (!ui) return sendJson(res, 503, { error: 'The Studio UI is not built (packages/studio/dist is missing). Run `pnpm build`.' });
-      const asset = path === '/' ? 'index.html' : path.replace(/^\/+/, '');
+      const sendIndex = async () => {
+        const html = withSessionToken(await readFile(join(ui, 'index.html'), 'utf8'), token);
+        res.writeHead(200, { 'content-type': TYPES['.html']!, 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', 'content-length': Buffer.byteLength(html) });
+        res.end(method === 'HEAD' ? undefined : html);
+      };
+      if (path === '/') return sendIndex();
+      const asset = path.replace(/^\/+/, '');
       const abs = resolve(ui, asset);
+      if (asset === 'index.html') return sendIndex();
       if (inside(abs, ui) && existsSync(abs) && (await stat(abs)).isFile()) return sendFile(req, res, abs);
-      if (!path.startsWith('/api/') && !extname(path)) return sendFile(req, res, join(ui, 'index.html'));
+      if (!path.startsWith('/api/') && !extname(path)) return sendIndex();
       return sendJson(res, 404, { error: 'Not found.' });
     } catch (err) {
       const status = (err as { status?: number }).status ?? (err instanceof EditableError ? err.status : err instanceof NeedsInput ? 409 : 500);
@@ -444,6 +460,7 @@ export async function startStudioServer(root: string, opts: { port?: number; hos
   return {
     url: urlStr,
     port,
+    token,
     close: () =>
       new Promise<void>((ok) => {
         clearInterval(heartbeat);

@@ -226,8 +226,12 @@ function errorText(data: Record<string, unknown>, fallback: string): string {
   return t(key, params);
 }
 
+/** The session token the server put into index.html; every request that changes something must send it back. */
+const TOKEN = typeof document === 'undefined' ? '' : (document.querySelector('meta[name="vitrin-token"]')?.getAttribute('content') ?? '');
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const res = await fetch(path, { method, headers: body === undefined ? {} : { 'content-type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body) });
+  const headers: Record<string, string> = { ...(TOKEN ? { 'x-vitrin-token': TOKEN } : {}), ...(body === undefined ? {} : { 'content-type': 'application/json' }) };
+  const res = await fetch(path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
   const text = await res.text();
   let data: Record<string, unknown> = {};
   try {

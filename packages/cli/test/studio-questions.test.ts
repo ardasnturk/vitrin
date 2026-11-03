@@ -35,7 +35,7 @@ describe('answering a question in the Studio', () => {
   let bin: string;
   let server: StudioServer;
   const path = process.env.PATH;
-  const post = (p: string, body: unknown) => fetch(new URL(p, server.url), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const post = (p: string, body: unknown) => fetch(new URL(p, server.url), { method: 'POST', headers: { 'content-type': 'application/json', 'x-vitrin-token': server.token }, body: JSON.stringify(body) });
 
   beforeAll(async () => {
     dir = mkdtempSync(join(tmpdir(), 'vitrin-questions-'));

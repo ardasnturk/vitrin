@@ -2,7 +2,11 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## Unreleased
+## 1.1.0 — 2026-11-03
+
+### Security
+- **Vitrin Studio and `vitrin review --serve` take a session token.** Each run mints one and puts it only into the page it serves itself (the Studio's index.html, the gallery in `--serve`); every request that changes something — a job, a file, a Claude run, an approval or rejection — must send it back in the `x-vitrin-token` header. The HTML the Studio shows from `metadata/` (Claude's screens, bespoke layouts, the store preview, the gallery) is served with `Content-Security-Policy: sandbox`: a script in one of those files has no origin, cannot read the Studio's page and cannot call the API. Before this, such a script could approve and start an upload. Inside the Studio the gallery's approve and reject buttons now hand the decision to the Studio (`postMessage`), which records it with its token. The token is not a defence against other processes on the same machine, which can already read the project's files.
+- **The plugin's launcher verifies the release tarball before installing it.** `plugins/vitrin/SHA256SUMS` records, per version, the SHA-256 of the gunzipped tar (the tar is byte-identical on every machine that builds the tagged commit; the gzip layer is not). The launcher downloads the release, checks it against the entry for its version and installs nothing when they differ or when no entry exists; a local `VITRIN_TARBALL` is the developer's own and is not checked. `pnpm release:checksum` records the entry before a release; the release workflow refuses to publish a tarball that does not match it and uploads `SHA256SUMS` next to the tarball. The 1.0.0 entry is the checksum of the asset on GitHub, which the same tag rebuilt locally reproduces.
 
 ### Changed — Vitrin Studio, revised after a first run on a real app
 - **One status model, worked out by the CLI:**

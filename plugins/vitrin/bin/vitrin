@@ -3,6 +3,11 @@
 # On first use it installs the Vitrin CLI pinned to this plugin's version into a per-user directory
 # (no sudo, no global npm prefix), downloads Playwright Chromium once, then runs the CLI.
 #
+# A release tarball is downloaded first and checked against the checksum this plugin version records in
+# ../SHA256SUMS (the SHA-256 of the gunzipped tar, which is the same on every machine while the gzip layer is not);
+# nothing is installed when they differ. A local tarball (VITRIN_TARBALL=/path/to.tgz) is the developer's own and
+# is not checked.
+#
 # Environment:
 #   VITRIN_HOME          install root (default: ${XDG_DATA_HOME:-$HOME/.local/share}/vitrin); one folder per version
 #   VITRIN_TARBALL       npm install spec for the CLI package (default: the GitHub release tarball of this version)
@@ -75,6 +80,11 @@ echo $$ >"$lock/pid"
 trap cleanup EXIT
 trap 'cleanup; exit 130' INT TERM HUP
 
+# SHA-256 of the gunzipped tar (node only: no gzip, shasum or sha256sum needed).
+tar_sha256() {
+  node -e 'const z=require("node:zlib"),c=require("node:crypto"),f=require("node:fs");process.stdout.write(c.createHash("sha256").update(z.gunzipSync(f.readFileSync(process.argv[1]))).digest("hex"))' "$1"
+}
+
 if [ ! -f "$ready" ] || [ ! -f "$entry" ]; then
   spec=${VITRIN_TARBALL:-https://github.com/ardasnturk/vitrin/releases/download/v$version/ardasnturk-vitrin-$version.tgz}
   case $spec in
@@ -86,6 +96,34 @@ if [ ! -f "$ready" ] || [ ! -f "$entry" ]; then
   rm -rf "$stage"
   mkdir -p "$stage"
   printf '{ "name": "vitrin-install", "private": true }\n' >"$stage/package.json"
+
+  case $spec in
+    http://* | https://*)
+      # Download, then check the tarball against the checksum recorded for this plugin version before installing it.
+      sums=$plugin_root/SHA256SUMS
+      asset=ardasnturk-vitrin-$version.tar
+      expected=$(sed -n "s/^\([0-9a-fA-F]\{64\}\)[[:space:]][[:space:]]*$(printf '%s' "$asset" | sed 's/[.]/\\./g')\$/\1/p" "$sums" 2>/dev/null | head -n 1 | tr 'A-F' 'a-f')
+      file=$stage/vitrin-$version.tgz
+      say "downloading $spec"
+      if ! node -e 'const [u,f]=process.argv.slice(1);fetch(u).then((r)=>{if(!r.ok)throw new Error(r.status+" "+r.statusText);return r.arrayBuffer()}).then((b)=>require("node:fs").writeFileSync(f,Buffer.from(b))).catch((e)=>{console.error(String(e&&e.message||e));process.exit(1)})' "$spec" "$file" >&2; then
+        die "the download failed for $spec. Check the network connection (or set VITRIN_TARBALL), then run vitrin again."
+      fi
+      actual=$(tar_sha256 "$file") || die "cannot read $file as a gzipped tarball."
+      if [ -n "$expected" ]; then
+        if [ "$actual" != "$expected" ]; then
+          rm -f "$file"
+          die "checksum mismatch for $spec: the plugin records $expected for $asset, the download is $actual. Nothing was installed. Update the plugin (claude plugin update vitrin@vitrin) and run vitrin again; if it still fails, the release asset is not the one this plugin version was made for — do not install it."
+        fi
+        say "checksum verified ($actual)"
+      elif [ -n "${VITRIN_TARBALL:-}" ]; then
+        say "warning: $sums records no checksum for $asset; VITRIN_TARBALL is installed unverified."
+      else
+        rm -f "$file"
+        die "$sums records no checksum for $asset, so the release cannot be verified. Update the plugin (claude plugin update vitrin@vitrin) and run vitrin again, or point VITRIN_TARBALL at a tarball you trust."
+      fi
+      spec=$file
+      ;;
+  esac
   # npm prints to stdout; keep stdout clean for `vitrin --json`.
   if ! npm install --prefix "$stage" --no-fund --no-audit --no-update-notifier --loglevel=error "$spec" >&2; then
     die "npm install failed for $spec. Check the network connection (or set VITRIN_TARBALL), then run vitrin again."

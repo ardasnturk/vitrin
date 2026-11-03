@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, fileUrl, type ReviewState } from '../api';
 import { t } from '../i18n';
 import { useBusy, useCli, useStudio } from '../store';
@@ -15,6 +15,7 @@ export function Review() {
   const [loading, setLoading] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const [frameKey, setFrameKey] = useState(0);
+  const frame = useRef<HTMLIFrameElement>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -33,6 +34,42 @@ export function Review() {
   }, [state.changedTick, state.job, load]);
 
   const invalid = Boolean(o.validation && !o.validation.ok);
+
+  const reject = useCallback(
+    async (overallHash: string, rejections: Array<{ item: string; comment: string }>) => {
+      try {
+        const r = await api.reject(overallHash, rejections);
+        toast(t('rejectionsSent', { n: r.rejected }), 'ok');
+      } catch (err) {
+        toast((err as Error).message, 'err');
+      }
+      await load();
+    },
+    [load, toast],
+  );
+
+  // The server serves the gallery with a sandbox CSP (no origin, no API; an iframe `sandbox` attribute would do the same
+  // but some embedded browsers refuse such frames): its buttons post the decision here, and the Studio records it with
+  // its session token. Only messages from this page's own frame count.
+  useEffect(() => {
+    const onMessage = (e: MessageEvent) => {
+      if (!frame.current || e.source !== frame.current.contentWindow) return;
+      const d = (typeof e.data === 'object' && e.data !== null ? e.data : {}) as { type?: unknown; overallHash?: unknown; rejections?: unknown };
+      if (d.type !== 'vitrin-approve' && d.type !== 'vitrin-reject') return;
+      if (!review || d.overallHash !== review.overallHash) {
+        toast(t('errFilesChanged'), 'err');
+        void load();
+        return;
+      }
+      if (d.type === 'vitrin-approve') setConfirm(true);
+      else if (Array.isArray(d.rejections)) {
+        const rejections = d.rejections.filter((r): r is { item: string; comment: string } => typeof r === 'object' && r !== null && typeof (r as { item?: unknown }).item === 'string' && typeof (r as { comment?: unknown }).comment === 'string');
+        if (rejections.length) void reject(review.overallHash, rejections);
+      }
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [review, load, reject, toast]);
 
   const approve = async () => {
     if (!review) return;
@@ -95,7 +132,7 @@ export function Review() {
           </div>
         </Card>
       )}
-      <div style={{ marginTop: 12 }}>{o.files.report ? <iframe key={frameKey} className="gallery-frame" src={fileUrl('metadata/report.html', frameKey)} title="review gallery" /> : <div className="empty">{t('nothingYet')}</div>}</div>
+      <div style={{ marginTop: 12 }}>{o.files.report ? <iframe key={frameKey} ref={frame} className="gallery-frame" src={fileUrl('metadata/report.html', frameKey)} title="review gallery" /> : <div className="empty">{t('nothingYet')}</div>}</div>
       {confirm && review && (
         <Modal title={t('approveAll')} onClose={() => setConfirm(false)}>
           <div className="stack">

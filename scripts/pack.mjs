@@ -7,11 +7,18 @@
 // Third-party packages (sharp, playwright, remotion, @remotion/*, fonts, zod, …) stay real `dependencies`
 // with the same version ranges as the workspace packages declare.
 //
-// Usage: node scripts/pack.mjs [--out <dir>]   (needs `pnpm build` first; `pnpm pack:release` does both)
+// Usage: node scripts/pack.mjs [--out <dir>] [--write-sums]   (needs `pnpm build` first; `pnpm pack:release` does both)
+//
+// The tarball's checksum is the SHA-256 of the gunzipped tar: the tar is byte-identical on every machine that builds
+// the same commit (npm pack fixes mtimes and owners), while the gzip layer differs between Node versions. The plugin's
+// launcher verifies a downloaded release against the entry for its version in plugins/vitrin/SHA256SUMS, which
+// `--write-sums` (`pnpm release:checksum`) records; the release workflow refuses to publish a tarball that does not match.
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { gunzipSync } from 'node:zlib';
 import { build } from 'esbuild';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -20,6 +27,8 @@ const readJson = (file) => JSON.parse(readFileSync(file, 'utf8'));
 
 const argv = process.argv.slice(2);
 const outIdx = argv.indexOf('--out');
+const writeSums = argv.includes('--write-sums');
+const SUMS = join(ROOT, 'plugins', 'vitrin', 'SHA256SUMS');
 const OUT = resolve(outIdx >= 0 && argv[outIdx + 1] ? argv[outIdx + 1] : join(ROOT, 'release'));
 const STAGE = join(OUT, 'package');
 
@@ -112,4 +121,21 @@ const packed = JSON.parse(execFileSync('npm', ['pack', '--json', '--pack-destina
 const tarball = join(OUT, packed.filename);
 const mb = (n) => `${(n / 1024 / 1024).toFixed(2)} MB`;
 console.log(`${relative(process.cwd(), tarball) || tarball}: ${packed.entryCount} files, ${mb(packed.size)} packed, ${mb(packed.unpackedSize)} unpacked`);
-if (process.env.GITHUB_OUTPUT) writeFileSync(process.env.GITHUB_OUTPUT, `tarball=${tarball.split(sep).join('/')}\n`, { flag: 'a' });
+
+// 5. The checksum the launcher verifies (see the header), as a SHA256SUMS line for the gunzipped tar.
+export function tarSha256(tgz) {
+  return createHash('sha256').update(gunzipSync(readFileSync(tgz))).digest('hex');
+}
+/** Replaces or adds the line for `name` in a SHA256SUMS text (`<sha256>  <name>`), keeping the others. */
+export function withSum(text, sha256, name) {
+  const lines = text.split('\n').filter((l) => l.trim() && !l.endsWith(`  ${name}`));
+  return [...lines, `${sha256}  ${name}`].join('\n') + '\n';
+}
+const sumName = `ardasnturk-vitrin-${version}.tar`;
+const sum = tarSha256(tarball);
+console.log(`${sum}  ${sumName}  (SHA-256 of the gunzipped tar; the plugin's launcher checks it)`);
+if (writeSums) {
+  writeFileSync(SUMS, withSum(existsSync(SUMS) ? readFileSync(SUMS, 'utf8') : '', sum, sumName));
+  console.log(`recorded in ${relative(process.cwd(), SUMS)}`);
+}
+if (process.env.GITHUB_OUTPUT) writeFileSync(process.env.GITHUB_OUTPUT, `tarball=${tarball.split(sep).join('/')}\nsha256=${sum}\nsum_name=${sumName}\n`, { flag: 'a' });

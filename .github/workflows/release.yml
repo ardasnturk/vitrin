@@ -55,6 +55,23 @@ jobs:
       - name: Pack
         id: pack
         run: pnpm pack:release
+      - name: Check the tarball against the checksum the plugin records
+        # plugins/vitrin/SHA256SUMS holds the SHA-256 of the gunzipped tar per version (`pnpm release:checksum`);
+        # the plugin's launcher refuses a download that differs, so a release that differs must not be published.
+        run: |
+          name="${{ steps.pack.outputs.sum_name }}"
+          actual="${{ steps.pack.outputs.sha256 }}"
+          expected=$(grep -E "^[0-9a-fA-F]{64}  ${name//./\\.}$" plugins/vitrin/SHA256SUMS | cut -d' ' -f1 | head -n 1 | tr 'A-F' 'a-f')
+          if [ -z "$expected" ]; then
+            echo "::error::plugins/vitrin/SHA256SUMS has no entry for ${name}: run \`pnpm release:checksum\` and commit it before tagging"
+            exit 1
+          fi
+          if [ "$expected" != "$actual" ]; then
+            echo "::error::checksum mismatch for ${name}: the plugin records ${expected}, this build is ${actual}. The build is not reproducible from the tagged commit; rerun \`pnpm release:checksum\` on it and investigate before releasing."
+            exit 1
+          fi
+          printf '%s  %s\n' "$actual" "$name" > "$RUNNER_TEMP/SHA256SUMS"
+          echo "checksum ok: $actual  $name"
       - name: Release notes from CHANGELOG.md
         run: node scripts/release-notes.mjs "$VERSION" > "$RUNNER_TEMP/release-notes.md"
       - name: Create the GitHub Release
@@ -63,7 +80,7 @@ jobs:
         run: |
           # A tag push releases that tag; a manual run creates v<version> on the commit it built.
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then tag_args=(--target "$GITHUB_SHA"); else tag_args=(--verify-tag); fi
-          gh release create "v${VERSION}" "${{ steps.pack.outputs.tarball }}" \
+          gh release create "v${VERSION}" "${{ steps.pack.outputs.tarball }}" "$RUNNER_TEMP/SHA256SUMS" \
             --title "Vitrin ${VERSION}" \
             --notes-file "$RUNNER_TEMP/release-notes.md" \
             "${tag_args[@]}"
