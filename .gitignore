@@ -26,3 +26,4 @@ DerivedData/
 # Vitrin for Mac build products
 apps/VitrinMac/build/
 apps/VitrinMac/build-test/
+apps/VitrinMac/dist/

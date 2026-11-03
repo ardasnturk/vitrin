@@ -77,8 +77,8 @@
           <h1>Your store listing, <span class="accent">built from your code.</span></h1>
           <p class="lead">Vitrin reads your app project — Swift, Flutter, React Native, Expo or Android — studies the competition and produces ASO-ready metadata, screenshots and App Previews for the App Store and Google Play. You choose what to make, approve every item, and only then does it upload.</p>
           <div class="cta">
-            <a class="btn btn-primary" href="#start">Get started</a>
-            <a class="btn btn-ghost" href="https://github.com/ardasnturk/vitrin">View on GitHub</a>
+            <a class="btn btn-primary" href="https://github.com/ardasnturk/vitrin/releases/latest">Download for Mac</a>
+            <a class="btn btn-ghost" href="#start">Claude Code plugin</a>
           </div>
           <div class="install" role="group" aria-label="Install command">
             <code><span class="prompt" aria-hidden="true">$</span> claude plugin install vitrin --marketplace ardasnturk/vitrin</code>
@@ -389,7 +389,7 @@
             <p>English, German, Spanish, French, Italian, Japanese, Korean, Brazilian Portuguese, Turkish and Simplified Chinese, following your system. Every section explains itself with an info button.</p>
           </article>
         </div>
-        <p class="section-lead">The connection is optional: projects work without it. macOS 15 or newer; for now you <a href="https://github.com/ardasnturk/vitrin/tree/main/apps/VitrinMac">build the app from source</a>.</p>
+        <p class="section-lead">The connection is optional: projects work without it. Needs macOS 15 or newer. <a href="https://github.com/ardasnturk/vitrin/releases/latest">Download the notarized DMG</a> or run <code>brew tap ardasnturk/vitrin https://github.com/ardasnturk/vitrin &amp;&amp; brew install --cask vitrin</code>.</p>
       </div>
     </section>
 
@@ -461,8 +461,8 @@
     <!-- Quick start -->
     <section id="start" aria-labelledby="start-title">
       <div class="wrap">
-        <h2 id="start-title" class="section-title">Install in one line</h2>
-        <p class="section-lead">Vitrin is a Claude Code plugin. Requires macOS, Node.js 22+ and <a href="https://claude.com/claude-code">Claude Code</a>; ffmpeg, the asc CLI for App Store uploads, Ruby + Bundler with fastlane only for Google Play, the Flutter SDK or Android SDK when your app needs them. <code>vitrin doctor</code> checks them and tells you what is missing.</p>
+        <h2 id="start-title" class="section-title">Install the plugin in one line</h2>
+        <p class="section-lead">The Mac app is a <a href="https://github.com/ardasnturk/vitrin/releases/latest">download</a>; the <code>/vitrin</code> skill is a Claude Code plugin. Requires macOS, Node.js 22+ and <a href="https://claude.com/claude-code">Claude Code</a>; ffmpeg, the asc CLI for App Store uploads, Ruby + Bundler with fastlane only for Google Play, the Flutter SDK or Android SDK when your app needs them. <code>vitrin doctor</code> checks them and tells you what is missing.</p>
         <ol class="quick">
           <li>
             <h3>Install the plugin</h3>
@@ -496,7 +496,7 @@ claude</code></pre><button class="copy" type="button" data-copy="cd path/to/Your
         </details>
         <details>
           <summary>Is there a Mac app?</summary>
-          <p>Yes. Vitrin for Mac runs the same flow in a native window and manages your team's apps on App Store Connect: release status, store text, screenshots, builds, TestFlight, reviews, prices and analytics, ten languages included. It needs macOS 15 or newer and, for now, <a href="https://github.com/ardasnturk/vitrin/tree/main/apps/VitrinMac">a build from source</a>.</p>
+          <p>Yes. Vitrin for Mac runs the same flow in a native window and manages your team's apps on App Store Connect: release status, store text, screenshots, builds, TestFlight, reviews, prices and analytics, ten languages included. It needs macOS 15 or newer: <a href="https://github.com/ardasnturk/vitrin/releases/latest">download the notarized DMG</a> or install it with Homebrew.</p>
         </details>
         <details>
           <summary>How do I install it? Do I have to clone the repo?</summary>

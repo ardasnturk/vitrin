@@ -21,6 +21,12 @@ Portuguese, Turkish and Simplified Chinese, falling back to English.
 
 ![Flow](docs/screenshots/flow.jpg)
 
+## Install
+
+Download the notarized `Vitrin-<version>.dmg` from [GitHub Releases](https://github.com/ardasnturk/vitrin/releases/latest),
+or `brew tap ardasnturk/vitrin https://github.com/ardasnturk/vitrin && brew install --cask vitrin`. What follows is for
+building it yourself; releases are described in [docs/RELEASE.md](docs/RELEASE.md).
+
 ## Requirements
 
 - macOS 15 or newer, Xcode 16 or newer (built with Xcode 27.1, Swift 6, strict concurrency).
@@ -28,7 +34,7 @@ Portuguese, Turkish and Simplified Chinese, falling back to English.
 - The Vitrin CLI, Vitrin **2.0 or newer** (`vitrin studio --token-file`), and Node.js 22+ to run it. The app looks for it in this order:
   1. the path set in Settings → Vitrin CLI (a `bin.js` or a `vitrin` executable),
   2. the Claude Code plugin install (`${VITRIN_HOME:-~/.local/share/vitrin}/<version>/node_modules/@ardasnturk/vitrin/dist/bin.js`, newest version),
-  3. `vitrin` on the login shell's PATH (`npm install -g @ardasnturk/vitrin`),
+  3. `vitrin` on the login shell's PATH,
   4. a developer checkout (Settings → Vitrin checkout, or `VITRIN_DEV`): `packages/cli/dist/bin.js` after `pnpm build`.
 
   A candidate counts only when its `studio --help` knows `--token-file`; older installs are skipped and named in the error.
@@ -42,9 +48,9 @@ xcodegen generate
 xcodebuild -scheme VitrinMac -destination 'platform=macOS' build
 ```
 
-The project signs ad hoc (`CODE_SIGN_IDENTITY: "-"`) with the Hardened Runtime on and the App Sandbox off (the app
-starts Node.js in the user's project folders). Set your team in `project.yml` to run it signed; notarization and a
-signed Sparkle feed are not set up (see Updates).
+Debug signs ad hoc with the Hardened Runtime on and the App Sandbox off (the app starts Node.js in the user's project
+folders). Release signs with Developer ID for the notarized DMG (`scripts/build-mac.sh`), so build Debug without that
+certificate. A signed Sparkle feed is not set up (see Updates).
 
 To try it with the example: `pnpm build` in the repository, open the app, Settings → Vitrin CLI → Vitrin checkout =
 the repository path, then Add project… → `examples/Ritim`.

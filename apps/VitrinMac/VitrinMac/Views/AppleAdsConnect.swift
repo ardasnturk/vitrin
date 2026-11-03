@@ -136,3 +136,43 @@ struct InstallAscButton: View {
         } catch { self.error = error.localizedDescription }
     }
 }
+
+/// Installs the Vitrin CLI of this release with the launcher the Claude Code plugin uses, bundled in the app: it
+/// verifies the release tarball against the plugin's checksums, installs it for this user, and fetches Chromium.
+struct InstallCLIButton: View {
+    @Environment(AppModel.self) private var model
+    @State private var running = false
+    @State private var error: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Button(L.t("cli.install")) { Task { await install() } }.buttonStyle(GradientButtonStyle(fullWidth: false)).disabled(running)
+                    .accessibilityIdentifier("cli.install")
+                if running { ProgressView().controlSize(.small); Text(L.t("cli.installing")).font(.callout).foregroundStyle(.secondary) }
+            }
+            if let error { Text(error).font(.caption).foregroundStyle(.red).fixedSize(horizontal: false, vertical: true).textSelection(.enabled) }
+        }
+    }
+
+    private func install() async {
+        running = true
+        defer { running = false }
+        error = nil
+        do {
+            var env = await ShellEnvironment.environment()
+            if await ShellEnvironment.which("npm") == nil {
+                guard let brew = await ShellEnvironment.which("brew") else { error = L.t("cli.needsNode"); return }
+                let r = try await ProcessRunner.run(brew, ["install", "node"], environment: env, timeout: 900)
+                guard r.code == 0 else { error = String(r.stderr.suffix(300)); return }
+                env = await ShellEnvironment.environment()
+            }
+            guard let launcher = Bundle.main.url(forResource: "vitrin", withExtension: nil)?.appendingPathComponent("bin/vitrin") else { error = L.t("cli.needsNode"); return }
+            env["VITRIN_VERSION"] = model.updates.appVersion
+            let r = try await ProcessRunner.run("/bin/bash", [launcher.path, "--version"], environment: env, timeout: 1500)
+            guard r.code == 0 else { error = String((r.stderr.isEmpty ? r.stdout : r.stderr).suffix(400)); return }
+            await model.locateCLI()
+            if let p = model.selectedProject { await model.open(p) }
+        } catch { self.error = error.localizedDescription }
+    }
+}

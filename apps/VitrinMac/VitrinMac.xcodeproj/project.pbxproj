@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		002E76A5498A3C3D3C8AA23B /* ReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB53321E2AC6996F8DDAFA1 /* ReviewView.swift */; };
 		01657CC38DEB346F5292810E /* AppIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F072DDADE9FDE8E22ED817A /* AppIcons.swift */; };
+		01E7BB02FF7ED4C5D0622DD1 /* vitrin in Resources */ = {isa = PBXBuildFile; fileRef = BBF0D34C8EB12E25E1CDC0FA /* vitrin */; };
 		04162DCD728995EFF844F68F /* ASCApps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C0B0D88CC3702B332EFCCF /* ASCApps.swift */; };
 		0BFAE15C9FE9A77391F032FD /* AscListingImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A3F41FBC6CAE0D466C60EF /* AscListingImport.swift */; };
 		0C2E33D731366A027E9821E1 /* AppleWebSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3EFB80A6FA75C3A967494C /* AppleWebSession.swift */; };
@@ -159,6 +160,7 @@
 		B0E08221597DCFE63E90E24A /* ClaudePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudePanel.swift; sourceTree = "<group>"; };
 		B74D68F1B0BD20A23DC2231D /* JSONValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONValueTests.swift; sourceTree = "<group>"; };
 		B8608CABDFF5103947E4E614 /* AscCommandShelf.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscCommandShelf.swift; sourceTree = "<group>"; };
+		BBF0D34C8EB12E25E1CDC0FA /* vitrin */ = {isa = PBXFileReference; lastKnownFileType = folder; name = vitrin; path = ../../plugins/vitrin; sourceTree = SOURCE_ROOT; };
 		C6A3F41FBC6CAE0D466C60EF /* AscListingImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscListingImport.swift; sourceTree = "<group>"; };
 		C6D51CAE05B7F00B658B2BA0 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		CBE4D6DF03D2F9BD630E46C3 /* AscCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscCatalog.swift; sourceTree = "<group>"; };
@@ -242,11 +244,21 @@
 		65A0D08315901B988056FDBD = {
 			isa = PBXGroup;
 			children = (
+				9CF77EE7D96830F9EF036027 /* auto-asc-metadata */,
 				EE75C35F198473E986D4D324 /* VitrinMac */,
 				18E35CD5E863016BF2567810 /* VitrinMacTests */,
 				FC643964C13DD9B9ABA15D0A /* VitrinMacUITests */,
 				137400809D7D6686E5A6EB18 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		9CF77EE7D96830F9EF036027 /* auto-asc-metadata */ = {
+			isa = PBXGroup;
+			children = (
+				CC92065EE7A1914FFFE9E6CB /* plugins */,
+			);
+			name = "auto-asc-metadata";
+			path = ../..;
 			sourceTree = "<group>";
 		};
 		9E23F5E2418630F9D34AF6CB /* Views */ = {
@@ -293,6 +305,14 @@
 				78237FAFA376D7A69B870240 /* Design.swift */,
 			);
 			path = Design;
+			sourceTree = "<group>";
+		};
+		CC92065EE7A1914FFFE9E6CB /* plugins */ = {
+			isa = PBXGroup;
+			children = (
+				BBF0D34C8EB12E25E1CDC0FA /* vitrin */,
+			);
+			path = plugins;
 			sourceTree = "<group>";
 		};
 		EE75C35F198473E986D4D324 /* VitrinMac */ = {
@@ -419,9 +439,6 @@
 						ProvisioningStyle = Automatic;
 						TestTargetID = 8F3B5044BF70D560768A6DF9;
 					};
-					8F3B5044BF70D560768A6DF9 = {
-						ProvisioningStyle = Automatic;
-					};
 				};
 			};
 			buildConfigurationList = D9E9381E0E215DAFBB96F252 /* Build configuration list for PBXProject "VitrinMac" */;
@@ -471,6 +488,7 @@
 				E33A0D024F9E3BB8F6E78B2C /* Assets.xcassets in Resources */,
 				27EAF5A890A43F354B838033 /* Localizable.xcstrings in Resources */,
 				69C506659A1FFDA0CFC008B5 /* asc-commands.json in Resources */,
+				01E7BB02FF7ED4C5D0622DD1 /* vitrin in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -656,9 +674,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = VitrinMac/Resources/VitrinMac.entitlements;
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Developer ID Application";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 5JMD3VSD7N;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -673,6 +692,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				OTHER_CODE_SIGN_FLAGS = "--timestamp";
 				OTHER_LDFLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.jastech.vitrin;
 				PRODUCT_NAME = Vitrin;

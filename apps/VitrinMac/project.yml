@@ -23,6 +23,10 @@ targets:
     platform: macOS
     sources:
       - path: VitrinMac
+      # The Claude Code plugin's launcher and its checksums: the app installs the CLI with them.
+      - path: ../../plugins/vitrin
+        type: folder
+        buildPhase: resources
     settings:
       base:
         PRODUCT_NAME: Vitrin
@@ -37,14 +41,21 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         CODE_SIGN_ENTITLEMENTS: VitrinMac/Resources/VitrinMac.entitlements
-        # Ad-hoc signing so the project builds on any Mac; set a team to run it signed.
-        CODE_SIGN_STYLE: Automatic
-        CODE_SIGN_IDENTITY: "-"
         ENABLE_HARDENED_RUNTIME: YES
         ENABLE_APP_SANDBOX: NO
         ENABLE_PREVIEWS: YES
         COMBINE_HIDPI_IMAGES: YES
         OTHER_LDFLAGS: "$(inherited)"
+      configs:
+        # Debug signs ad hoc so the project builds on any Mac. Release is what scripts/build-mac.sh notarizes.
+        Debug:
+          CODE_SIGN_STYLE: Automatic
+          CODE_SIGN_IDENTITY: "-"
+        Release:
+          DEVELOPMENT_TEAM: 5JMD3VSD7N
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: "Developer ID Application"
+          OTHER_CODE_SIGN_FLAGS: --timestamp
     info:
       path: VitrinMac/Resources/Info.plist
       properties:

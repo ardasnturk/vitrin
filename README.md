@@ -1,14 +1,24 @@
-# Vitrin
+<p align="center"><img src="docs/icon.png" width="128" height="128" alt="Vitrin icon"></p>
 
-[![CI](https://github.com/ardasnturk/vitrin/actions/workflows/ci.yml/badge.svg)](https://github.com/ardasnturk/vitrin/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Website](https://img.shields.io/badge/website-vitrin.ardasnturk.com-7b6cff.svg)](https://vitrin.ardasnturk.com)
+<h1 align="center">Vitrin</h1>
 
-Vitrin reads a mobile app project, researches competitors and keywords, and produces everything a store listing needs: ASO-friendly metadata, screenshots, product page and search creatives, and App Preview videos. It covers the App Store (iPhone, iPad, iPhone Duo, Mac, Apple Watch, Apple TV, Vision Pro) and Google Play. Swift/SwiftUI apps are the primary case; Flutter, React Native, Expo and native Android projects are detected and handled too. Every image is rendered from HTML and every video is rendered in code with Remotion. Vitrin validates all of it against the stores' current rules, shows you everything in a review gallery, and uploads only what you approved, with the asc CLI for the App Store and fastlane supply for Google Play.
+<p align="center">Your store listing, built from your code, and your whole <b>App Store Connect</b> in one Mac app.</p>
 
-The whole flow runs inside Claude Code through the `/vitrin` skill. Claude makes the creative decisions (copy, keyword selection, art direction, shot list, video plan) and asks you the choices that are yours: the language Vitrin talks to you in, which platforms, which content, which design, then which store languages and formats, and after the upload whether to delete the research data. It does nothing you did not approve. Everything it generates lives in your project's `metadata/` folder. The TypeScript CLI does the deterministic work (detection, data collection, rendering, validation, upload). No additional LLM API key is required.
+<p align="center">
+  <a href="https://github.com/ardasnturk/vitrin/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/ardasnturk/vitrin?label=release"></a>
+  <a href="https://github.com/ardasnturk/vitrin/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ardasnturk/vitrin/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="Platform" src="https://img.shields.io/badge/platform-macOS%2015%2B-blue">
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-green"></a>
+</p>
+
+<p align="center"><a href="https://vitrin.ardasnturk.com">Website</a> · <b>English</b> · <a href="README.tr.md">Türkçe</a></p>
 
 > Vitrin is an independent open-source project. It is not affiliated with, endorsed by, or sponsored by Apple Inc. App Store, App Store Connect, iPhone, iPad and other Apple marks are trademarks of Apple Inc.
+
+Vitrin is an app and a Claude Code plugin that share one pipeline:
+
+* **Vitrin for Mac** — a native app that manages every app on your team through the [asc CLI](https://github.com/rorkai/App-Store-Connect-CLI): release status, store text, screenshots, builds, TestFlight, reviews, prices and analytics. It also runs the store listing pipeline for your projects, in ten languages.
+* **The `/vitrin` skill** — inside Claude Code, it reads a mobile app project, researches competitors and keywords, and produces what a store listing needs: ASO-friendly metadata, screenshots, product page and App Preview creatives. Claude makes the creative decisions; the CLI collects, renders, validates and uploads, and only what you approved.
 
 Apple's rules as of October 2026, and the points that could not be verified, are documented in [apple-notes.md](plugins/vitrin/skills/vitrin/references/apple-notes.md).
 
@@ -34,34 +44,21 @@ Apple's rules as of October 2026, and the points that could not be verified, are
 - **Fast first run** — four design samples in one language and one format come first; only after you pick a design and the store languages and formats is the rest captured and rendered.
 - **Idempotent, resumable stages** — `metadata/state.json` tracks input hashes so unchanged stages are skipped.
 
-## Requirements
+## Contents
 
-- macOS (Vision OCR; simulators and Mac window capture only for `capture.mode: launch-args`)
-- Node.js ≥ 22 (pnpm only for development)
-- Xcode (with `simctl`) only for real captures (`capture.mode: launch-args`); HTML screens need no Xcode
-- For App Store uploads: the asc CLI (`brew install asc`, no Ruby). Google Play uses fastlane supply (Ruby + Bundler, fastlane ≥ 2.241.1 pinned in the generated `Gemfile`)
-- ffmpeg / ffprobe
-- For cross-platform or Android apps: the Flutter SDK, Node/CocoaPods for React Native and Expo, or the Android SDK (`adb`, `emulator`, an AVD) as needed
-- [Claude Code](https://claude.com/claude-code) for the `/vitrin` skill
-
-## Installation
-
-Vitrin is a Claude Code plugin. Install it once, in Claude Code:
-
-```text
-/plugin marketplace add ardasnturk/vitrin
-/plugin install vitrin@vitrin
-```
-
-or from a terminal: `claude plugin install vitrin --marketplace ardasnturk/vitrin` (Claude Code 2.1.292 or newer; older versions: `claude plugin marketplace add ardasnturk/vitrin && claude plugin install vitrin@vitrin`).
-
-The plugin adds the `/vitrin` skill and a `vitrin` command for Claude. Nothing else is needed up front besides Node.js 22+: the first time the skill runs `vitrin`, it downloads the release tarball for the plugin's version, checks it against the checksum recorded in the plugin (`plugins/vitrin/SHA256SUMS`; nothing is installed when they differ) and installs the CLI into `~/.local/share/vitrin/<version>/` (override with `VITRIN_HOME`), including Playwright Chromium. That one-time step downloads roughly 450 MB and takes a few minutes; it needs no sudo and no global npm packages. Update with `claude plugin update vitrin@vitrin` (or `/plugin` → Marketplaces → Update); the new version installs its CLI on its next run.
-
-To use the CLI in your own terminal as well: `npm install -g @ardasnturk/vitrin`.
-
-The skill alone can also be added with the [skills CLI](https://github.com/vercel-labs/skills) (`npx skills add ardasnturk/vitrin`), but then the `vitrin` command is missing; prefer the plugin.
-
-**Contributors** working from a clone can still run `plugins/vitrin/skills/vitrin/scripts/install.sh`: it builds this checkout, writes a `vitrin` launcher into npm's global bin directory (override with `VITRIN_BIN_DIR`) and copies the skill to `~/.claude/skills/vitrin` (override with `CLAUDE_SKILLS_DIR`). With the plugin installed, `VITRIN_DEV=/path/to/vitrin` makes the plugin's `vitrin` run your local build instead.
+* [Quick start](#quick-start)
+* [Requirements](#requirements)
+* [Install](#install)
+* [Vitrin for Mac](#vitrin-for-mac)
+* [Updates](#updates)
+* [Commands](#commands)
+* [Keys and `.env`](#keys-and-env)
+* [Render matrix](#render-matrix)
+* [Repository layout](#repository-layout)
+* [Development](#development)
+* [Example app](#example-app)
+* [Contributing](#contributing)
+* [License](#license)
 
 ## Quick start
 
@@ -72,6 +69,63 @@ Open Claude Code in your app's repository and run:
 ```
 
 The skill first asks which language to talk in (English by default). On a new repository it runs `vitrin init` (config and `.gitignore` block only; everything Vitrin generates stays in `metadata/`). It asks which platforms and which content to produce. It recreates the app's screens in HTML from the code (no build), places them in device mockups, then renders four sample designs — at least one designed for your app — in one language (English when the app has it), with a store preview you can switch between stores and designs. Only after you approved a design does it ask which store languages and formats to produce. It walks through every stage, writes the creative inputs itself, shows you everything in the review gallery, asks for your keys only at the upload, and never uploads or submits without an explicit "yes". If `/vitrin` is taken by another command, use `/vitrin:vitrin`.
+
+## Requirements
+
+- macOS (Vision OCR; simulators and Mac window capture only for `capture.mode: launch-args`)
+- Node.js ≥ 22 (pnpm only for development)
+- Xcode (with `simctl`) only for real captures (`capture.mode: launch-args`); HTML screens need no Xcode
+- For App Store uploads: the asc CLI (`brew install asc`, no Ruby). Google Play uses fastlane supply (Ruby + Bundler, fastlane ≥ 2.241.1 pinned in the generated `Gemfile`)
+- ffmpeg / ffprobe
+- For cross-platform or Android apps: the Flutter SDK, Node/CocoaPods for React Native and Expo, or the Android SDK (`adb`, `emulator`, an AVD) as needed
+- [Claude Code](https://claude.com/claude-code) for the `/vitrin` skill
+
+## Install
+
+**Mac app** — download the notarized `Vitrin-<version>.dmg` from [GitHub Releases](https://github.com/ardasnturk/vitrin/releases/latest), or use Homebrew:
+
+```sh
+brew tap ardasnturk/vitrin https://github.com/ardasnturk/vitrin
+brew install --cask vitrin
+```
+
+Open Vitrin and follow the welcome tour. It checks the tools on your Mac and installs what is missing with a click: the asc CLI, and the Vitrin CLI for the store listing pipeline.
+
+**Claude Code plugin** — install it once, in Claude Code:
+
+```text
+/plugin marketplace add ardasnturk/vitrin
+/plugin install vitrin@vitrin
+```
+
+or from a terminal: `claude plugin install vitrin --marketplace ardasnturk/vitrin` (Claude Code 2.1.292 or newer; older versions: `claude plugin marketplace add ardasnturk/vitrin && claude plugin install vitrin@vitrin`).
+
+The plugin adds the `/vitrin` skill and a `vitrin` command for Claude. Nothing else is needed up front besides Node.js 22+: the first time the skill runs `vitrin`, it downloads the release tarball for the plugin's version, checks it against the checksum recorded in the plugin (`plugins/vitrin/SHA256SUMS`; nothing is installed when they differ) and installs the CLI into `~/.local/share/vitrin/<version>/` (override with `VITRIN_HOME`), including Playwright Chromium. That one-time step downloads roughly 450 MB and takes a few minutes; it needs no sudo and no global npm packages. Update with `claude plugin update vitrin@vitrin` (or `/plugin` → Marketplaces → Update); the new version installs its CLI on its next run.
+
+To use the CLI in your own terminal as well: `npm install -g https://github.com/ardasnturk/vitrin/releases/download/v2.0.0/ardasnturk-vitrin-2.0.0.tgz`.
+
+The skill alone can also be added with the [skills CLI](https://github.com/vercel-labs/skills) (`npx skills add ardasnturk/vitrin`), but then the `vitrin` command is missing; prefer the plugin.
+
+**Contributors** working from a clone can still run `plugins/vitrin/skills/vitrin/scripts/install.sh`: it builds this checkout, writes a `vitrin` launcher into npm's global bin directory (override with `VITRIN_BIN_DIR`) and copies the skill to `~/.claude/skills/vitrin` (override with `CLAUDE_SKILLS_DIR`). With the plugin installed, `VITRIN_DEV=/path/to/vitrin` makes the plugin's `vitrin` run your local build instead.
+
+## Vitrin for Mac
+
+Connecting to App Store Connect is optional, either with an API key entered once or with asc's own login. Then:
+
+* **Every app on your team** — icons, versions and states in the sidebar, a tab for each part of an app, and team pages for users, devices, signing, reports, automation, Apple Ads and the account.
+* **Commands become features** — asc's 1,300 commands sit on the tab they belong to. What only reads loads by itself and shows as lists and cards, never JSON; what changes something is a button with a short form. Language codes, categories and states read as words.
+* **Release from your desk** — why a version can't be submitted, what App Review sees, the submission history, then submit, release or phase it.
+* **Create apps and keys** — Apple's API can't create an app, so this signs in with your Apple Account; the same sign-in makes an Admin API key in one step and shows the App Store Connect analytics dashboards. The password stays in the keychain with asc.
+* **Apple Ads** — connects inside the app: Vitrin makes the key pair and signs in, Apple needs three short steps from you once.
+* **Your projects** — add a repository and run the whole `/vitrin` flow in a window, with Claude next to it.
+* **Menu bar** — which apps were rejected or are in review, and what runs and waits.
+* **Your language** — it follows the system in English, German, Spanish, French, Italian, Japanese, Korean, Brazilian Portuguese, Turkish and Simplified Chinese. Every section explains itself with an info button.
+
+More in [apps/VitrinMac](apps/VitrinMac).
+
+## Updates
+
+The Mac app checks GitHub for a new release once a day (Settings → Updates) and opens the release page when there is one. Homebrew users can run `brew upgrade --cask vitrin`. The Claude Code plugin updates with `claude plugin update vitrin@vitrin`.
 
 ## Commands
 
@@ -185,7 +239,7 @@ node packages/cli/dist/bin.js --cwd examples/Ritim validate
 node packages/cli/dist/bin.js --cwd examples/Ritim studio   # the Studio on the example; `pnpm dev:studio` rebuilds the UI on change
 ```
 
-Releases: bump `version` in `package.json` (the single source), `plugins/vitrin/.claude-plugin/plugin.json`, the `vitrin` entry of `.claude-plugin/marketplace.json` and every `packages/*/package.json` to the same value (a test checks this), add the CHANGELOG section, run `pnpm release:checksum` (it builds, packs and records the tarball's checksum in `plugins/vitrin/SHA256SUMS`), commit, then push a tag `v<version>`. The release workflow tests, runs `pnpm pack:release`, refuses to publish when its tarball does not match the recorded checksum, and creates the GitHub Release with `ardasnturk-vitrin-<version>.tgz` and `SHA256SUMS`; the plugin's launcher verifies the download against the recorded checksum before installing it. It also publishes to npm when the `NPM_TOKEN` secret is set. The checksum is the SHA-256 of the gunzipped tar (`gunzip -c … | shasum -a 256`), which is the same on every machine that builds the tagged commit, while the gzip layer differs between Node versions.
+Releases: bump `version` in `package.json` (the single source), `plugins/vitrin/.claude-plugin/plugin.json`, the `vitrin` entry of `.claude-plugin/marketplace.json` and every `packages/*/package.json` to the same value (a test checks this), add the CHANGELOG section, run `pnpm release:checksum` (it builds, packs and records the tarball's checksum in `plugins/vitrin/SHA256SUMS`), commit, then build the Mac app's DMG and push a tag `v<version>` ([apps/VitrinMac/docs/RELEASE.md](apps/VitrinMac/docs/RELEASE.md)). The release workflow tests, runs `pnpm pack:release`, refuses to publish when its tarball does not match the recorded checksum, and creates the GitHub Release with `ardasnturk-vitrin-<version>.tgz` and `SHA256SUMS`; the plugin's launcher verifies the download against the recorded checksum before installing it. It also publishes to npm when the `NPM_TOKEN` secret is set. The checksum is the SHA-256 of the gunzipped tar (`gunzip -c … | shasum -a 256`), which is the same on every machine that builds the tagged commit, while the gzip layer differs between Node versions.
 
 ## Example app
 

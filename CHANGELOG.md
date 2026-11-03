@@ -31,6 +31,8 @@ Vitrin for Mac becomes an App Store Connect panel, and the asc CLI becomes the o
 - Vitrin for Mac: follows the system language, with the languages of Remote Code: English, German, Spanish, French, Italian, Japanese, Korean, Brazilian Portuguese, Turkish and Simplified Chinese. A system language the app doesn't have falls back to English.
 - Vitrin for Mac: the menu bar panel shows app icons, rejected apps first, and opens an app or Settings in front.
 - Vitrin for Mac: create a new app on App Store Connect, from the sidebar or the overview. Apple only allows this through an Apple Account, so the app signs in with the email, password and two-factor code (the password stays with asc in the keychain) and runs `asc web apps create`. The same sign-in creates an Admin API key in one step and shows the App Store Connect analytics dashboards for keys that can't read reports.
+- Vitrin for Mac ships as a notarized DMG with a designed window, attached to each release, and as a Homebrew cask (`Casks/vitrin.rb`). `apps/VitrinMac/scripts/build-mac.sh` builds it; `apps/VitrinMac/docs/RELEASE.md` describes the release.
+- Vitrin for Mac: installs the Vitrin CLI with a button, using the plugin's launcher, which verifies the release tarball.
 
 ### Fixed
 - **The Team pages no longer push the window's content off screen.** Their header's description had a vertical `fixedSize`; measured at a zero width it grew a letter per line. It is two lines at most now.
