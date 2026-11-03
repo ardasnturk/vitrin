@@ -3,6 +3,7 @@ import type { PreviewType, ScreenshotDisplayType } from '@vitrin/schemas';
 import { readFile } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
 import type { AscClient, JsonApiDocument, JsonApiResource } from './asc-client.js';
+import type { RetryPolicy } from './retry.js';
 import { defaultSleep, md5, performUploadOperations, type PollOptions, type UploadOperation } from './upload-operations.js';
 
 /**
@@ -17,6 +18,11 @@ import { defaultSleep, md5, performUploadOperations, type PollOptions, type Uplo
  * creates) the set of one localization and one display type, deletes only that set's items, uploads the new files
  * (reserve → upload operations → commit with the MD5 `sourceFileChecksum` → poll the delivery state) and sets the
  * order. The flow follows the one in rorkai/App-Store-Connect-CLI (MIT; internal/cli/assets).
+ *
+ * A classic set holds its items directly and at most 10 of them, so the new files cannot be reserved beside the old
+ * ones: the deletes have to come first. Every file is read before that, and each network call is retried by
+ * AscClient and performUploadOperations; if an upload still fails after the deletes, the error says how many of the
+ * new files made it into the set, so a second run can complete it.
  */
 
 /** Apple's per-set limits: 10 screenshots, 3 App Previews. */
@@ -106,7 +112,7 @@ export interface ReplaceResult {
 export class ClassicMediaClient {
   constructor(
     private readonly asc: AscClient,
-    private readonly opts: { uploadFetch?: typeof fetch; poll?: PollOptions } = {},
+    private readonly opts: { uploadFetch?: typeof fetch; poll?: PollOptions; retry?: Partial<RetryPolicy> } = {},
   ) {}
 
   /** The set of exactly this display type in one version localization (filter[screenshotDisplayType]). */
@@ -144,14 +150,18 @@ export class ClassicMediaClient {
       }
     }
     const uploaded: string[] = [];
-    for (const { file, bytes } of contents) {
-      const reserved = idOrThrow(await this.asc.request<JsonApiDocument<MediaAttrs>>('POST', '/v1/appScreenshots', screenshotCreateBody(set.id, basename(file), bytes.byteLength)), 'appScreenshots') as JsonApiResource<MediaAttrs>;
-      await performUploadOperations(reserved.attributes?.uploadOperations ?? [], bytes, file, this.opts.uploadFetch);
-      await this.asc.request('PATCH', `/v1/appScreenshots/${reserved.id}`, screenshotCommitBody(reserved.id, md5(bytes)));
-      await this.waitDelivered('appScreenshots', reserved.id, basename(file), false);
-      uploaded.push(reserved.id);
+    try {
+      for (const { file, bytes } of contents) {
+        const reserved = idOrThrow(await this.asc.request<JsonApiDocument<MediaAttrs>>('POST', '/v1/appScreenshots', screenshotCreateBody(set.id, basename(file), bytes.byteLength)), 'appScreenshots') as JsonApiResource<MediaAttrs>;
+        await performUploadOperations(reserved.attributes?.uploadOperations ?? [], bytes, file, this.opts.uploadFetch, this.opts.retry);
+        await this.asc.request('PATCH', `/v1/appScreenshots/${reserved.id}`, screenshotCommitBody(reserved.id, md5(bytes)));
+        await this.waitDelivered('appScreenshots', reserved.id, basename(file), false);
+        uploaded.push(reserved.id);
+      }
+      if (uploaded.length > 1) await this.asc.request('PATCH', `/v1/appScreenshotSets/${set.id}/relationships/appScreenshots`, screenshotOrderBody(uploaded));
+    } catch (err) {
+      throw leftBehind(displayType, 'screenshots', err, deleted, uploaded.length, contents.length);
     }
-    if (uploaded.length > 1) await this.asc.request('PATCH', `/v1/appScreenshotSets/${set.id}/relationships/appScreenshots`, screenshotOrderBody(uploaded));
     return { setId: set.id, createdSet, deleted, uploaded };
   }
 
@@ -177,14 +187,18 @@ export class ClassicMediaClient {
       }
     }
     const uploaded: string[] = [];
-    for (const { file, bytes, mimeType } of contents) {
-      const reserved = idOrThrow(await this.asc.request<JsonApiDocument<MediaAttrs>>('POST', '/v1/appPreviews', previewCreateBody(set.id, basename(file), bytes.byteLength, { mimeType, previewFrameTimeCode: tc })), 'appPreviews') as JsonApiResource<MediaAttrs>;
-      await performUploadOperations(reserved.attributes?.uploadOperations ?? [], bytes, file, this.opts.uploadFetch);
-      await this.asc.request('PATCH', `/v1/appPreviews/${reserved.id}`, previewCommitBody(reserved.id, md5(bytes), tc));
-      await this.waitDelivered('appPreviews', reserved.id, basename(file), true);
-      uploaded.push(reserved.id);
+    try {
+      for (const { file, bytes, mimeType } of contents) {
+        const reserved = idOrThrow(await this.asc.request<JsonApiDocument<MediaAttrs>>('POST', '/v1/appPreviews', previewCreateBody(set.id, basename(file), bytes.byteLength, { mimeType, previewFrameTimeCode: tc })), 'appPreviews') as JsonApiResource<MediaAttrs>;
+        await performUploadOperations(reserved.attributes?.uploadOperations ?? [], bytes, file, this.opts.uploadFetch, this.opts.retry);
+        await this.asc.request('PATCH', `/v1/appPreviews/${reserved.id}`, previewCommitBody(reserved.id, md5(bytes), tc));
+        await this.waitDelivered('appPreviews', reserved.id, basename(file), true);
+        uploaded.push(reserved.id);
+      }
+      if (uploaded.length > 1) await this.asc.request('PATCH', `/v1/appPreviewSets/${set.id}/relationships/appPreviews`, previewOrderBody(uploaded));
+    } catch (err) {
+      throw leftBehind(previewType, 'App Previews', err, deleted, uploaded.length, contents.length);
     }
-    if (uploaded.length > 1) await this.asc.request('PATCH', `/v1/appPreviewSets/${set.id}/relationships/appPreviews`, previewOrderBody(uploaded));
     return { setId: set.id, createdSet, deleted, uploaded };
   }
 
@@ -217,6 +231,12 @@ export class ClassicMediaClient {
       await sleep(interval);
     }
   }
+}
+
+/** The error of a failed upload, with what the set now holds: the old items are gone and some new ones are in. */
+function leftBehind(type: string, what: string, err: unknown, deleted: number, uploaded: number, total: number): Error {
+  const msg = err instanceof Error ? err.message : String(err);
+  return new Error(`${type}: ${msg} The set's ${deleted} old ${what} were removed and ${uploaded} of ${total} new ones are in it; run the upload again to complete the set.`, { cause: err });
 }
 
 function pickSet<K extends string>(sets: Array<JsonApiResource<Partial<Record<K, string>>>>, key: K, value: string) {

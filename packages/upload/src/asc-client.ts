@@ -1,6 +1,7 @@
-import { addSecret, mask } from '@vitrin/core';
+import { addSecret, log, mask } from '@vitrin/core';
 import { importPKCS8, SignJWT } from 'jose';
 import { existsSync, readFileSync } from 'node:fs';
+import { attemptLabel, isRetryableStatus, retryDelayMs, retryPolicy, type RetryPolicy } from './retry.js';
 
 const BASE = 'https://api.appstoreconnect.apple.com';
 /** Apple allows at most 20 minutes; we stay a bit below. */
@@ -59,6 +60,32 @@ export class AscApiError extends Error {
   }
 }
 
+/** Thrown when every attempt of a request ended without a response (DNS, reset, timeout). `cause` is the last one. */
+export class AscNetworkError extends Error {
+  constructor(
+    public readonly path: string,
+    public readonly attempts: number,
+    cause: unknown,
+  ) {
+    super(mask(`ASC API ${path}: no response after ${attempts} attempt(s): ${cause instanceof Error ? cause.message : String(cause)}`), { cause });
+  }
+}
+
+/**
+ * The body of an error response as the JSON:API `errors` list. App Store Connect's gateways answer 502/503 with
+ * HTML, and some 4xx come without a body: both become one entry with the first 300 characters, so the status and
+ * path are never lost to a SyntaxError.
+ */
+export function errorsFromBody(text: string): AscApiError['errors'] {
+  const fallback = [{ detail: text.trim().slice(0, 300) || '(empty body)' }];
+  try {
+    const json = JSON.parse(text) as { errors?: unknown };
+    return Array.isArray(json?.errors) && json.errors.length ? (json.errors as AscApiError['errors']) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export interface JsonApiResource<A = Record<string, unknown>> {
   type: string;
   id: string;
@@ -72,13 +99,27 @@ export interface JsonApiDocument<A = Record<string, unknown>> {
   links?: { next?: string };
 }
 
+/** A 2xx body: JSON, or nothing. A non-JSON 2xx (a gateway page with the wrong status) is reported, not crashed on. */
+function parseJsonBody<T>(text: string, status: number, path: string): T {
+  if (!text.trim()) return {} as T;
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new AscApiError(status, path, [{ detail: `response is not JSON: ${text.trim().slice(0, 300)}` }]);
+  }
+}
+
 export class AscClient {
   private token?: { value: string; exp: number };
+  private readonly retry: RetryPolicy;
 
   constructor(
     private readonly creds: AscCredentials,
     private readonly fetchImpl: typeof fetch = fetch,
-  ) {}
+    opts: { retry?: Partial<RetryPolicy> } = {},
+  ) {
+    this.retry = retryPolicy(opts.retry);
+  }
 
   private async auth(): Promise<string> {
     const now = Math.floor(Date.now() / 1000);
@@ -88,39 +129,59 @@ export class AscClient {
     return this.token.value;
   }
 
-  async request<T = JsonApiDocument>(method: string, path: string, body?: unknown, attempt = 0): Promise<T> {
+  /**
+   * One API call with bounded retries: 429, 5xx and requests that got no response at all are tried again after
+   * `Retry-After` (seconds or HTTP-date) or exponential backoff, within the policy's attempt and total-wait caps.
+   * Any other 4xx is final. A write may be repeated after a 5xx or a dropped connection, since App Store Connect
+   * may or may not have applied it; fastlane's Spaceship retries the same way. A DELETE that is answered 404 on a
+   * repeat counts as done: the first attempt removed the resource before the response was lost.
+   */
+  async request<T = JsonApiDocument>(method: string, path: string, body?: unknown): Promise<T> {
     const url = path.startsWith('http') ? path : BASE + path;
-    const res = await this.fetchImpl(url, {
-      method,
-      headers: {
-        Authorization: `Bearer ${await this.auth()}`,
-        ...(body ? { 'Content-Type': 'application/json' } : {}),
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    if (res.status === 429 && attempt < 5) {
-      const wait = Number(res.headers.get('retry-after') ?? 2 ** attempt * 2);
-      await new Promise((r) => setTimeout(r, wait * 1000));
-      return this.request<T>(method, path, body, attempt + 1);
+    let waitedMs = 0;
+    for (let attempt = 1; ; attempt++) {
+      const token = await this.auth();
+      let res: Response;
+      try {
+        res = await this.fetchImpl(url, {
+          method,
+          headers: { Authorization: `Bearer ${token}`, ...(body ? { 'Content-Type': 'application/json' } : {}) },
+          body: body ? JSON.stringify(body) : undefined,
+        });
+      } catch (err) {
+        const delay = retryDelayMs({ attempt, waitedMs }, this.retry);
+        if (delay === undefined) throw new AscNetworkError(path, attempt, err);
+        log.dim(`ASC ${method} ${path}: no response (${(err as Error).message}); retrying in ${Math.round(delay / 1000)} s (${attemptLabel(attempt, this.retry)})`);
+        await this.retry.sleep(delay);
+        waitedMs += delay;
+        continue;
+      }
+      if (res.status === 204 || (method === 'DELETE' && attempt > 1 && res.status === 404)) return undefined as T;
+      const text = await res.text();
+      if (res.ok) return parseJsonBody<T>(text, res.status, path);
+      const errors = errorsFromBody(text);
+      const delay = isRetryableStatus(res.status) ? retryDelayMs({ attempt, waitedMs, retryAfter: res.headers.get('retry-after') }, this.retry) : undefined;
+      if (delay === undefined) throw new AscApiError(res.status, path, errors);
+      log.dim(`ASC ${method} ${path}: ${res.status}; retrying in ${Math.round(delay / 1000)} s (${attemptLabel(attempt, this.retry)})`);
+      await this.retry.sleep(delay);
+      waitedMs += delay;
     }
-    if (res.status === 204) return undefined as T;
-    const text = await res.text();
-    const json = text ? (JSON.parse(text) as Record<string, unknown>) : {};
-    if (!res.ok) {
-      throw new AscApiError(res.status, path, (json.errors as AscApiError['errors']) ?? [{ detail: text.slice(0, 300) }]);
-    }
-    return json as T;
   }
 
   get<T = JsonApiDocument>(path: string): Promise<T> {
     return this.request<T>('GET', path);
   }
 
-  /** Follows `links.next` and concatenates `data`. */
-  async getAll<A = Record<string, unknown>>(path: string, max = 20): Promise<Array<JsonApiResource<A>>> {
+  /**
+   * Follows `links.next` and concatenates `data`. A list longer than `maxPages` pages is an error, not a prefix:
+   * callers delete what is not in this list, so a silently truncated one would make them delete too much or too
+   * little.
+   */
+  async getAll<A = Record<string, unknown>>(path: string, maxPages = 20): Promise<Array<JsonApiResource<A>>> {
     const out: Array<JsonApiResource<A>> = [];
     let next: string | undefined = path;
-    for (let i = 0; next && i < max; i++) {
+    for (let page = 0; next; page++) {
+      if (page >= maxPages) throw new Error(`ASC API ${path}: more than ${maxPages} pages; refusing to work with a partial list.`);
       const doc: JsonApiDocument<A> = await this.get<JsonApiDocument<A>>(next);
       out.push(...(Array.isArray(doc.data) ? doc.data : [doc.data]));
       next = doc.links?.next;

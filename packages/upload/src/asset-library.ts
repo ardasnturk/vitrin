@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
 import type { AscClient, JsonApiDocument, JsonApiResource } from './asc-client.js';
 import { loadAscDisplayTypes } from './display-types.js';
+import type { RetryPolicy } from './retry.js';
 import { defaultSleep, performUploadOperations, type PollOptions, type UploadOperation } from './upload-operations.js';
 
 export type { UploadOperation } from './upload-operations.js';
@@ -162,7 +163,7 @@ export class AssetLibraryClient {
 
   constructor(
     private readonly asc: AscClient,
-    private readonly opts: { uploadFetch?: typeof fetch; poll?: PollOptions } = {},
+    private readonly opts: { uploadFetch?: typeof fetch; poll?: PollOptions; retry?: Partial<RetryPolicy> } = {},
   ) {}
 
   async libraryId(appId: string): Promise<string> {
@@ -182,13 +183,13 @@ export class AssetLibraryClient {
   }
 
   /** Reserve, upload, commit (`uploaded: true`) and wait for processing. Returns the image/video id. */
-  async upload(libraryId: string, file: string, kind: AssetKind, a: { category: AssetLibraryCategory; previewFrameTimeCode?: string }): Promise<string> {
+  async upload(libraryId: string, file: string, kind: AssetKind, a: { category: AssetLibraryCategory; previewFrameTimeCode?: string; bytes?: Buffer<ArrayBuffer> }): Promise<string> {
     const type = kind === 'image' ? 'appAssetLibraryImages' : 'appAssetLibraryVideos';
-    const bytes = await readFile(file);
+    const bytes = a.bytes ?? (await readFile(file));
     const reserve = await this.asc.request<JsonApiDocument<AssetAttrs>>('POST', `/v1/${type}`, assetCreateBody(kind, libraryId, { fileName: basename(file), fileSize: bytes.byteLength, category: a.category, previewFrameTimeCode: a.previewFrameTimeCode }));
     const res = (Array.isArray(reserve.data) ? reserve.data[0] : reserve.data) as JsonApiResource<AssetAttrs> | undefined;
     if (!res?.id || res.type !== type) throw new Error(`${type} reservation returned no ${type} resource.`);
-    await performUploadOperations(res.attributes?.uploadOperations ?? [], bytes, file, this.opts.uploadFetch);
+    await performUploadOperations(res.attributes?.uploadOperations ?? [], bytes, file, this.opts.uploadFetch, this.opts.retry);
     await this.asc.request('PATCH', `/v1/${type}/${res.id}`, assetCommitBody(kind, res.id));
     await this.waitProcessed(type, res.id, basename(file), kind === 'video');
     return res.id;
@@ -240,8 +241,12 @@ export class AssetLibraryClient {
   /** Deletes the owner's placements of one type and group so a re-upload replaces the set. Returns the count. */
   async clearPlacements(owner: Owner, placementType: AssetLibraryPlacementType, placementGroup: string): Promise<number> {
     const victims = await this.placements(owner, placementType, placementGroup);
-    for (const p of victims) await this.asc.request('DELETE', `/v1/appAssetLibraryPlacements/${p.id}`);
+    await this.deletePlacements(victims.map((p) => p.id));
     return victims.length;
+  }
+
+  async deletePlacements(ids: string[]): Promise<void> {
+    for (const id of ids) await this.asc.request('DELETE', `/v1/appAssetLibraryPlacements/${id}`);
   }
 
   async order(owner: Owner, placementGroup: string, placementIds: string[]): Promise<void> {
@@ -249,19 +254,35 @@ export class AssetLibraryClient {
   }
 
   /**
-   * Replaces one placement set (one owner, placement type and group): delete its placements, upload each file,
-   * place it, then request the order. Returns the new placement ids.
+   * Replaces one placement set (one owner, placement type and group) in an order that keeps the live set intact for
+   * as long as possible:
+   *   1. read every file and resolve the placement group — a missing file or an unknown group fails before any call;
+   *   2. list the old placements — a list that carries another type or group refuses here, before any upload;
+   *   3. upload every file into the library and wait for processing — the slow part, with file reads, pre-signed
+   *      PUTs and polling, all while the old placements still show in App Store Connect;
+   *   4. delete the old placements;
+   *   5. place the uploaded assets and request the order.
+   * Placing the new assets beside the old ones (add, then remove) would close the remaining gap, but a placement
+   * group holds a fixed number of items (10 screenshots, 3 previews, 1 header creative) and a full set plus its
+   * replacement would exceed it, so the deletes come first. What is left between steps 4 and 5 is a handful of
+   * POSTs, each retried by AscClient; if one still fails, the error names the placements that were made so the next
+   * run can finish the set. Returns the new placement ids.
    */
   async replaceSet(libraryId: string, owner: Owner, spec: PlacementSpec, files: Array<{ file: string; kind: AssetKind }>): Promise<{ group: string; removed: number; placements: string[] }> {
     const group = await this.placementGroup(spec);
-    const removed = await this.clearPlacements(owner, spec.placementType, group);
+    const contents = await Promise.all(files.map(async (f) => ({ ...f, bytes: await readFile(f.file) })));
+    const old = await this.placements(owner, spec.placementType, group);
+    const assets: Array<{ kind: AssetKind; id: string }> = [];
+    for (const f of contents) assets.push({ kind: f.kind, id: await this.upload(libraryId, f.file, f.kind, { category: spec.category, bytes: f.bytes }) });
+    await this.deletePlacements(old.map((p) => p.id));
     const placements: string[] = [];
-    for (const f of files) {
-      const id = await this.upload(libraryId, f.file, f.kind, { category: spec.category });
-      placements.push(await this.place(owner, { kind: f.kind, id }, spec.placementType, group));
+    try {
+      for (const asset of assets) placements.push(await this.place(owner, asset, spec.placementType, group));
+      if (placements.length > 1 && owner.type !== 'appEventLocalizations') await this.order(owner, group, placements);
+    } catch (err) {
+      throw new Error(`${spec.placementType}/${group}: ${(err as Error).message} The ${old.length} old placement(s) were removed and ${placements.length} of ${assets.length} new ones placed; the uploads are in the library, so run the upload again to finish the set.`, { cause: err });
     }
-    if (placements.length > 1 && owner.type !== 'appEventLocalizations') await this.order(owner, group, placements);
-    return { group, removed, placements };
+    return { group, removed: old.length, placements };
   }
 }
 

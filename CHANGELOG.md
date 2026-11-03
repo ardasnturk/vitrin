@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased
+
+### Fixed
+- **An upload that fails halfway no longer leaves an App Store Connect set empty.** The Asset Library path (iPhone Duo, Custom Product Page and In-App Event creatives, `upload.uploader: asset-library`) now reads every file, lists the old placements and uploads and processes every new asset before it deletes anything; the deletes and the placements are a handful of quick calls at the end, and if one of those still fails the error says how many old placements were removed and how many new ones were placed. The classic screenshot and preview sets must still delete first (a set holds at most 10 items), and their error now says the same. Placing the new assets beside the old ones was considered and left out: a placement group's item limit would be exceeded by a full set plus its replacement.
+- **Bounded retries for App Store Connect calls and the pre-signed upload PUTs.** 429, 500, 502, 503, 504 and requests that got no response are tried again with exponential backoff (1 s, 2 s, 4 s … up to 30 s), five attempts and two minutes of waiting in all. `Retry-After` is honoured both as seconds and as an HTTP-date, and only while it fits into that budget; a header the client cannot read falls back to backoff instead of becoming a `NaN` wait that burnt every attempt at once. A DELETE answered 404 on a repeat counts as done. Every other 4xx is final.
+- **A non-JSON error body (an HTML 502/503 page) no longer surfaces as a `SyntaxError`.** `AscApiError` and `PlayApiError` keep the status, the path and the first 300 characters of the body.
+- **`getAll` refuses a list longer than 20 pages instead of silently returning a prefix**, since the callers delete what is not in the list.
+
 ## 1.1.0 — 2026-11-03
 
 ### Security
