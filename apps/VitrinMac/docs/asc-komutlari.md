@@ -11,43 +11,24 @@ Burada kalanlar iki gruptur:
 
 | Sekme | Komut | Kalan okuma | Çalıştırılamadı | Denenmedi |
 |---|---|---:|---:|---:|
-| Durum | 57 | 16 | 7 | 34 |
-| Mağaza metni | 107 | 28 | 18 | 61 |
-| Görseller | 122 | 12 | 29 | 81 |
-| Derlemeler | 46 | 13 | 13 | 20 |
-| TestFlight | 69 | 27 | 9 | 33 |
-| Yorumlar | 9 | 1 | 2 | 6 |
-| Satın almalar | 219 | 38 | 61 | 120 |
-| Analitik | 19 | 3 | 7 | 9 |
-| Diğer | 318 | 40 | 100 | 178 |
-| Takım: Kullanıcılar | 17 | 6 | 5 | 6 |
-| Takım: Cihazlar | 6 | 2 | 0 | 4 |
-| Takım: Sertifikalar, profiller, bundle ID'ler | 70 | 14 | 10 | 46 |
+| Durum | 57 | 0 | 7 | 34 |
+| Mağaza metni | 107 | 0 | 18 | 61 |
+| Görseller | 122 | 0 | 29 | 81 |
+| Derlemeler | 46 | 0 | 13 | 20 |
+| TestFlight | 69 | 0 | 9 | 33 |
+| Yorumlar | 9 | 0 | 2 | 6 |
+| Satın almalar | 219 | 0 | 61 | 120 |
+| Analitik | 19 | 0 | 7 | 9 |
+| Diğer | 318 | 0 | 100 | 178 |
+| Takım: Kullanıcılar | 17 | 0 | 5 | 6 |
+| Takım: Cihazlar | 6 | 0 | 0 | 4 |
+| Takım: Sertifikalar, profiller, bundle ID'ler | 70 | 0 | 10 | 46 |
 | Takım: Raporlar ve finans | 6 | 0 | 1 | 5 |
-| Takım: Otomasyon | 61 | 8 | 21 | 32 |
-| Takım: Apple Ads | 186 | 2 | 90 | 94 |
-| Takım: Hesap | 3 | 2 | 1 | 0 |
+| Takım: Otomasyon | 61 | 0 | 21 | 32 |
+| Takım: Apple Ads | 186 | 0 | 90 | 94 |
+| Takım: Hesap | 3 | 0 | 1 | 0 |
 
 ## Durum
-
-### İşlenecek okuma komutları
-
-- `review details-for-version`: Sürüm inceleme ayrıntıları
-- `review doctor`: Neden gönderemiyorum?
-- `review history`: İnceleme geçmişi
-- `review items list`: İnceleme öğeleri
-- `review items-list`: İnceleme öğeleri
-- `review status`: İnceleme durumu
-- `review submissions list`: İnceleme gönderimleri
-- `review submissions-get`: İnceleme gönderimi ayrıntıları
-- `review submissions-items-ids`: Gönderim öğeleri
-- `review submissions-list`: İnceleme gönderimleri
-- `status`: Yayın durumu
-- `versions app-clip-default-experience view`: App Clip deneyimi
-- `versions customer-reviews list`: Müşteri yorumları
-- `versions experiments-v2 list`: Deneyler
-- `versions list`: App Store sürümleri
-- `versions phased-release view`: Aşamalı yayın ayrıntıları
 
 ### Çalıştırılamadı
 
@@ -97,37 +78,6 @@ Burada kalanlar iki gruptur:
 - `versions update`: App Store sürümü güncelle
 
 ## Mağaza metni
-
-### İşlenecek okuma komutları
-
-- `accessibility list`: Erişilebilirlik beyanları
-- `age-rating audit`: Yaş derecelendirmesi denetimi
-- `age-rating view`: Yaş derecelendirmesi
-- `app-tags links`: Etiket bağlantıları
-- `app-tags list`: Uygulama etiketleri
-- `apps app-encryption-declarations list`: Şifreleme beyanları
-- `apps content-rights view`: İçerik hakları
-- `apps info list`: Uygulama bilgi kayıtları
-- `apps info territory-age-ratings list`: Bölge yaş derecelendirmeleri
-- `apps info view`: Uygulama bilgileri
-- `apps list`: Uygulamalar
-- `apps public storefronts list`: Mağazalar
-- `apps subscription-grace-period view`: Abonelik ek süresi
-- `apps view`: Uygulama ayrıntıları
-- `categories list`: Kategoriler
-- `encryption declarations list`: Şifreleme beyanları
-- `eula list`: Lisans sözleşmesi
-- `eula view`: Lisans sözleşmesi ayrıntıları
-- `localizations list`: Yerelleştirmeler
-- `localizations placements list`: Görsel yerleşimleri
-- `localizations preview-sets links`: Önizleme seti bağlantıları
-- `localizations preview-sets list`: Önizleme setleri
-- `localizations preview-sets view`: Önizleme seti ayrıntıları
-- `localizations screenshot-sets links`: Ekran görüntüsü seti bağlantıları
-- `localizations screenshot-sets list`: Ekran görüntüsü setleri
-- `localizations screenshot-sets view`: Ekran görüntüsü seti ayrıntıları
-- `localizations search-keywords list`: Arama anahtar kelimeleri
-- `localizations view`: Yerelleştirme ayrıntıları
 
 ### Çalıştırılamadı
 
@@ -215,21 +165,6 @@ Burada kalanlar iki gruptur:
 - `metadata push`: Meta verileri gönder
 
 ## Görseller
-
-### İşlenecek okuma komutları
-
-- `app-events list`: Uygulama içi etkinlikler
-- `app-events localizations placements list`: Varlık yerleşimleri
-- `asset-library images list`: Kitaplık görselleri
-- `asset-library images view`: Görsel ayrıntıları
-- `asset-library videos list`: Kitaplık videoları
-- `asset-library videos view`: Video ayrıntıları
-- `asset-library view`: Varlık kitaplığı
-- `product-pages custom-pages list`: Özel ürün sayfaları
-- `product-pages custom-pages localizations placements list`: Görsel yerleşimleri
-- `product-pages experiments list`: Ürün sayfası denemeleri
-- `product-pages experiments treatments localizations placements list`: Görsel yerleşimleri
-- `video-previews list`: Önizleme videoları
 
 ### Çalıştırılamadı
 
@@ -349,22 +284,6 @@ Burada kalanlar iki gruptur:
 
 ## Derlemeler
 
-### İşlenecek okuma komutları
-
-- `build-bundles app-clip cache-status view`: App Clip önbellek durumu
-- `build-bundles app-clip debug-status view`: App Clip hata ayıklama durumu
-- `build-bundles app-clip invocations list`: App Clip çağrıları
-- `build-bundles file-sizes list`: Dosya boyutları
-- `build-bundles list`: Derleme paketleri
-- `build-localizations list`: Derleme sürüm notları
-- `build-localizations view`: Sürüm notu ayrıntıları
-- `builds count`: Derleme sayısı
-- `builds groups list`: Beta grupları
-- `builds list`: Derlemeler
-- `builds next-build-number`: Sonraki derleme numarası
-- `builds uploads list`: Derleme yüklemeleri
-- `builds uploads view`: Derleme yüklemesi ayrıntıları
-
 ### Çalıştırılamadı
 
 - `builds app view`: Uygulama (`--build-id cannot be combined with --app, --latest, --build-num`)
@@ -405,36 +324,6 @@ Burada kalanlar iki gruptur:
 - `builds wait`: İşlenmesini bekle
 
 ## TestFlight
-
-### İşlenecek okuma komutları
-
-- `testflight agreements list`: TestFlight sözleşmeleri
-- `testflight agreements view`: TestFlight sözleşmesi ayrıntıları
-- `testflight app-localizations app view`: Uygulama ayrıntıları
-- `testflight app-localizations list`: TestFlight yerelleştirmeleri
-- `testflight app-localizations view`: TestFlight yerelleştirmesi ayrıntıları
-- `testflight crashes list`: Çökme raporları
-- `testflight distribution build view`: Dağıtım derlemesi
-- `testflight distribution view`: Dağıtım ayarları
-- `testflight feedback list`: Geri bildirimler
-- `testflight groups app view`: Grup uygulaması
-- `testflight groups builds list`: Grup derlemeleri
-- `testflight groups list`: TestFlight grupları
-- `testflight groups testers list`: Grup test kullanıcıları
-- `testflight groups view`: TestFlight grubu ayrıntıları
-- `testflight pre-release app view`: Ön sürüm uygulaması
-- `testflight pre-release builds list`: Ön sürüm derlemeleri
-- `testflight pre-release list`: Ön sürümler
-- `testflight pre-release view`: Ön sürüm ayrıntıları
-- `testflight review app view`: İnceleme uygulaması
-- `testflight review submissions list`: İnceleme gönderimleri
-- `testflight review view`: İnceleme ayrıntıları
-- `testflight testers apps list`: Test kullanıcısının uygulamaları
-- `testflight testers builds list`: Test kullanıcısının derlemeleri
-- `testflight testers groups list`: Test kullanıcısının grupları
-- `testflight testers list`: TestFlight test kullanıcıları
-- `testflight testers metrics`: Test kullanıcısı kullanımı
-- `testflight testers view`: TestFlight test kullanıcısı ayrıntıları
 
 ### Çalıştırılamadı
 
@@ -486,10 +375,6 @@ Burada kalanlar iki gruptur:
 
 ## Yorumlar
 
-### İşlenecek okuma komutları
-
-- `reviews list`: Müşteri yorumları
-
 ### Çalıştırılamadı
 
 - `reviews response view`: Yanıt ayrıntıları (`--id is required`)
@@ -505,47 +390,6 @@ Burada kalanlar iki gruptur:
 - `reviews summarizations`: Yorum özetlerini göster
 
 ## Satın almalar
-
-### İşlenecek okuma komutları
-
-- `iap content view`: Satın alma içeriği ayrıntıları
-- `iap list`: Uygulama içi satın almalar
-- `iap offer-codes list`: Teklif kodları
-- `iap pricing availabilities available-territories`: Kullanılabilir bölgeler
-- `iap pricing availabilities view`: Kullanılabilirlik ayrıntıları
-- `iap pricing availability view`: Kullanılabilirlik
-- `iap pricing price-points equalizations`: Eşitlenmiş fiyat noktaları
-- `iap pricing price-points list`: Fiyat noktaları
-- `iap pricing schedules view`: Fiyat takvimi
-- `iap pricing summary`: Fiyat özeti
-- `iap promoted-purchases list`: Öne çıkarılan satın almalar
-- `iap review-screenshots view`: İnceleme ekran görüntüsü
-- `iap versions links versions`: Sürüm bağlantıları
-- `iap versions list`: Satın alma sürümleri
-- `iap view`: Uygulama içi satın alma ayrıntıları
-- `pre-orders view`: Ön sipariş kullanılabilirliği
-- `pricing availability view`: Uygulama kullanılabilirliği
-- `pricing schedule view`: Güncel fiyat takvimi
-- `pricing territories list`: Bölgeler
-- `storekit auth status`: StoreKit oturum durumu
-- `subscriptions groups list`: Abonelik grupları
-- `subscriptions groups view`: Abonelik grubu ayrıntıları
-- `subscriptions list`: Abonelikler
-- `subscriptions offers introductory list`: Tanıtım teklifleri
-- `subscriptions offers offer-codes list`: Teklif kodları
-- `subscriptions offers promotional list`: Promosyon teklifleri
-- `subscriptions offers win-back links`: Geri kazanma teklifi bağlantıları
-- `subscriptions offers win-back list`: Geri kazanma teklifleri
-- `subscriptions pricing monthly-commitment list`: 12 aylık taahhüt kullanılabilirliği
-- `subscriptions pricing price-points list`: Fiyat noktaları
-- `subscriptions pricing prices list`: Abonelik fiyatları
-- `subscriptions pricing summary`: Fiyatlandırma özeti
-- `subscriptions promoted-purchases list`: Öne çıkan satın almalar
-- `subscriptions review app-store-screenshot view`: İnceleme ekran görüntüsü
-- `subscriptions versions links`: Sürüm bağlantıları
-- `subscriptions versions list`: Abonelik sürümleri
-- `subscriptions versions view`: Abonelik sürümü ayrıntıları
-- `subscriptions view`: Abonelik ayrıntıları
 
 ### Çalıştırılamadı
 
@@ -736,12 +580,6 @@ Burada kalanlar iki gruptur:
 
 ## Analitik
 
-### İşlenecek okuma komutları
-
-- `performance diagnostics list`: Tanılama imzaları
-- `performance metrics list`: Performans ölçümleri
-- `performance metrics view`: Derleme performans ölçümleri
-
 ### Çalıştırılamadı
 
 - `analytics instances links`: Rapor segmenti bağlantıları (`--instance-id is required`)
@@ -765,49 +603,6 @@ Burada kalanlar iki gruptur:
 - `performance overview`: Performans özetini göster
 
 ## Diğer
-
-### İşlenecek okuma komutları
-
-- `alternative-distribution domains list`: Dağıtım alan adları
-- `alternative-distribution keys list`: Dağıtım anahtarları
-- `android-ios-mapping list`: Android-iOS eşlemeleri
-- `app-clips list`: App Clip'ler
-- `background-assets list`: Arka plan varlıkları
-- `game-center achievements group-achievement view`: Grup başarımı
-- `game-center achievements list`: Başarımlar
-- `game-center achievements v2 list`: Başarımlar (v2)
-- `game-center achievements view`: Başarım ayrıntıları
-- `game-center activities list`: Etkinlikler
-- `game-center activities releases list`: Etkinlik yayınları
-- `game-center activities view`: Etkinlik ayrıntıları
-- `game-center app-versions app-store-version view`: App Store sürümü
-- `game-center app-versions compatibility list`: Uyumlu sürümler
-- `game-center app-versions list`: Uygulama sürümleri
-- `game-center app-versions view`: Uygulama sürümü ayrıntıları
-- `game-center challenges list`: Meydan okumalar
-- `game-center challenges releases list`: Meydan okuma yayınları
-- `game-center challenges view`: Meydan okuma ayrıntıları
-- `game-center details achievement-releases list`: Başarım yayınları
-- `game-center details achievements-v2 list`: Başarımlar (v2)
-- `game-center details app-versions list`: Uygulama sürümleri
-- `game-center details group view`: Game Center grubu
-- `game-center details leaderboard-releases list`: Lider tablosu yayınları
-- `game-center details leaderboard-set-releases list`: Lider tablosu seti yayınları
-- `game-center details leaderboard-sets-v2 list`: Lider tablosu setleri (v2)
-- `game-center details leaderboards-v2 list`: Lider tabloları (v2)
-- `game-center details list`: Game Center ayrıntıları
-- `game-center details view`: Game Center ayrıntıları
-- `game-center enabled-versions list`: Etkin sürümler
-- `game-center groups details list`: Grup ayrıntıları
-- `game-center leaderboard-sets list`: Lider tablosu setleri
-- `game-center leaderboard-sets v2 list`: Lider tablosu setleri (v2)
-- `game-center leaderboards group-leaderboard view`: Grup lider tablosu
-- `game-center leaderboards list`: Lider tabloları
-- `game-center leaderboards v2 list`: Lider tabloları (v2)
-- `game-center leaderboards view`: Lider tablosu ayrıntıları
-- `game-center matchmaking queues list`: Eşleştirme kuyrukları
-- `game-center matchmaking rule-sets list`: Kural setleri
-- `routing-coverage view`: Yönlendirme kapsamı
 
 ### Çalıştırılamadı
 
@@ -1095,15 +890,6 @@ Burada kalanlar iki gruptur:
 
 ## Takım: Kullanıcılar
 
-### İşlenecek okuma komutları
-
-- `sandbox list`: Sandbox test kullanıcıları
-- `sandbox view`: Sandbox test kullanıcısı ayrıntıları
-- `users invites list`: Kullanıcı davetleri
-- `users list`: Kullanıcılar
-- `users view`: Kullanıcı ayrıntıları
-- `users visible-apps list`: Görünür uygulamalar
-
 ### Çalıştırılamadı
 
 - `actors list`: Aktörler (`--id is required`)
@@ -1123,11 +909,6 @@ Burada kalanlar iki gruptur:
 
 ## Takım: Cihazlar
 
-### İşlenecek okuma komutları
-
-- `devices list`: Cihazlar
-- `devices view`: Cihaz ayrıntıları
-
 ### Gerçek hesapta denenmedi
 
 - `devices local-udid`: Bu Mac'in cihaz kimliği
@@ -1136,23 +917,6 @@ Burada kalanlar iki gruptur:
 - `devices update`: Cihazı güncelle
 
 ## Takım: Sertifikalar, profiller, bundle ID'ler
-
-### İşlenecek okuma komutları
-
-- `bundle-ids list`: Paket kimlikleri
-- `bundle-ids profiles list`: Profiller
-- `bundle-ids view`: Paket kimliği ayrıntıları
-- `certificates list`: Sertifikalar
-- `certificates view`: Sertifika ayrıntıları
-- `merchant-ids list`: Satıcı kimlikleri
-- `notarization list`: Noter onayı gönderimleri
-- `notarization log`: Noter onayı günlüğü
-- `notarization status`: Noter onayı durumu
-- `pass-type-ids list`: Pass türü kimlikleri
-- `profiles list`: Sağlama profilleri
-- `profiles local list`: Yerel profiller
-- `profiles view`: Profil ayrıntıları
-- `signing keychain list`: İmzalama anahtarlıkları
 
 ### Çalıştırılamadı
 
@@ -1232,17 +996,6 @@ Burada kalanlar iki gruptur:
 
 ## Takım: Otomasyon
 
-### İşlenecek okuma komutları
-
-- `webhooks list`: Webhook'lar
-- `xcode-cloud macos-versions list`: MacOS sürümleri
-- `xcode-cloud macos-versions view`: MacOS sürümü ayrıntıları
-- `xcode-cloud products list`: Xcode Cloud ürünleri
-- `xcode-cloud scm providers list`: Kaynak sağlayıcılar
-- `xcode-cloud scm repositories list`: Depolar
-- `xcode-cloud xcode-versions list`: Xcode sürümleri
-- `xcode-cloud xcode-versions view`: Xcode sürümü ayrıntıları
-
 ### Çalıştırılamadı
 
 - `webhooks deliveries links`: Teslimat bağlantıları (`--webhook-id is required`)
@@ -1303,11 +1056,6 @@ Burada kalanlar iki gruptur:
 - `xcode-cloud xcode-versions macos-versions`: Xcode için macOS sürümleri
 
 ## Takım: Apple Ads
-
-### İşlenecek okuma komutları
-
-- `ads auth doctor`: Kimlik bilgisi denetimi
-- `ads auth status`: Oturum durumu
 
 ### Çalıştırılamadı
 
@@ -1500,11 +1248,6 @@ Burada kalanlar iki gruptur:
 - `ads v5 targeting-keywords update-bulk`: Anahtar kelimeleri toplu güncelle
 
 ## Takım: Hesap
-
-### İşlenecek okuma komutları
-
-- `account status`: Hesap durumu kontrolleri
-- `system-status`: Apple hizmet durumu
 
 ### Çalıştırılamadı
 
