@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		002E76A5498A3C3D3C8AA23B /* ReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB53321E2AC6996F8DDAFA1 /* ReviewView.swift */; };
 		16FE7B8EE832830B24A92163 /* StudioEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA21416BDE031F109E9C8C96 /* StudioEvents.swift */; };
+		1BDCA8D967820E7E9D403278 /* VitrinMacUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED75F4ED390F077ED6DDAC79 /* VitrinMacUITests.swift */; };
+		1CBF3F8E4F8D7EB4B649859C /* UpdateCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2617D41381B1B43B12D982ED /* UpdateCheckerTests.swift */; };
 		215164E370A42C91EB3C4972 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6D51CAE05B7F00B658B2BA0 /* AppSettings.swift */; };
 		22E3B1F24BEEED5D3023698E /* VitrinMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252E7B6410A6AA6524E12122 /* VitrinMacApp.swift */; };
 		25FF69CDCC4ECEBC89AFEA7A /* Notifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ED1D2139A67069C8A5DB50F /* Notifier.swift */; };
@@ -20,12 +22,17 @@
 		331AD65CE81888B784CF7AE5 /* LogPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A80B36BCD7531834776B9CD5 /* LogPanel.swift */; };
 		33F2783440EC511CB7579C86 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25EAF5412213B7B53D1F19B6 /* SettingsView.swift */; };
 		3846EF84FDEF0C59295A7420 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31457BDA652BD723EE7815F6 /* AppModel.swift */; };
+		3BABDFA9389D5246FE3DC9C8 /* overview-ritim.json in Resources */ = {isa = PBXBuildFile; fileRef = 2A98C23CC09E90604C2ADA8F /* overview-ritim.json */; };
 		3D1855476A9C6BCD42997C45 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51F56DBCAA368ACDF451597 /* Models.swift */; };
 		4A592BF0BA965DEAB1CBBC0F /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0821F25BF977420819CA929 /* WelcomeView.swift */; };
 		4DB13C31678BAFDC2B7F8986 /* Sidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76F172094DDF61E930A998AA /* Sidebar.swift */; };
 		56CABFF4FEC52F0C2DCEF426 /* MainWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E276ADD36183CB2534CD55D /* MainWindow.swift */; };
+		5A47CC0DEB0E271DE00C1852 /* OverviewDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB048CF9E3B96B7FFB1A78B /* OverviewDecodingTests.swift */; };
 		5F90AB4B1153ED5592C566E6 /* VisualsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01E20EED87A8F2960D1D0B50 /* VisualsView.swift */; };
+		66098835DA01703BD923ACA6 /* TestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178E50E1F076BEF93183110C /* TestSupport.swift */; };
 		6E7D7FF75ADCF7C949E05D36 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03E402820452B8F74BC043AE /* Components.swift */; };
+		6EF806F1907DC9ADD2A48AF1 /* StudioHandshakeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E0F98EB10502D837CFE213C /* StudioHandshakeTests.swift */; };
+		8ADFBB8EB97D74D673427D90 /* SSEParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ED2DE5B9BA4D66A3D616C6 /* SSEParserTests.swift */; };
 		90CD6BA696AC79413B12B512 /* CLIRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 881DDD917D5CD5A33E79CB97 /* CLIRunner.swift */; };
 		94CCB9FCFCDBD20A8554A89D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A615B339C608275E0690C8 /* AppDelegate.swift */; };
 		97A67230093A24847BEE711E /* CLILocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC082A50AEAD3C99A7E712AF /* CLILocator.swift */; };
@@ -38,17 +45,39 @@
 		DFF1255023D4187934EA1D3C /* ListingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3255B591A29D8456D604343C /* ListingView.swift */; };
 		E33A0D024F9E3BB8F6E78B2C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 35DF5D01E1CD8589A8C793F4 /* Assets.xcassets */; };
 		E8254E33EAAE1294E05AAF77 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 017A34E4C1024DA1FBE3F5CF /* UpdateChecker.swift */; };
+		EE7F39DE57B3D619CC9D499A /* JSONValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B74D68F1B0BD20A23DC2231D /* JSONValueTests.swift */; };
 		F0EF0B60BBCD4062BD01892D /* FlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37D3AC9D274A37B09528BCFB /* FlowView.swift */; };
 		F9D9D34D2E981B414D2A1E6E /* Limits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40D651EA0B55D06E8A246136 /* Limits.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		84FFE447BFEE0462B9581578 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1064FFF947617ADA21EB2F4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8F3B5044BF70D560768A6DF9;
+			remoteInfo = VitrinMac;
+		};
+		AE6B2176262ED188D9A44E9D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1064FFF947617ADA21EB2F4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8F3B5044BF70D560768A6DF9;
+			remoteInfo = VitrinMac;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		017A34E4C1024DA1FBE3F5CF /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
 		01E20EED87A8F2960D1D0B50 /* VisualsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualsView.swift; sourceTree = "<group>"; };
 		03E402820452B8F74BC043AE /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		178E50E1F076BEF93183110C /* TestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestSupport.swift; sourceTree = "<group>"; };
 		252E7B6410A6AA6524E12122 /* VitrinMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitrinMacApp.swift; sourceTree = "<group>"; };
 		25EAF5412213B7B53D1F19B6 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		2617D41381B1B43B12D982ED /* UpdateCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckerTests.swift; sourceTree = "<group>"; };
 		26B23332E85855232EE83F71 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		2A98C23CC09E90604C2ADA8F /* overview-ritim.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "overview-ritim.json"; sourceTree = "<group>"; };
+		2E0F98EB10502D837CFE213C /* StudioHandshakeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudioHandshakeTests.swift; sourceTree = "<group>"; };
 		31457BDA652BD723EE7815F6 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		3255B591A29D8456D604343C /* ListingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListingView.swift; sourceTree = "<group>"; };
 		35DF5D01E1CD8589A8C793F4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -59,16 +88,20 @@
 		412D65A67CF2009541AEFC8E /* UploadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadView.swift; sourceTree = "<group>"; };
 		476499AF954F73C7E3B491F9 /* ProjectSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectSession.swift; sourceTree = "<group>"; };
 		48040DA2E36A7D8B5ABD9C0C /* StudioClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudioClient.swift; sourceTree = "<group>"; };
+		49ED2DE5B9BA4D66A3D616C6 /* SSEParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSEParserTests.swift; sourceTree = "<group>"; };
 		4ED1D2139A67069C8A5DB50F /* Notifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifier.swift; sourceTree = "<group>"; };
+		5BB048CF9E3B96B7FFB1A78B /* OverviewDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverviewDecodingTests.swift; sourceTree = "<group>"; };
 		5E276ADD36183CB2534CD55D /* MainWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindow.swift; sourceTree = "<group>"; };
 		73A615B339C608275E0690C8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		76F172094DDF61E930A998AA /* Sidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sidebar.swift; sourceTree = "<group>"; };
 		82A0DAF979334D56AA86F2E6 /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 		881DDD917D5CD5A33E79CB97 /* CLIRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIRunner.swift; sourceTree = "<group>"; };
+		92699CD2D9DA59BE49F354BE /* VitrinMacUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VitrinMacUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A51F56DBCAA368ACDF451597 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		A80B36BCD7531834776B9CD5 /* LogPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPanel.swift; sourceTree = "<group>"; };
 		AA21416BDE031F109E9C8C96 /* StudioEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudioEvents.swift; sourceTree = "<group>"; };
 		B0E08221597DCFE63E90E24A /* ClaudePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudePanel.swift; sourceTree = "<group>"; };
+		B74D68F1B0BD20A23DC2231D /* JSONValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONValueTests.swift; sourceTree = "<group>"; };
 		C6D51CAE05B7F00B658B2BA0 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		CC082A50AEAD3C99A7E712AF /* CLILocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLILocator.swift; sourceTree = "<group>"; };
 		D80D0930CA2A98024CA41616 /* JSONValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONValue.swift; sourceTree = "<group>"; };
@@ -79,6 +112,8 @@
 		E5C182D4404EB5143FF15DFC /* VitrinMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VitrinMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EA5817B638BEABD004C8AEC4 /* ProjectStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectStore.swift; sourceTree = "<group>"; };
 		EACD137CC67DA4F8B7886237 /* StudioProcess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudioProcess.swift; sourceTree = "<group>"; };
+		EB9284217380FD3F27219A52 /* VitrinMacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VitrinMacTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		ED75F4ED390F077ED6DDAC79 /* VitrinMacUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitrinMacUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -86,6 +121,8 @@
 			isa = PBXGroup;
 			children = (
 				E5C182D4404EB5143FF15DFC /* VitrinMac.app */,
+				EB9284217380FD3F27219A52 /* VitrinMacTests.xctest */,
+				92699CD2D9DA59BE49F354BE /* VitrinMacUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -98,6 +135,28 @@
 				252E7B6410A6AA6524E12122 /* VitrinMacApp.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		18E35CD5E863016BF2567810 /* VitrinMacTests */ = {
+			isa = PBXGroup;
+			children = (
+				243B1910F2E467A1998BAAAD /* Fixtures */,
+				B74D68F1B0BD20A23DC2231D /* JSONValueTests.swift */,
+				5BB048CF9E3B96B7FFB1A78B /* OverviewDecodingTests.swift */,
+				49ED2DE5B9BA4D66A3D616C6 /* SSEParserTests.swift */,
+				2E0F98EB10502D837CFE213C /* StudioHandshakeTests.swift */,
+				178E50E1F076BEF93183110C /* TestSupport.swift */,
+				2617D41381B1B43B12D982ED /* UpdateCheckerTests.swift */,
+			);
+			path = VitrinMacTests;
+			sourceTree = "<group>";
+		};
+		243B1910F2E467A1998BAAAD /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				2A98C23CC09E90604C2ADA8F /* overview-ritim.json */,
+			);
+			path = Fixtures;
 			sourceTree = "<group>";
 		};
 		4A7F11DC783C8FD55C21DFA8 /* Resources */ = {
@@ -115,6 +174,8 @@
 			isa = PBXGroup;
 			children = (
 				EE75C35F198473E986D4D324 /* VitrinMac */,
+				18E35CD5E863016BF2567810 /* VitrinMacTests */,
+				FC643964C13DD9B9ABA15D0A /* VitrinMacUITests */,
 				137400809D7D6686E5A6EB18 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -151,6 +212,14 @@
 			path = VitrinMac;
 			sourceTree = "<group>";
 		};
+		FC643964C13DD9B9ABA15D0A /* VitrinMacUITests */ = {
+			isa = PBXGroup;
+			children = (
+				ED75F4ED390F077ED6DDAC79 /* VitrinMacUITests.swift */,
+			);
+			path = VitrinMacUITests;
+			sourceTree = "<group>";
+		};
 		FE183BE4835830D66CFADFBF /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -175,6 +244,43 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		6149509BE7025A2EB39EE559 /* VitrinMacTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6BC50677607F0F69C6C79510 /* Build configuration list for PBXNativeTarget "VitrinMacTests" */;
+			buildPhases = (
+				09120D5DA8EC9377DA336405 /* Sources */,
+				083B89C252F7AD291BB20FC9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BF98607CB78E8F3E9E67529B /* PBXTargetDependency */,
+			);
+			name = VitrinMacTests;
+			packageProductDependencies = (
+			);
+			productName = VitrinMacTests;
+			productReference = EB9284217380FD3F27219A52 /* VitrinMacTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		859453D6330E5928D94890B9 /* VitrinMacUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 957110948A5D901E5B4F6120 /* Build configuration list for PBXNativeTarget "VitrinMacUITests" */;
+			buildPhases = (
+				F6FB5F359EC9B6D9C665E392 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5487BADE768F80B18D2250E6 /* PBXTargetDependency */,
+			);
+			name = VitrinMacUITests;
+			packageProductDependencies = (
+			);
+			productName = VitrinMacUITests;
+			productReference = 92699CD2D9DA59BE49F354BE /* VitrinMacUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		8F3B5044BF70D560768A6DF9 /* VitrinMac */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 04485355DB02A4D43E239E37 /* Build configuration list for PBXNativeTarget "VitrinMac" */;
@@ -202,6 +308,13 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
+					6149509BE7025A2EB39EE559 = {
+						ProvisioningStyle = Automatic;
+					};
+					859453D6330E5928D94890B9 = {
+						ProvisioningStyle = Automatic;
+						TestTargetID = 8F3B5044BF70D560768A6DF9;
+					};
 					8F3B5044BF70D560768A6DF9 = {
 						ProvisioningStyle = Automatic;
 					};
@@ -223,11 +336,21 @@
 			projectRoot = "";
 			targets = (
 				8F3B5044BF70D560768A6DF9 /* VitrinMac */,
+				6149509BE7025A2EB39EE559 /* VitrinMacTests */,
+				859453D6330E5928D94890B9 /* VitrinMacUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		083B89C252F7AD291BB20FC9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3BABDFA9389D5246FE3DC9C8 /* overview-ritim.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B3D505B526244F92F83FB2FF /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -240,6 +363,19 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		09120D5DA8EC9377DA336405 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EE7F39DE57B3D619CC9D499A /* JSONValueTests.swift in Sources */,
+				5A47CC0DEB0E271DE00C1852 /* OverviewDecodingTests.swift in Sources */,
+				8ADFBB8EB97D74D673427D90 /* SSEParserTests.swift in Sources */,
+				6EF806F1907DC9ADD2A48AF1 /* StudioHandshakeTests.swift in Sources */,
+				66098835DA01703BD923ACA6 /* TestSupport.swift in Sources */,
+				1CBF3F8E4F8D7EB4B649859C /* UpdateCheckerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1F832E6EFE7CEDAAAFE128FD /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -278,7 +414,28 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F6FB5F359EC9B6D9C665E392 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1BDCA8D967820E7E9D403278 /* VitrinMacUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		5487BADE768F80B18D2250E6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8F3B5044BF70D560768A6DF9 /* VitrinMac */;
+			targetProxy = AE6B2176262ED188D9A44E9D /* PBXContainerItemProxy */;
+		};
+		BF98607CB78E8F3E9E67529B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8F3B5044BF70D560768A6DF9 /* VitrinMac */;
+			targetProxy = 84FFE447BFEE0462B9581578 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		048E04EDA084E2A33720B5CA /* Debug */ = {
@@ -440,6 +597,44 @@
 			};
 			name = Release;
 		};
+		A21D0DB561E009A2A032CD92 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jastech.vitrin.uitests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = VitrinMac;
+			};
+			name = Debug;
+		};
+		A43A8494842195239F9A5A5A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jastech.vitrin.uitests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = VitrinMac;
+			};
+			name = Release;
+		};
 		DBBABD66F37C9CF21F43D044 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -470,6 +665,44 @@
 			};
 			name = Debug;
 		};
+		EEBC92D9CFB5F9ACD4D05509 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jastech.vitrin.tests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Vitrin.app/Contents/MacOS/Vitrin";
+			};
+			name = Release;
+		};
+		FB21D08AB7C5EC16E06F2AEA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jastech.vitrin.tests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Vitrin.app/Contents/MacOS/Vitrin";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -478,6 +711,24 @@
 			buildConfigurations = (
 				DBBABD66F37C9CF21F43D044 /* Debug */,
 				2103C438462411996DD8D7A1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		6BC50677607F0F69C6C79510 /* Build configuration list for PBXNativeTarget "VitrinMacTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FB21D08AB7C5EC16E06F2AEA /* Debug */,
+				EEBC92D9CFB5F9ACD4D05509 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		957110948A5D901E5B4F6120 /* Build configuration list for PBXNativeTarget "VitrinMacUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A21D0DB561E009A2A032CD92 /* Debug */,
+				A43A8494842195239F9A5A5A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

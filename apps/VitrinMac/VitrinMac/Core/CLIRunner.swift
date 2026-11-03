@@ -7,6 +7,12 @@ struct ProcessResult: Sendable {
 }
 
 /// Runs a process to completion with a timeout; stdout and stderr are collected, never shown raw to the user.
+///
+/// The exit is observed through `terminationHandler`, not `waitUntilExit()`: the latter runs a run loop on whatever
+/// thread calls it and, on a cooperative-pool thread, has been seen to miss the exit of a short-lived child (the app
+/// then sat on "looking for the CLI" for ever). A child that outlives the timeout gets SIGTERM, then SIGKILL. The
+/// pipes are read on their own tasks; when a grandchild keeps a pipe open after the child exited (a login shell's
+/// background jobs), the read ends are closed after a grace period so the call still returns.
 enum ProcessRunner {
     static func run(_ executable: String, _ arguments: [String], environment: [String: String], cwd: String? = nil, timeout: TimeInterval = 120) async throws -> ProcessResult {
         let p = Process()
@@ -18,20 +24,38 @@ enum ProcessRunner {
         p.standardOutput = out
         p.standardError = err
         p.standardInput = FileHandle.nullDevice
-        let outTask = Task.detached { out.fileHandleForReading.readDataToEndOfFile() }
-        let errTask = Task.detached { err.fileHandleForReading.readDataToEndOfFile() }
-        try p.run()
-        let waiter = Task.detached { () -> Int32 in
-            p.waitUntilExit()
-            return p.terminationStatus
+        let outTask = Task.detached { (try? out.fileHandleForReading.readToEnd()) ?? Data() }
+        let errTask = Task.detached { (try? err.fileHandleForReading.readToEnd()) ?? Data() }
+
+        let code: Int32 = try await withCheckedThrowingContinuation { cont in
+            p.terminationHandler = { proc in cont.resume(returning: proc.terminationStatus) }
+            do {
+                try p.run()
+            } catch {
+                p.terminationHandler = nil
+                cont.resume(throwing: error)
+                return
+            }
+            let pid = p.processIdentifier
+            Task.detached {
+                try? await Task.sleep(for: .seconds(timeout))
+                guard p.isRunning else { return }
+                kill(pid, SIGTERM)
+                try? await Task.sleep(for: .seconds(3))
+                if p.isRunning { kill(pid, SIGKILL) }
+            }
         }
-        let timer = Task.detached {
-            try await Task.sleep(for: .seconds(timeout))
-            if p.isRunning { p.terminate() }
+
+        // The child is gone; give its output a moment, then stop waiting for a pipe something else still holds.
+        let closer = Task.detached {
+            try? await Task.sleep(for: .seconds(2))
+            try? out.fileHandleForReading.close()
+            try? err.fileHandleForReading.close()
         }
-        let code = await waiter.value
-        timer.cancel()
         let o = await outTask.value, e = await errTask.value
+        closer.cancel()
+        try? out.fileHandleForReading.close()
+        try? err.fileHandleForReading.close()
         return ProcessResult(code: code, stdout: String(decoding: o, as: UTF8.self), stderr: String(decoding: e, as: UTF8.self))
     }
 }

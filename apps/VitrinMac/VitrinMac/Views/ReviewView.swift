@@ -24,8 +24,8 @@ struct ReviewView: View {
                     Spacer()
                     Button(L.stage("validate")) { Task { await session.run("validate") } }.disabled(session.isBusy).cliHelp("vitrin validate")
                     Button(L.t("review.rebuild")) { Task { await load() } }.disabled(session.isBusy || loading).cliHelp("vitrin review")
-                    Button(L.t("review.reject")) { showReject = true }.disabled(session.isBusy || review == nil)
-                    Button(L.t("review.approveAll")) { confirmApprove = true }.buttonStyle(.borderedProminent)
+                    Button(L.t("review.reject")) { showReject = true }.disabled(session.isBusy || review == nil).accessibilityIdentifier("review.reject")
+                    Button(L.t("review.approveAll")) { confirmApprove = true }.buttonStyle(.borderedProminent).accessibilityIdentifier("review.approveAll")
                         .disabled(session.isBusy || loading || review == nil || review?.approval.ok == true || invalid)
                 }
                 HStack(spacing: 8) {
@@ -45,7 +45,8 @@ struct ReviewView: View {
             .padding(20)
             Divider()
             if overview.files["report"] == true, let c = session.client {
-                WebView(url: c.fileURL("metadata/report.html", bust: String(frameKey))).id(frameKey)
+                // `embed=app`: the gallery hides its own decision bar; the buttons above record the decision.
+                WebView(url: URL(string: c.fileURL("metadata/report.html", bust: String(frameKey)).absoluteString + "&embed=app")!).id(frameKey)
             } else {
                 EmptyHint(text: L.t("review.noReport"), symbol: "checklist")
             }

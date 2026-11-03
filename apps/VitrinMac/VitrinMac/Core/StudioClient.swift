@@ -29,7 +29,8 @@ struct StudioClient: Sendable {
     /// A file under the app root (`metadata/…`) as the Studio serves it.
     func fileURL(_ rel: String, bust: String? = nil) -> URL {
         var c = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)!
-        c.path = "/files/" + rel.split(separator: "/").map { String($0).addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? String($0) }.joined(separator: "/")
+        // Encoded once, by hand: `path` would encode again and turn "a b.png" into "a%2520b.png".
+        c.percentEncodedPath = "/files/" + rel.split(separator: "/").map { String($0).addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? String($0) }.joined(separator: "/")
         if let bust { c.queryItems = [URLQueryItem(name: "v", value: bust)] }
         return c.url!
     }

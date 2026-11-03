@@ -8,23 +8,33 @@ struct FlowView: View {
     var overview: Overview
     @State private var brief: (name: String, text: String)?
     @State private var showBrief = false
+    @State private var width: CGFloat = 1000
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 header
                 NextStepCard(session: session, overview: overview, showBrief: openBrief)
-                HStack(alignment: .top, spacing: 16) {
-                    stageList.frame(maxWidth: .infinity)
-                    VStack(spacing: 12) {
-                        decisions
-                        summary
+                // Two columns while there is room for both (the Claude column and the log take theirs); stacked otherwise,
+                // so the stage rows never shrink to a word per line.
+                if width >= 860 {
+                    HStack(alignment: .top, spacing: 16) {
+                        stageList.frame(maxWidth: .infinity)
+                        VStack(spacing: 12) {
+                            decisions
+                            summary
+                        }
+                        .frame(width: 340)
                     }
-                    .frame(width: 340)
+                } else {
+                    stageList
+                    decisions
+                    summary
                 }
             }
             .padding(20)
         }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .sheet(isPresented: $showBrief) {
             if let brief {
                 BriefSheet(name: brief.name, text: brief.text, session: session) { showBrief = false }

@@ -33,6 +33,7 @@ signed Sparkle feed are not set up (see Updates).
 
 To try it with the example: `pnpm build` in the repository, open the app, Settings → Vitrin CLI → Vitrin checkout =
 the repository path, then Add project… → `examples/Ritim`.
+Without the dialog: `open -a Vitrin --args --project /path/to/examples/Ritim` adds and opens that folder at launch.
 
 ## Architecture
 
@@ -52,7 +53,7 @@ server and removes the file; the app sends it when a project is closed, when it 
 | Studio | `Core/StudioProcess.swift`, `Core/StudioClient.swift`, `Core/StudioEvents.swift` | The process and its handshake; the API client (`/api/overview`, `/api/jobs`, `/api/file`, `/api/claude`, `/api/questions/answer`, `/api/review`, `/api/approve`, `/api/reject`, `/files/…`); the SSE stream (`log`, `job`, `claude`, `changed`, `remotion`), parsed byte by byte. |
 | State | `Core/ProjectSession.swift`, `Core/ProjectStore.swift`, `App/AppModel.swift`, `Core/AppSettings.swift` | One `@Observable` session per open project (overview, running job, log lines, Claude runs, toasts); the persistent project list (`~/Library/Application Support/Vitrin/projects.json`); the root model; preferences. |
 | Models | `Core/Models.swift`, `Core/JSONValue.swift`, `Core/Limits.swift` | The Studio's JSON by hand, statuses kept as strings so a newer server never breaks decoding; the App Store Connect text limits. |
-| UI | `Views/*` | `NavigationSplitView`: projects and their pages in the sidebar, the page as detail, the live log under it (draggable), Claude as an inspector. |
+| UI | `Views/*` | `NavigationSplitView`: projects and their pages in the sidebar, the page as detail, the live log under it (draggable), Claude in a side column (a plain `HStack`: SwiftUI's `.inspector` raised an NSException inside AppKit layout on macOS 15 and 26 the first time the column opened). |
 | Menu bar | `Views/MenuBarView.swift`, `App/AppDelegate.swift` | `MenuBarExtra` with the running or last stage, pending decisions per project and quick actions; the window can close while the app keeps running. |
 | Updates | `Core/UpdateChecker.swift` | GitHub Releases (`ardasnturk/vitrin`, latest tag, assets incl. `SHA256SUMS`) against the CLI and app versions, daily when enabled, with a notification. `SparkleUpdater` is a skeleton with the appcast URL setting. |
 | Words | `Core/Localization.swift`, `Resources/Localizable.xcstrings` | English and Turkish; "Follow the project" uses `ui.language` from `vitrin.config.yaml`, like the Studio, and switches at runtime. |
@@ -77,6 +78,36 @@ The gallery's own approve and reject buttons are inert inside the app (they post
 | ![Review and the live log](docs/screenshots/review-and-log.jpg) | ![Approve](docs/screenshots/approve.jpg) |
 | ![Dry-run plan](docs/screenshots/upload-plan.jpg) | ![Updates](docs/screenshots/settings-updates.jpg) |
 | ![Turkish](docs/screenshots/flow-tr.jpg) | |
+
+## Tests
+
+Two bundles, both in the `VitrinMac` scheme (`xcodegen generate` first; always build into `build-test`, never into the
+`build` folder a running Xcode build may use):
+
+```bash
+cd apps/VitrinMac
+xcodebuild test -scheme VitrinMac -destination 'platform=macOS' -derivedDataPath build-test -only-testing:VitrinMacTests
+xcodebuild test -scheme VitrinMac -destination 'platform=macOS' -derivedDataPath build-test -only-testing:VitrinMacUITests
+```
+
+- **VitrinMacTests** (unit tests, hosted in the app): `UpdateChecker.compare`, `JSONValue` round trips, the SSE parser
+  (`SSEParser`), `Overview` decoding from `Fixtures/overview-ritim.json` (a real `GET /api/overview` of
+  `examples/Ritim`), and `StudioHandshakeTests`, which starts the real CLI on `examples/Ritim`, reads the handshake,
+  checks the token gate (403 without, 202 with the token, an unknown command fails with "Unknown command") and that
+  `SIGTERM` removes the token file. The scheme gives the host app `VITRIN_UITEST=1`, its own UserDefaults suite and
+  `VITRIN_APP_SUPPORT=build-test/test-support`, so a test run never touches your projects or calls GitHub.
+- **VitrinMacUITests** launches the app with `VITRIN_PROJECT=examples/Ritim`, `VITRIN_DEV=<checkout>`,
+  `VITRIN_LANGUAGE=en`, `VITRIN_UITEST=1` and a fresh temp folder for `projects.json` and defaults, then walks the
+  pages: the sidebar and the Flow stages, the Claude column and the log toggles, every page's title, an upload dry-run
+  (the plan appears, *Upload now* stays disabled without keys) and the Review page (*Approve all* is present and never
+  clicked, so `approval.json` is never written into the example).
+
+Both need Node.js 22+ and the CLI built at `packages/cli/dist/bin.js` (`pnpm build` at the repository root); the
+integration and UI tests skip (`XCTSkip`) when it is missing. The UI tests also need macOS's UI-automation permission
+for the process running them: the first run from a terminal asks ("… wants to control this computer"; allow it, or run
+the suite from Xcode once); without it the runner fails with "Timed out while enabling automation mode" before any test
+starts. The Studio takes 5–30 s to start per launch, so the UI suite runs a few minutes. The dry-run rewrites `examples/Ritim/metadata/upload-plan.json`, and opening the Review page
+regenerates `metadata/report.html`, as the CLI does; `git checkout examples/Ritim/metadata` restores them.
 
 ## Updates
 

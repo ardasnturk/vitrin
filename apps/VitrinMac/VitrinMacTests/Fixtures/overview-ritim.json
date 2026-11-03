@@ -1,0 +1,1298 @@
+{
+    "version": "1.2.0",
+    "root": "/Users/ardasenturk/JASTech/auto-asc-metadata/examples/Ritim",
+    "initialized": true,
+    "stages": {
+        "analyze": {
+            "completedAt": "2026-10-24T08:38:39.677Z",
+            "status": "ok"
+        },
+        "capture": {
+            "completedAt": "2026-10-24T08:42:27.890Z",
+            "status": "ok"
+        },
+        "design": {
+            "completedAt": "2026-10-24T10:01:38.532Z",
+            "status": "ok"
+        },
+        "video": {
+            "completedAt": "2026-10-24T09:30:35.023Z",
+            "status": "ok"
+        },
+        "validate": {
+            "completedAt": "2026-11-03T13:33:24.675Z",
+            "status": "ok"
+        },
+        "research": {
+            "completedAt": "2026-10-24T08:35:42.306Z",
+            "status": "ok"
+        },
+        "write": {
+            "completedAt": "2026-10-24T10:01:00.667Z",
+            "status": "ok"
+        }
+    },
+    "files": {
+        "profile": true,
+        "appMetadata": true,
+        "artDirection": true,
+        "shots": true,
+        "videoPlan": true,
+        "experiments": false,
+        "cpp": false,
+        "competitors": true,
+        "liveListing": false,
+        "iconSheet": false,
+        "validation": true,
+        "report": true,
+        "approval": false,
+        "uploadPlan": true,
+        "renderManifest": true,
+        "reviewFeedback": false,
+        "gemfile": true,
+        "fastfile": true,
+        "env": false,
+        "screensKit": true
+    },
+    "listing": [
+        "en-US",
+        "tr"
+    ],
+    "playListing": [],
+    "briefs": [
+        {
+            "name": "design",
+            "path": "metadata/briefs/design.md",
+            "modifiedAt": "2026-10-29T18:51:59.652Z",
+            "stage": "design"
+        }
+    ],
+    "flow": [
+        {
+            "id": "analyze",
+            "status": "done",
+            "completedAt": "2026-10-24T08:38:39.677Z"
+        },
+        {
+            "id": "research",
+            "status": "done",
+            "completedAt": "2026-10-24T08:35:42.306Z"
+        },
+        {
+            "id": "write",
+            "status": "done",
+            "completedAt": "2026-10-24T10:01:00.667Z"
+        },
+        {
+            "id": "capture",
+            "status": "done",
+            "completedAt": "2026-10-24T08:42:27.890Z"
+        },
+        {
+            "id": "mockups",
+            "status": "not-run",
+            "optional": true
+        },
+        {
+            "id": "design",
+            "status": "needs-claude",
+            "completedAt": "2026-10-24T10:01:38.532Z",
+            "brief": "design"
+        },
+        {
+            "id": "video",
+            "status": "outdated",
+            "completedAt": "2026-10-24T09:30:35.023Z",
+            "reason": "design"
+        },
+        {
+            "id": "validate",
+            "status": "done",
+            "completedAt": "2026-11-03T13:33:24.675Z"
+        },
+        {
+            "id": "review",
+            "status": "needs-user"
+        },
+        {
+            "id": "upload",
+            "status": "blocked",
+            "reason": "keys-missing"
+        },
+        {
+            "id": "rank",
+            "status": "not-run",
+            "optional": true
+        }
+    ],
+    "blockers": [
+        {
+            "code": "keys-missing",
+            "severity": "error",
+            "stage": "upload",
+            "params": {
+                "keys": [
+                    "ASC_KEY_ID",
+                    "ASC_ISSUER_ID",
+                    "ASC_KEY_PATH"
+                ]
+            },
+            "fixes": []
+        }
+    ],
+    "questions": [],
+    "raw": {
+        "_brand": {},
+        "en-US": {
+            "ipad": [
+                {
+                    "path": "metadata/raw/en-US/ipad/add.png",
+                    "name": "add.png",
+                    "bytes": 120204
+                },
+                {
+                    "path": "metadata/raw/en-US/ipad/detail.png",
+                    "name": "detail.png",
+                    "bytes": 170499
+                },
+                {
+                    "path": "metadata/raw/en-US/ipad/home-7.png",
+                    "name": "home-7.png",
+                    "bytes": 386491
+                },
+                {
+                    "path": "metadata/raw/en-US/ipad/home-done.png",
+                    "name": "home-done.png",
+                    "bytes": 382398
+                },
+                {
+                    "path": "metadata/raw/en-US/ipad/home-flow.mp4",
+                    "name": "home-flow.mp4",
+                    "bytes": 2900153
+                },
+                {
+                    "path": "metadata/raw/en-US/ipad/home.png",
+                    "name": "home.png",
+                    "bytes": 386687
+                },
+                {
+                    "path": "metadata/raw/en-US/ipad/reminders.png",
+                    "name": "reminders.png",
+                    "bytes": 214843
+                },
+                {
+                    "path": "metadata/raw/en-US/ipad/stats-flow.mp4",
+                    "name": "stats-flow.mp4",
+                    "bytes": 3061023
+                },
+                {
+                    "path": "metadata/raw/en-US/ipad/stats-more.png",
+                    "name": "stats-more.png",
+                    "bytes": 152111
+                },
+                {
+                    "path": "metadata/raw/en-US/ipad/stats.png",
+                    "name": "stats.png",
+                    "bytes": 224706
+                }
+            ],
+            "iphone": [
+                {
+                    "path": "metadata/raw/en-US/iphone/add.png",
+                    "name": "add.png",
+                    "bytes": 169292
+                },
+                {
+                    "path": "metadata/raw/en-US/iphone/detail.png",
+                    "name": "detail.png",
+                    "bytes": 215734
+                },
+                {
+                    "path": "metadata/raw/en-US/iphone/home-7.png",
+                    "name": "home-7.png",
+                    "bytes": 464884
+                },
+                {
+                    "path": "metadata/raw/en-US/iphone/home-done.png",
+                    "name": "home-done.png",
+                    "bytes": 461550
+                },
+                {
+                    "path": "metadata/raw/en-US/iphone/home-flow.mp4",
+                    "name": "home-flow.mp4",
+                    "bytes": 2044299
+                },
+                {
+                    "path": "metadata/raw/en-US/iphone/home.png",
+                    "name": "home.png",
+                    "bytes": 465161
+                },
+                {
+                    "path": "metadata/raw/en-US/iphone/reminders.png",
+                    "name": "reminders.png",
+                    "bytes": 310649
+                },
+                {
+                    "path": "metadata/raw/en-US/iphone/stats-flow.mp4",
+                    "name": "stats-flow.mp4",
+                    "bytes": 1747519
+                },
+                {
+                    "path": "metadata/raw/en-US/iphone/stats-more.png",
+                    "name": "stats-more.png",
+                    "bytes": 239377
+                },
+                {
+                    "path": "metadata/raw/en-US/iphone/stats.png",
+                    "name": "stats.png",
+                    "bytes": 250872
+                }
+            ]
+        },
+        "tr": {
+            "ipad": [
+                {
+                    "path": "metadata/raw/tr/ipad/add.png",
+                    "name": "add.png",
+                    "bytes": 126981
+                },
+                {
+                    "path": "metadata/raw/tr/ipad/detail.png",
+                    "name": "detail.png",
+                    "bytes": 159394
+                },
+                {
+                    "path": "metadata/raw/tr/ipad/home-7.png",
+                    "name": "home-7.png",
+                    "bytes": 382304
+                },
+                {
+                    "path": "metadata/raw/tr/ipad/home-done.png",
+                    "name": "home-done.png",
+                    "bytes": 376702
+                },
+                {
+                    "path": "metadata/raw/tr/ipad/home-flow.mp4",
+                    "name": "home-flow.mp4",
+                    "bytes": 3006359
+                },
+                {
+                    "path": "metadata/raw/tr/ipad/home.png",
+                    "name": "home.png",
+                    "bytes": 382584
+                },
+                {
+                    "path": "metadata/raw/tr/ipad/reminders.png",
+                    "name": "reminders.png",
+                    "bytes": 201528
+                },
+                {
+                    "path": "metadata/raw/tr/ipad/stats-flow.mp4",
+                    "name": "stats-flow.mp4",
+                    "bytes": 3048212
+                },
+                {
+                    "path": "metadata/raw/tr/ipad/stats-more.png",
+                    "name": "stats-more.png",
+                    "bytes": 149595
+                },
+                {
+                    "path": "metadata/raw/tr/ipad/stats.png",
+                    "name": "stats.png",
+                    "bytes": 219650
+                }
+            ],
+            "iphone": [
+                {
+                    "path": "metadata/raw/tr/iphone/add.png",
+                    "name": "add.png",
+                    "bytes": 176868
+                },
+                {
+                    "path": "metadata/raw/tr/iphone/detail.png",
+                    "name": "detail.png",
+                    "bytes": 209612
+                },
+                {
+                    "path": "metadata/raw/tr/iphone/home-7.png",
+                    "name": "home-7.png",
+                    "bytes": 486582
+                },
+                {
+                    "path": "metadata/raw/tr/iphone/home-done.png",
+                    "name": "home-done.png",
+                    "bytes": 480366
+                },
+                {
+                    "path": "metadata/raw/tr/iphone/home-flow.mp4",
+                    "name": "home-flow.mp4",
+                    "bytes": 2247169
+                },
+                {
+                    "path": "metadata/raw/tr/iphone/home.png",
+                    "name": "home.png",
+                    "bytes": 486931
+                },
+                {
+                    "path": "metadata/raw/tr/iphone/reminders.png",
+                    "name": "reminders.png",
+                    "bytes": 288047
+                },
+                {
+                    "path": "metadata/raw/tr/iphone/stats-flow.mp4",
+                    "name": "stats-flow.mp4",
+                    "bytes": 1822265
+                },
+                {
+                    "path": "metadata/raw/tr/iphone/stats-more.png",
+                    "name": "stats-more.png",
+                    "bytes": 234480
+                },
+                {
+                    "path": "metadata/raw/tr/iphone/stats.png",
+                    "name": "stats.png",
+                    "bytes": 241549
+                }
+            ]
+        }
+    },
+    "screenshots": {
+        "en-US": [
+            {
+                "path": "metadata/store/screenshots/en-US/01_today_ipad-13.png",
+                "name": "01_today_ipad-13.png",
+                "bytes": 760396
+            },
+            {
+                "path": "metadata/store/screenshots/en-US/01_today_iphone-6.3.png",
+                "name": "01_today_iphone-6.3.png",
+                "bytes": 563202
+            },
+            {
+                "path": "metadata/store/screenshots/en-US/02_streaks_ipad-13.png",
+                "name": "02_streaks_ipad-13.png",
+                "bytes": 651751
+            },
+            {
+                "path": "metadata/store/screenshots/en-US/02_streaks_iphone-6.3.png",
+                "name": "02_streaks_iphone-6.3.png",
+                "bytes": 461388
+            },
+            {
+                "path": "metadata/store/screenshots/en-US/03_charts_ipad-13.png",
+                "name": "03_charts_ipad-13.png",
+                "bytes": 672366
+            },
+            {
+                "path": "metadata/store/screenshots/en-US/03_charts_iphone-6.3.png",
+                "name": "03_charts_iphone-6.3.png",
+                "bytes": 434656
+            },
+            {
+                "path": "metadata/store/screenshots/en-US/04_reminders_ipad-13.png",
+                "name": "04_reminders_ipad-13.png",
+                "bytes": 927392
+            },
+            {
+                "path": "metadata/store/screenshots/en-US/04_reminders_iphone-6.3.png",
+                "name": "04_reminders_iphone-6.3.png",
+                "bytes": 755339
+            },
+            {
+                "path": "metadata/store/screenshots/en-US/05_custom_iphone-6.3.png",
+                "name": "05_custom_iphone-6.3.png",
+                "bytes": 422094
+            },
+            {
+                "path": "metadata/store/screenshots/en-US/06_day_ipad-13.png",
+                "name": "06_day_ipad-13.png",
+                "bytes": 712262
+            },
+            {
+                "path": "metadata/store/screenshots/en-US/06_day_iphone-6.3.png",
+                "name": "06_day_iphone-6.3.png",
+                "bytes": 591150
+            },
+            {
+                "path": "metadata/store/screenshots/en-US/07_more_ipad-13.png",
+                "name": "07_more_ipad-13.png",
+                "bytes": 654730
+            },
+            {
+                "path": "metadata/store/screenshots/en-US/07_more_iphone-6.3.png",
+                "name": "07_more_iphone-6.3.png",
+                "bytes": 378971
+            },
+            {
+                "path": "metadata/store/screenshots/en-US/08_rhythm_ipad-13.png",
+                "name": "08_rhythm_ipad-13.png",
+                "bytes": 1334444
+            },
+            {
+                "path": "metadata/store/screenshots/en-US/08_rhythm_iphone-6.3.png",
+                "name": "08_rhythm_iphone-6.3.png",
+                "bytes": 754746
+            }
+        ],
+        "tr": [
+            {
+                "path": "metadata/store/screenshots/tr/01_today_ipad-13.png",
+                "name": "01_today_ipad-13.png",
+                "bytes": 758516
+            },
+            {
+                "path": "metadata/store/screenshots/tr/01_today_iphone-6.3.png",
+                "name": "01_today_iphone-6.3.png",
+                "bytes": 560706
+            },
+            {
+                "path": "metadata/store/screenshots/tr/02_streaks_ipad-13.png",
+                "name": "02_streaks_ipad-13.png",
+                "bytes": 583457
+            },
+            {
+                "path": "metadata/store/screenshots/tr/02_streaks_iphone-6.3.png",
+                "name": "02_streaks_iphone-6.3.png",
+                "bytes": 433911
+            },
+            {
+                "path": "metadata/store/screenshots/tr/03_charts_ipad-13.png",
+                "name": "03_charts_ipad-13.png",
+                "bytes": 590669
+            },
+            {
+                "path": "metadata/store/screenshots/tr/03_charts_iphone-6.3.png",
+                "name": "03_charts_iphone-6.3.png",
+                "bytes": 405233
+            },
+            {
+                "path": "metadata/store/screenshots/tr/04_reminders_ipad-13.png",
+                "name": "04_reminders_ipad-13.png",
+                "bytes": 920243
+            },
+            {
+                "path": "metadata/store/screenshots/tr/04_reminders_iphone-6.3.png",
+                "name": "04_reminders_iphone-6.3.png",
+                "bytes": 743537
+            },
+            {
+                "path": "metadata/store/screenshots/tr/05_custom_iphone-6.3.png",
+                "name": "05_custom_iphone-6.3.png",
+                "bytes": 430376
+            },
+            {
+                "path": "metadata/store/screenshots/tr/06_day_ipad-13.png",
+                "name": "06_day_ipad-13.png",
+                "bytes": 706930
+            },
+            {
+                "path": "metadata/store/screenshots/tr/06_day_iphone-6.3.png",
+                "name": "06_day_iphone-6.3.png",
+                "bytes": 586370
+            },
+            {
+                "path": "metadata/store/screenshots/tr/07_more_ipad-13.png",
+                "name": "07_more_ipad-13.png",
+                "bytes": 649553
+            },
+            {
+                "path": "metadata/store/screenshots/tr/07_more_iphone-6.3.png",
+                "name": "07_more_iphone-6.3.png",
+                "bytes": 376359
+            },
+            {
+                "path": "metadata/store/screenshots/tr/08_rhythm_ipad-13.png",
+                "name": "08_rhythm_ipad-13.png",
+                "bytes": 1329665
+            },
+            {
+                "path": "metadata/store/screenshots/tr/08_rhythm_iphone-6.3.png",
+                "name": "08_rhythm_iphone-6.3.png",
+                "bytes": 754914
+            }
+        ]
+    },
+    "previews": {
+        "en-US": [
+            {
+                "path": "metadata/store/app-previews/en-US/01_IPHONE_67.mp4",
+                "name": "01_IPHONE_67.mp4",
+                "bytes": 24350747
+            }
+        ],
+        "tr": [
+            {
+                "path": "metadata/store/app-previews/tr/01_IPHONE_67.mp4",
+                "name": "01_IPHONE_67.mp4",
+                "bytes": 24363678
+            }
+        ]
+    },
+    "creatives": {
+        "en-US": [
+            {
+                "path": "metadata/creative/en-US/event-card_event-statistics-card.png",
+                "name": "event-card_event-statistics-card.png",
+                "bytes": 803601
+            },
+            {
+                "path": "metadata/creative/en-US/event-detail_event-statistics-detail.png",
+                "name": "event-detail_event-statistics-detail.png",
+                "bytes": 999399
+            },
+            {
+                "path": "metadata/creative/en-US/header_header.png",
+                "name": "header_header.png",
+                "bytes": 1268985
+            },
+            {
+                "path": "metadata/creative/en-US/header_loop.mp4",
+                "name": "header_loop.mp4",
+                "bytes": 28393190
+            },
+            {
+                "path": "metadata/creative/en-US/search_loop.mp4",
+                "name": "search_loop.mp4",
+                "bytes": 21880101
+            },
+            {
+                "path": "metadata/creative/en-US/search_search.png",
+                "name": "search_search.png",
+                "bytes": 1626094
+            }
+        ],
+        "tr": [
+            {
+                "path": "metadata/creative/tr/event-card_event-statistics-card.png",
+                "name": "event-card_event-statistics-card.png",
+                "bytes": 796814
+            },
+            {
+                "path": "metadata/creative/tr/event-detail_event-statistics-detail.png",
+                "name": "event-detail_event-statistics-detail.png",
+                "bytes": 978714
+            },
+            {
+                "path": "metadata/creative/tr/header_header.png",
+                "name": "header_header.png",
+                "bytes": 1277181
+            },
+            {
+                "path": "metadata/creative/tr/header_loop.mp4",
+                "name": "header_loop.mp4",
+                "bytes": 28661247
+            },
+            {
+                "path": "metadata/creative/tr/search_loop.mp4",
+                "name": "search_loop.mp4",
+                "bytes": 24376281
+            },
+            {
+                "path": "metadata/creative/tr/search_search.png",
+                "name": "search_search.png",
+                "bytes": 1622994
+            }
+        ]
+    },
+    "videoStyles": {
+        "en-US": [
+            {
+                "path": "metadata/video-styles/en-US/01_classic.mp4",
+                "name": "01_classic.mp4",
+                "bytes": 26673895
+            },
+            {
+                "path": "metadata/video-styles/en-US/01_energetic.mp4",
+                "name": "01_energetic.mp4",
+                "bytes": 27502795
+            },
+            {
+                "path": "metadata/video-styles/en-US/01_kinetic.mp4",
+                "name": "01_kinetic.mp4",
+                "bytes": 33015490
+            },
+            {
+                "path": "metadata/video-styles/en-US/01_showcase.mp4",
+                "name": "01_showcase.mp4",
+                "bytes": 28339209
+            }
+        ],
+        "tr": [
+            {
+                "path": "metadata/video-styles/tr/01_classic.mp4",
+                "name": "01_classic.mp4",
+                "bytes": 26838941
+            },
+            {
+                "path": "metadata/video-styles/tr/01_energetic.mp4",
+                "name": "01_energetic.mp4",
+                "bytes": 27467796
+            },
+            {
+                "path": "metadata/video-styles/tr/01_kinetic.mp4",
+                "name": "01_kinetic.mp4",
+                "bytes": 33270977
+            },
+            {
+                "path": "metadata/video-styles/tr/01_showcase.mp4",
+                "name": "01_showcase.mp4",
+                "bytes": 28563283
+            }
+        ]
+    },
+    "cpp": {},
+    "tools": {
+        "asc": "5.17.1",
+        "fastlane": "2.241.1",
+        "ruby": "4.0.7",
+        "bundler": "4.0.20",
+        "brew": "7.0.12",
+        "claude": "/opt/homebrew/bin/claude",
+        "ffmpeg": "/opt/homebrew/bin/ffmpeg"
+    },
+    "missingKeys": [
+        "ASC_KEY_ID",
+        "ASC_ISSUER_ID",
+        "ASC_KEY_PATH"
+    ],
+    "enums": {
+        "presets": [
+            "vitrin-classic",
+            "liquid-glass-aurora",
+            "swiss-grid-bold",
+            "midnight-glow-pro",
+            "soft-clay-wellness",
+            "quiet-japandi",
+            "bento-keynote-grid",
+            "magazine-cover-editorial",
+            "candy-pop-social",
+            "neon-athletic-night",
+            "paper-sticker-skeuomorphic",
+            "hand-drawn-editorial",
+            "clean-studio-light",
+            "bold-poster-type",
+            "color-block-sequence",
+            "noir-gold-luxe"
+        ],
+        "emphasis": [
+            "color",
+            "gradient",
+            "block",
+            "box",
+            "pill",
+            "italic",
+            "script",
+            "kenten",
+            "underline",
+            "outline"
+        ],
+        "archetypes": [
+            "hero",
+            "feature",
+            "split",
+            "collage",
+            "before-after",
+            "stat",
+            "social-proof",
+            "panoramic",
+            "fullbleed",
+            "callout",
+            "tilted",
+            "statement",
+            "testimonial",
+            "feature-wall",
+            "mosaic"
+        ],
+        "framings": [
+            "auto",
+            "bleed-bottom",
+            "bleed-top",
+            "offset",
+            "tilted",
+            "two-devices",
+            "no-device",
+            "contained"
+        ],
+        "scenes": [
+            "device",
+            "zoom",
+            "split",
+            "text",
+            "stat",
+            "badges",
+            "flow"
+        ],
+        "videoStyles": [
+            "classic",
+            "showcase",
+            "kinetic",
+            "energetic"
+        ],
+        "transitions": [
+            "auto",
+            "fade",
+            "slide",
+            "wipe",
+            "flip",
+            "push",
+            "iris",
+            "none"
+        ],
+        "badgeTypes": [
+            "feature",
+            "new",
+            "proof",
+            "platform"
+        ]
+    },
+    "app": {
+        "name": "Ritim",
+        "bundleId": "com.jastech.ritim",
+        "icon": "Ritim/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png",
+        "kind": "native",
+        "platforms": [
+            "ios"
+        ],
+        "version": "1.2.0"
+    },
+    "config": {
+        "locales": [
+            "en-US",
+            "tr"
+        ],
+        "primaryLocale": "en-US",
+        "language": "en",
+        "uploader": "deliver",
+        "capture": "html",
+        "screens": [
+            {
+                "id": "home",
+                "launchArgs": [],
+                "source": [
+                    "Ritim/Views/HomeView.swift",
+                    "Ritim/Views/Components/Components.swift",
+                    "Ritim/App/RitimApp.swift"
+                ],
+                "waitMs": 2500
+            },
+            {
+                "id": "home-7",
+                "launchArgs": [],
+                "source": [
+                    "Ritim/Views/HomeView.swift"
+                ],
+                "waitMs": 2500
+            },
+            {
+                "id": "home-done",
+                "launchArgs": [],
+                "source": [
+                    "Ritim/Views/HomeView.swift"
+                ],
+                "waitMs": 2500
+            },
+            {
+                "id": "stats",
+                "launchArgs": [],
+                "source": [
+                    "Ritim/Views/StatsView.swift",
+                    "Ritim/Views/Components/Components.swift"
+                ],
+                "waitMs": 2500
+            },
+            {
+                "id": "stats-more",
+                "launchArgs": [],
+                "source": [
+                    "Ritim/Views/StatsView.swift"
+                ],
+                "waitMs": 2500
+            },
+            {
+                "id": "detail",
+                "launchArgs": [],
+                "source": [
+                    "Ritim/Views/HabitDetailView.swift",
+                    "Ritim/Views/Components/Components.swift"
+                ],
+                "waitMs": 2500
+            },
+            {
+                "id": "reminders",
+                "launchArgs": [],
+                "source": [
+                    "Ritim/Views/RemindersView.swift"
+                ],
+                "waitMs": 2500
+            },
+            {
+                "id": "add",
+                "launchArgs": [],
+                "source": [
+                    "Ritim/Views/AddHabitView.swift",
+                    "Ritim/Models/HabitStyle.swift"
+                ],
+                "waitMs": 2500
+            }
+        ],
+        "selection": {
+            "platforms": [
+                "ios"
+            ],
+            "assets": [
+                "metadata",
+                "screenshots",
+                "previews",
+                "creatives",
+                "events"
+            ],
+            "targets": [
+                "iphone-6.3",
+                "ipad-13",
+                "preview-iphone",
+                "header",
+                "search",
+                "event-card",
+                "event-detail"
+            ]
+        },
+        "video": {
+            "enabled": true,
+            "loops": false
+        },
+        "seeds": {
+            "en-US": [
+                "habit tracker",
+                "daily habits",
+                "streak tracker",
+                "routine planner",
+                "habit calendar",
+                "goal tracker"
+            ],
+            "tr": [
+                "al\u0131\u015fkanl\u0131k takibi",
+                "al\u0131\u015fkanl\u0131k",
+                "g\u00fcnl\u00fck rutin",
+                "hedef takip",
+                "seri takibi",
+                "rutin planlay\u0131c\u0131"
+            ]
+        },
+        "urls": {
+            "support": "https://example.com/support",
+            "privacy": "https://example.com/privacy"
+        }
+    },
+    "platforms": {
+        "app": "Ritim",
+        "kind": "native",
+        "platforms": [
+            {
+                "platform": "ios",
+                "label": "iPhone & iPad (App Store)",
+                "detected": true,
+                "selected": true,
+                "evidence": [
+                    {
+                        "path": "Ritim.xcodeproj/project.pbxproj",
+                        "note": "Ritim: SDKROOT=iphoneos, TARGETED_DEVICE_FAMILY=1,2"
+                    }
+                ],
+                "targets": {
+                    "screenshots": [
+                        "iphone-6.3",
+                        "iphone-6.9",
+                        "ipad-13",
+                        "duo-outer",
+                        "duo-inner"
+                    ],
+                    "previews": [
+                        "preview-iphone",
+                        "preview-ipad"
+                    ],
+                    "creatives": [
+                        "header",
+                        "search"
+                    ],
+                    "events": [
+                        "event-card",
+                        "event-detail"
+                    ]
+                }
+            },
+            {
+                "platform": "macos",
+                "label": "Mac (App Store)",
+                "detected": false,
+                "selected": false,
+                "evidence": [],
+                "targets": {
+                    "screenshots": [
+                        "mac-16x10"
+                    ],
+                    "previews": [
+                        "preview-mac"
+                    ],
+                    "creatives": [],
+                    "events": []
+                }
+            },
+            {
+                "platform": "watchos",
+                "label": "Apple Watch (App Store)",
+                "detected": false,
+                "selected": false,
+                "evidence": [],
+                "targets": {
+                    "screenshots": [
+                        "watch-ultra"
+                    ],
+                    "previews": [],
+                    "creatives": [],
+                    "events": []
+                }
+            },
+            {
+                "platform": "tvos",
+                "label": "Apple TV (App Store)",
+                "detected": false,
+                "selected": false,
+                "evidence": [],
+                "targets": {
+                    "screenshots": [
+                        "appletv-4k"
+                    ],
+                    "previews": [
+                        "preview-tv"
+                    ],
+                    "creatives": [],
+                    "events": []
+                }
+            },
+            {
+                "platform": "visionos",
+                "label": "Apple Vision Pro (App Store)",
+                "detected": false,
+                "selected": false,
+                "evidence": [],
+                "targets": {
+                    "screenshots": [
+                        "vision-pro"
+                    ],
+                    "previews": [
+                        "preview-vision"
+                    ],
+                    "creatives": [],
+                    "events": []
+                }
+            },
+            {
+                "platform": "android",
+                "label": "Android (Google Play)",
+                "detected": false,
+                "selected": false,
+                "evidence": [],
+                "targets": {
+                    "screenshots": [
+                        "play-phone"
+                    ],
+                    "previews": [],
+                    "creatives": [
+                        "play-feature-graphic",
+                        "play-icon"
+                    ],
+                    "events": []
+                }
+            }
+        ],
+        "assets": [
+            {
+                "asset": "metadata",
+                "label": "Store metadata (name, subtitle, keywords, description)",
+                "selected": true
+            },
+            {
+                "asset": "screenshots",
+                "label": "Screenshots",
+                "selected": true
+            },
+            {
+                "asset": "previews",
+                "label": "App Preview videos",
+                "selected": true
+            },
+            {
+                "asset": "creatives",
+                "label": "Creatives (product page header, search result, Play feature graphic and icon)",
+                "selected": true
+            },
+            {
+                "asset": "events",
+                "label": "In-App Event cards",
+                "selected": true
+            }
+        ],
+        "formats": [
+            {
+                "target": "iphone-6.3",
+                "label": "iPhone 6.3\" (Dynamic Island, medium)",
+                "platform": "ios",
+                "kind": "screenshot",
+                "size": "1206\u00d72622",
+                "required": true,
+                "selected": true
+            },
+            {
+                "target": "iphone-6.9",
+                "label": "iPhone 6.9\" (Dynamic Island, large)",
+                "platform": "ios",
+                "kind": "screenshot",
+                "size": "1320\u00d72868",
+                "required": false,
+                "selected": false
+            },
+            {
+                "target": "ipad-13",
+                "label": "iPad 13\"",
+                "platform": "ios",
+                "kind": "screenshot",
+                "size": "2064\u00d72752",
+                "required": false,
+                "selected": true
+            },
+            {
+                "target": "duo-outer",
+                "label": "iPhone Duo outer display",
+                "platform": "ios",
+                "kind": "screenshot",
+                "size": "1398\u00d72034",
+                "required": false,
+                "selected": false
+            },
+            {
+                "target": "duo-inner",
+                "label": "iPhone Duo inner display",
+                "platform": "ios",
+                "kind": "screenshot",
+                "size": "2007\u00d72853",
+                "required": false,
+                "selected": false
+            },
+            {
+                "target": "preview-iphone",
+                "label": "App Preview iPhone (all modern classes, including Duo)",
+                "platform": "ios",
+                "kind": "preview",
+                "size": "886\u00d71920",
+                "required": false,
+                "selected": true
+            },
+            {
+                "target": "preview-ipad",
+                "label": "App Preview iPad 13\"/11\"",
+                "platform": "ios",
+                "kind": "preview",
+                "size": "1200\u00d71600",
+                "required": false,
+                "selected": false
+            },
+            {
+                "target": "header",
+                "label": "Product page header (21:9)",
+                "platform": "ios",
+                "kind": "creative",
+                "size": "3840\u00d71646",
+                "required": false,
+                "selected": true
+            },
+            {
+                "target": "search",
+                "label": "Search result creative (3:2)",
+                "platform": "ios",
+                "kind": "creative",
+                "size": "3840\u00d72560",
+                "required": false,
+                "selected": true
+            },
+            {
+                "target": "event-card",
+                "label": "In-App Event card (16:9)",
+                "platform": "ios",
+                "kind": "event",
+                "size": "3840\u00d72160",
+                "required": false,
+                "selected": true
+            },
+            {
+                "target": "event-detail",
+                "label": "In-App Event detail (9:16)",
+                "platform": "ios",
+                "kind": "event",
+                "size": "2160\u00d73840",
+                "required": false,
+                "selected": true
+            }
+        ],
+        "locales": [
+            {
+                "locale": "en-US",
+                "selected": true,
+                "detected": true
+            },
+            {
+                "locale": "tr",
+                "selected": true,
+                "detected": true
+            }
+        ],
+        "samples": {
+            "locale": "en-US",
+            "target": "iphone-6.3",
+            "family": "iphone"
+        },
+        "language": "en",
+        "uploader": "deliver",
+        "capture": "html",
+        "selection": {
+            "platforms": [
+                "ios"
+            ],
+            "assets": [
+                "metadata",
+                "screenshots",
+                "previews",
+                "creatives",
+                "events"
+            ],
+            "targets": [
+                "iphone-6.3",
+                "ipad-13",
+                "preview-iphone",
+                "header",
+                "search",
+                "event-card",
+                "event-detail"
+            ]
+        }
+    },
+    "validation": {
+        "ok": true,
+        "counts": {
+            "error": 0,
+            "warning": 9,
+            "info": 2
+        },
+        "generatedAt": "2026-11-03T13:33:24.674Z",
+        "issues": [
+            {
+                "severity": "info",
+                "code": "keywords.top-unused",
+                "message": "Best-scored candidates not in any field: daily habits.",
+                "file": "metadata/listing/en-US.json",
+                "locale": "en-US",
+                "field": "keywords"
+            },
+            {
+                "severity": "warning",
+                "code": "text.superlative",
+                "message": "The description contains \u201cbest\u201d; remove it unless it is documented.",
+                "file": "metadata/listing/en-US.json",
+                "locale": "en-US",
+                "field": "description"
+            },
+            {
+                "severity": "warning",
+                "code": "text.price",
+                "message": "The description contains a price term (\u201cfree\u201d); remove it unless it is subscription information.",
+                "file": "metadata/listing/en-US.json",
+                "locale": "en-US",
+                "field": "description"
+            },
+            {
+                "severity": "warning",
+                "code": "url.placeholder",
+                "message": "supportUrl is a placeholder (https://example.com/support); set the real address before uploading.",
+                "file": "metadata/listing/en-US.json",
+                "locale": "en-US",
+                "field": "supportUrl"
+            },
+            {
+                "severity": "warning",
+                "code": "url.placeholder",
+                "message": "privacyUrl is a placeholder (https://example.com/privacy); set the real address before uploading.",
+                "file": "metadata/listing/en-US.json",
+                "locale": "en-US",
+                "field": "privacyUrl"
+            },
+            {
+                "severity": "info",
+                "code": "keywords.top-unused",
+                "message": "Best-scored candidates not in any field: hedef takip.",
+                "file": "metadata/listing/tr.json",
+                "locale": "tr",
+                "field": "keywords"
+            },
+            {
+                "severity": "warning",
+                "code": "text.price",
+                "message": "The description contains a price term (\u201c\u00fccretsiz\u201d); remove it unless it is subscription information.",
+                "file": "metadata/listing/tr.json",
+                "locale": "tr",
+                "field": "description"
+            },
+            {
+                "severity": "warning",
+                "code": "url.placeholder",
+                "message": "supportUrl is a placeholder (https://example.com/support); set the real address before uploading.",
+                "file": "metadata/listing/tr.json",
+                "locale": "tr",
+                "field": "supportUrl"
+            },
+            {
+                "severity": "warning",
+                "code": "url.placeholder",
+                "message": "privacyUrl is a placeholder (https://example.com/privacy); set the real address before uploading.",
+                "file": "metadata/listing/tr.json",
+                "locale": "tr",
+                "field": "privacyUrl"
+            },
+            {
+                "severity": "warning",
+                "code": "event.deep-link",
+                "message": "In-App Event statistics: no deepLink; App Review needs one that opens the event in the app."
+            },
+            {
+                "severity": "warning",
+                "code": "video.no-recording",
+                "message": "The App Preview is built only from screenshots; a real screen recording (capture.recordings) is recommended."
+            }
+        ]
+    },
+    "samples": {
+        "styles": [
+            "liquid-glass-aurora",
+            "midnight-glow-pro",
+            "night-rhythm",
+            "soft-clay-wellness"
+        ],
+        "contactSheet": "metadata/design-samples/contact-sheet.png",
+        "storePreview": "metadata/design-samples/store-preview.html",
+        "options": []
+    },
+    "next": {
+        "stage": "design",
+        "action": "claude"
+    },
+    "job": null,
+    "claude": {
+        "available": true,
+        "running": false,
+        "sessionId": null
+    },
+    "remotion": {
+        "running": false,
+        "url": null,
+        "available": true
+    },
+    "ui": true
+}

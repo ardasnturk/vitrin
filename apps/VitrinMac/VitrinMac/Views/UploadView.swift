@@ -82,7 +82,7 @@ struct UploadView: View {
                         Toggle(L.t("upload.experiment"), isOn: $flags.experiment).disabled(overview.files["experiments"] != true)
                         Toggle(L.t("upload.skipScreenshots"), isOn: $flags.skipScreenshots)
                     }.toggleStyle(.checkbox).font(.callout)
-                    Button(L.t("upload.dryRun")) { Task { await session.run("upload", args: flags.args.merging(["dryRun": true]) { $1 }) } }.buttonStyle(.borderedProminent).disabled(session.isBusy).cliHelp("vitrin upload --dry-run")
+                    Button(L.t("upload.dryRun")) { Task { await session.run("upload", args: flags.args.merging(["dryRun": true]) { $1 }) } }.buttonStyle(.borderedProminent).disabled(session.isBusy).cliHelp("vitrin upload --dry-run").accessibilityIdentifier("upload.dryRun")
                     if let p = planJob, !p.summary.isRunning {
                         HStack {
                             Pill("\(L.t("upload.lastPlan")) · \(L.date(p.endedAt))", Tone.ofJob(p.status))
@@ -96,7 +96,7 @@ struct UploadView: View {
                     }
                 }
                 Step(n: 5, ok: uploaded != nil && uploaded?.overallHash == overview.approval?.overallHash, title: L.t("upload.stepUpload")) {
-                    Button(L.t("upload.now")) { typed = ""; confirmUpload = true }.buttonStyle(.borderedProminent).tint(.red).disabled(!waiting.isEmpty || session.isBusy).cliHelp("vitrin upload --yes")
+                    Button(L.t("upload.now")) { typed = ""; confirmUpload = true }.buttonStyle(.borderedProminent).tint(.red).disabled(!waiting.isEmpty || session.isBusy).cliHelp("vitrin upload --yes").accessibilityIdentifier("upload.now")
                     if !waiting.isEmpty { Text(L.t("upload.waitsFor").replacingOccurrences(of: "{steps}", with: waiting.joined(separator: ", "))).font(.callout).foregroundStyle(.red) }
                 }
                 Text(L.t("upload.after")).font(.title3.bold()).padding(.top, 8)

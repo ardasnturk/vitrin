@@ -41,11 +41,11 @@ struct Sidebar: View {
         .listStyle(.sidebar)
         .safeAreaInset(edge: .bottom) {
             VStack(alignment: .leading, spacing: 6) {
-                Button { model.pickProjectFolder() } label: { Label(L.t("projects.add"), systemImage: "plus") }.buttonStyle(.borderless)
+                Button { model.pickProjectFolder() } label: { Label(L.t("projects.add"), systemImage: "plus") }.buttonStyle(.borderless).accessibilityIdentifier("sidebar.addProject")
                 HStack(spacing: 6) {
                     if model.locating { ProgressView().controlSize(.mini) }
-                    Image(systemName: model.cli == nil ? "exclamationmark.circle" : "checkmark.circle").foregroundStyle(model.cli == nil ? .orange : .green)
-                    Text(model.cli.map { "Vitrin CLI \($0.version ?? "")" } ?? L.t("cli.notFound")).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    if !model.locating { Image(systemName: model.cli == nil ? "exclamationmark.circle" : "checkmark.circle").foregroundStyle(model.cli == nil ? .orange : .green) }
+                    Text(model.cli.map { "Vitrin CLI \($0.version ?? "")" } ?? L.t(model.locating ? "cli.locating" : "cli.notFound")).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
                 .help(model.cli?.displayPath ?? model.cliError ?? "")
             }

@@ -22,3 +22,7 @@ release/
 # Xcode (apps/VitrinMac)
 xcuserdata/
 DerivedData/
+
+# Vitrin for Mac build products
+apps/VitrinMac/build/
+apps/VitrinMac/build-test/

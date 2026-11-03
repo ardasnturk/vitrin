@@ -2,9 +2,10 @@ import Foundation
 import Observation
 
 /// The app's own preferences (UserDefaults). Nothing here is a secret: keys stay in each project's `.env`.
+/// `VITRIN_DEFAULTS_SUITE` names a separate suite (the UI tests), `VITRIN_LANGUAGE` fixes the language (en, tr).
 @MainActor @Observable final class AppSettings {
     static let shared = AppSettings()
-    private let d = UserDefaults.standard
+    private let d = ProcessInfo.processInfo.environment["VITRIN_DEFAULTS_SUITE"].flatMap { UserDefaults(suiteName: $0) } ?? UserDefaults.standard
 
     var language: AppLanguage { didSet { d.set(language.rawValue, forKey: "language") } }
     /// Keep running in the menu bar when the last window closes.
@@ -24,10 +25,13 @@ import Observation
     var lastProjectID: String? { didSet { d.set(lastProjectID, forKey: "lastProjectID") } }
 
     private init() {
-        language = AppLanguage(rawValue: d.string(forKey: "language") ?? "") ?? .project
-        keepInMenuBar = d.object(forKey: "keepInMenuBar") as? Bool ?? true
-        showMenuBarExtra = d.object(forKey: "showMenuBarExtra") as? Bool ?? true
-        checkForUpdates = d.object(forKey: "checkForUpdates") as? Bool ?? true
+        let env = ProcessInfo.processInfo.environment
+        let testing = env["VITRIN_UITEST"] == "1"
+        language = env["VITRIN_LANGUAGE"].flatMap(AppLanguage.init(rawValue:)) ?? AppLanguage(rawValue: d.string(forKey: "language") ?? "") ?? .project
+        keepInMenuBar = d.object(forKey: "keepInMenuBar") as? Bool ?? !testing
+        showMenuBarExtra = d.object(forKey: "showMenuBarExtra") as? Bool ?? !testing
+        // A test run never calls GitHub.
+        checkForUpdates = d.object(forKey: "checkForUpdates") as? Bool ?? !testing
         notifications = d.object(forKey: "notifications") as? Bool ?? true
         appcastURL = d.string(forKey: "appcastURL") ?? "https://github.com/ardasnturk/vitrin/releases.atom"
         cliPath = d.string(forKey: "cliPath") ?? ""

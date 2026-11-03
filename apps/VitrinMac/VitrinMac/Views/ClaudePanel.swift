@@ -11,7 +11,7 @@ struct ClaudePanel: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Label("Claude", systemImage: "sparkles").font(.headline)
+                Label("Claude", systemImage: "sparkles").font(.headline).accessibilityIdentifier("claude.title")
                 Spacer()
                 if session.claudeRunning {
                     ProgressView().controlSize(.small)

@@ -1,21 +1,34 @@
 import SwiftUI
 
-/// Sidebar (projects and their pages) + detail (the page), with the live log at the bottom and Claude as an inspector.
+/// Sidebar (projects and their pages) + detail (the page), with the live log at the bottom and Claude in a side column.
+///
+/// The Claude column is a plain `HStack`, not `.inspector`: the inspector's split view re-enters AppKit layout while
+/// its hosting view resizes and while the column slides in, and both raise an NSException on macOS 15 and 26
+/// (`_postWindowNeedsUpdateConstraints`, `AppKitPlatformViewHost.coreLayoutTraits`), which killed the app the first
+/// time a user clicked "Let Claude do it".
 struct MainWindow: View {
     @Environment(AppModel.self) private var model
     @Environment(LanguageState.self) private var language
 
     var body: some View {
-        @Bindable var model = model
         NavigationSplitView {
             Sidebar()
                 .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 340)
         } detail: {
-            detail
-        }
-        .inspector(isPresented: $model.showClaude) {
-            if let s = model.selectedSession { ClaudePanel(session: s).inspectorColumnWidth(min: 300, ideal: 380, max: 520) }
-            else { EmptyHint(text: L.t("projects.selectOne"), symbol: "sparkles") }
+            HStack(spacing: 0) {
+                detail.frame(maxWidth: .infinity, maxHeight: .infinity)
+                if model.showClaude {
+                    Divider()
+                    Group {
+                        if let s = model.selectedSession { ClaudePanel(session: s) } else { EmptyHint(text: L.t("projects.selectOne"), symbol: "sparkles") }
+                    }
+                    .frame(width: 360)
+                    .frame(maxHeight: .infinity)
+                    .background(Color(nsColor: .windowBackgroundColor))
+                    .transaction { $0.animation = nil }
+                    .accessibilityIdentifier("claude.column")
+                }
+            }
         }
         .toolbar { toolbar }
         .navigationTitle(model.selectedProject?.name ?? "Vitrin")
@@ -49,11 +62,11 @@ struct MainWindow: View {
                         Text(L.t("claude.busy")).font(.callout)
                     }
                 }
-                Button { Task { await s.refresh() } } label: { Image(systemName: "arrow.clockwise") }.help(L.t("common.refresh")).disabled(!s.isReady)
-                Button { model.showLog.toggle() } label: { Image(systemName: "terminal") }.help(L.t("log.toggle"))
-                Button { model.showClaude.toggle() } label: { Image(systemName: "sparkles") }.help(L.t("claude.toggle"))
+                Button { Task { await s.refresh() } } label: { Image(systemName: "arrow.clockwise") }.help(L.t("common.refresh")).disabled(!s.isReady).accessibilityIdentifier("toolbar.refresh")
+                Button { model.showLog.toggle() } label: { Image(systemName: "terminal") }.help(L.t("log.toggle")).accessibilityIdentifier("toolbar.log")
+                Button { model.showClaude.toggle() } label: { Image(systemName: "sparkles") }.help(L.t("claude.toggle")).accessibilityIdentifier("toolbar.claude")
                 if let url = s.url {
-                    Button { NSWorkspace.shared.open(url) } label: { Image(systemName: "safari") }.help(L.t("project.openStudio"))
+                    Button { NSWorkspace.shared.open(url) } label: { Image(systemName: "safari") }.help(L.t("project.openStudio")).accessibilityIdentifier("toolbar.studio")
                 }
             }
         }
@@ -81,7 +94,7 @@ struct ProjectDetail: View {
                     .overlay(Rectangle().fill(.clear).frame(height: 7).contentShape(Rectangle()))
                     .gesture(DragGesture(minimumDistance: 1).onChanged { v in logHeight = min(max(110, logHeight - v.translation.height), 600) })
                     .onHover { inside in if inside { NSCursor.resizeUpDown.push() } else { NSCursor.pop() } }
-                LogPanel(session: session).frame(height: logHeight)
+                LogPanel(session: session).frame(height: logHeight).accessibilityElement(children: .contain).accessibilityIdentifier("log.panel")
             }
         }
         .task(id: project.id) {

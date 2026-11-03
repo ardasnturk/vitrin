@@ -59,6 +59,38 @@ targets:
           NSAllowsLocalNetworking: true
         NSUserNotificationsUsageDescription: Vitrin tells you when a stage finished, when Claude asks a question and when a new version is available.
 
+  VitrinMacTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: VitrinMacTests
+    dependencies:
+      - target: VitrinMac
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jastech.vitrin.tests
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "-"
+        # XcodeGen derives TEST_HOST from the target name; the product is Vitrin.app.
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Vitrin.app/Contents/MacOS/Vitrin
+        BUNDLE_LOADER: $(TEST_HOST)
+
+  VitrinMacUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - path: VitrinMacUITests
+    dependencies:
+      - target: VitrinMac
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jastech.vitrin.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "-"
+        TEST_TARGET_NAME: VitrinMac
+
 schemes:
   VitrinMac:
     build:
@@ -68,6 +100,14 @@ schemes:
       config: Debug
     test:
       config: Debug
+      targets:
+        - VitrinMacTests
+        - VitrinMacUITests
+      # The unit tests run inside the app; keep the host away from the user's projects, settings and GitHub.
+      environmentVariables:
+        VITRIN_UITEST: "1"
+        VITRIN_DEFAULTS_SUITE: com.jastech.vitrin.tests
+        VITRIN_APP_SUPPORT: $(PROJECT_DIR)/build-test/test-support
     profile:
       config: Release
     analyze:

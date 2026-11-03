@@ -11,13 +11,15 @@ struct Project: Codable, Hashable, Identifiable, Sendable {
     var exists: Bool { FileManager.default.fileExists(atPath: path) }
 }
 
-/// The project list, kept as JSON in ~/Library/Application Support/Vitrin/projects.json.
+/// The project list, kept as JSON in ~/Library/Application Support/Vitrin/projects.json
+/// (`VITRIN_APP_SUPPORT` names another folder: the UI tests keep theirs apart from the user's).
 @MainActor @Observable final class ProjectStore {
     private(set) var projects: [Project] = []
     private let file: URL
 
     init() {
-        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Vitrin", isDirectory: true)
+        let base = ProcessInfo.processInfo.environment["VITRIN_APP_SUPPORT"].map { URL(fileURLWithPath: $0, isDirectory: true) }
+            ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Vitrin", isDirectory: true)
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
         file = base.appendingPathComponent("projects.json")
         if let data = try? Data(contentsOf: file), let list = try? JSONDecoder().decode([Project].self, from: data) { projects = list }

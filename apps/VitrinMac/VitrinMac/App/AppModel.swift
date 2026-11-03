@@ -34,9 +34,18 @@ import Observation
 
     /// Finds the CLI and opens the selected project. Called at launch and after the CLI settings change.
     func bootstrap() async {
+        if let path = Self.launchProject { selectedProjectID = store.add(path: path).id }
         await locateCLI()
         await updates.checkIfDue()
         if let p = selectedProject { await open(p) }
+    }
+
+    /// `--project <folder>` (or `VITRIN_PROJECT`) adds and opens a project at launch: `open -a Vitrin --args --project ~/MyApp`.
+    /// The UI tests use it to start on the example without a file dialog.
+    static var launchProject: String? {
+        let args = CommandLine.arguments
+        if let i = args.firstIndex(of: "--project"), i + 1 < args.count { return args[i + 1] }
+        return ProcessInfo.processInfo.environment["VITRIN_PROJECT"]
     }
 
     func locateCLI() async {

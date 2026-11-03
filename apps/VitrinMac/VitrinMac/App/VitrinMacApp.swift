@@ -13,7 +13,7 @@ struct VitrinMacApp: App {
                 .environment(model)
                 .environment(settings)
                 .environment(language)
-                .frame(minWidth: 1040, minHeight: 680)
+                .frame(minWidth: 1120, minHeight: 680)
                 .task { await model.bootstrap() }
         }
         .defaultSize(width: 1280, height: 820)

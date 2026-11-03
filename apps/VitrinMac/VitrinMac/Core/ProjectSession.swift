@@ -23,6 +23,7 @@ import Observation
     private(set) var toasts: [Toast] = []
     private var eventsTask: Task<Void, Never>?
     private var refreshTask: Task<Void, Never>?
+    private var startTask: Task<Void, Never>?
     private var seq = 0
 
     struct Toast: Identifiable, Hashable {
@@ -40,17 +41,25 @@ import Observation
 
     // MARK: lifecycle
 
+    /// Starts the Studio once: a second call while the first is still waiting for the handshake (the sidebar and the
+    /// page both ask on open) joins it instead of starting a second server for the same project.
     func start(cli: CLILocation) async {
+        if let running = startTask { return await running.value }
         guard client == nil else { return }
-        loadError = nil
-        do {
-            let h = try await process.start(root: project.path, cli: cli)
-            client = StudioClient(handshake: h)
-            await refresh()
-            subscribe()
-        } catch {
-            loadError = error.localizedDescription
+        let task = Task { [self] in
+            loadError = nil
+            do {
+                let h = try await process.start(root: project.path, cli: cli)
+                client = StudioClient(handshake: h)
+                await refresh()
+                subscribe()
+            } catch {
+                loadError = error.localizedDescription
+            }
         }
+        startTask = task
+        await task.value
+        startTask = nil
     }
 
     func stop() {

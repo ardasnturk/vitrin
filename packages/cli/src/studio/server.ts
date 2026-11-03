@@ -530,6 +530,18 @@ export async function studioCommand(opts: StudioOptions): Promise<number> {
   await new Promise<void>((ok) => {
     process.once('SIGINT', () => ok());
     process.once('SIGTERM', () => ok());
+    if (opts.tokenFile) {
+      // Driven by another program (the macOS app): when that program dies without stopping us — a crash, a force quit —
+      // this process is re-parented, so a changed parent pid means nobody is listening any more. Stop, do not linger.
+      const parent = process.ppid;
+      const watchdog = setInterval(() => {
+        if (process.ppid === parent) return;
+        clearInterval(watchdog);
+        log.warn('The program that started the Studio is gone; stopping.');
+        ok();
+      }, 2000);
+      watchdog.unref();
+    }
   });
   await server.close();
   if (opts.tokenFile) await rm(resolve(opts.tokenFile), { force: true }).catch(() => undefined);

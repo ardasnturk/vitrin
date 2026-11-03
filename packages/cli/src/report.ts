@@ -488,6 +488,8 @@ const VITRIN = ${boot};
 
   // Decision buttons exist only when served by \`vitrin review --serve\` (the page posts with its session token)
   // or inside Vitrin Studio (the page runs sandboxed there and hands the decision to the Studio with postMessage).
+  // Inside the macOS app (\`?embed=app\`) the app's own buttons decide: the bar at the bottom goes away.
+  if (new URLSearchParams(location.search).get('embed') === 'app') { const bar = document.querySelector('.actions'); if (bar) bar.remove(); return; }
   if (!location.protocol.startsWith('http')) return;
   const embedded = window.parent !== window;
   const meta = document.querySelector('meta[name="vitrin-token"]');
