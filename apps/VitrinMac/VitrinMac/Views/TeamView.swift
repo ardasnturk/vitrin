@@ -68,8 +68,23 @@ struct TeamView: View {
 
     @ViewBuilder private var content: some View {
         switch page {
-        case .reports, .automation, .ads, .account:
-            TabPage { EmptyView() }
+        case .reports:
+            TabPage {
+                AscSection(title: L.t("team.reports.regions"), args: ["finance", "regions"])
+            }
+        case .automation:
+            TabPage {
+                AscSection(title: L.t("team.auto.products"), args: ["xcode-cloud", "products", "list"], empty: L.t("team.auto.noProducts"))
+            }
+        case .ads:
+            TabPage {
+                AscLoad(args: ["ads", "me", "view"], errorText: L.t("team.ads.login")) { doc, _ in AscDataView(doc: doc) }
+            }
+        case .account:
+            TabPage {
+                AscSection(title: L.t("team.account.status"), args: ["account", "status"])
+                AscSection(title: L.t("team.account.system"), args: ["system-status"])
+            }
         case .users:
             TabPage {
                 AscLoad(args: ["users", "list", "--paginate"]) { doc, reload in
@@ -83,6 +98,8 @@ struct TeamView: View {
                         (L.t("asc.field.email"), "username", .mono), (L.t("act.roles"), "roles", .text), (L.t("act.allApps"), "allAppsVisible", .bool),
                     ], empty: L.t("asc.empty"))
                 }
+                AscSection(title: L.t("team.users.invites"), args: ["users", "invites", "list"], empty: L.t("team.users.noInvites"))
+                AscSection(title: L.t("team.users.sandbox"), args: ["sandbox", "list"], empty: L.t("team.users.noSandbox"))
             }
         case .devices:
             TabPage {

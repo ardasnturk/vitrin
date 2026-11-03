@@ -19,10 +19,15 @@ All notable changes to this project are documented in this file. The format is b
 - **`vitrin studio`: the Claude model is a request field and a config key.** `POST /api/claude` and `POST /api/questions/answer` take `model` (an alias or a full name, letters, digits, `. _ : -`; anything else is 400), passed to Claude Code as `--model`; without it the Studio uses `ui.claudeModel` from `vitrin.config.yaml`, and without that Claude Code's own default.
 - **`vitrin studio --token-file <path>` and `vitrin studio --json`** hand the Studio's URL, port and session token to a program that drives it (the macOS app): the file is written for its owner only (0600) and atomically, and removed when the Studio stops.
 
+- Vitrin for Mac: asc's commands read as features. Every tab loads what matters by itself (App Review readiness, submission history, store settings, screenshots as images, builds with their groups, TestFlight groups, testers, feedback and crashes, prices with what you keep, weekly insights, Game Center), and the other commands sit in closed cards: what only reads opens in place and runs by itself, asking for a build or a group from a picker when it needs one; what changes something is a button with a short form. No command lines, no JSON.
+- Vitrin for Mac: App Store Connect's codes in words, in English and Turkish: languages, countries, categories, states, field names, form fields. Commands, with their titles, come from `Resources/asc-commands.json`; `apps/VitrinMac/docs/asc-komutlari.md` lists which of asc's 1315 commands could not be run yet.
+- Vitrin for Mac: app icons, from each app's newest build.
+
 ### Fixed
 - **The Team pages no longer push the window's content off screen.** Their header's description had a vertical `fixedSize`; measured at a zero width it grew a letter per line. It is two lines at most now.
 - **The review page no longer reloads in a loop.** Reading the review regenerates `metadata/report.html`, the Studio announced that as a file change, and the page read the review again. The Studio no longer announces the files it derives itself (`report.html`, `store/`, `review-snapshot.json`), and the app redraws the gallery only when its content changed.
 - **`vitrin asc apps` failed on every real account with `ASC API 400: createdAt is not a valid field name`.** App Store Connect does not accept `createdAt` in `fields[appStoreVersions]`; the newest version per platform is now the highest version number. With the field gone, the versions were still empty: a sparse fieldset drops every relationship it does not name, so `fields[apps]` now names `appStoreVersions`. Checked against a real team (38 apps, all with their versions); the tests pin both rules, since the stubbed API had accepted the broken request.
+- Vitrin for Mac: the project row's arrow no longer touches the icon or sits on the first line.
 
 ## 1.2.0 — 2026-11-03
 
