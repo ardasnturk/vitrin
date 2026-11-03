@@ -13,6 +13,8 @@ import Observation
     /// Who App Store Connect requests run as (Vitrin's key, asc's own login, or nobody).
     let connection = AscConnection()
     let icons = AppIconStore()
+    /// The new app sheet.
+    var showNewApp = false
     private(set) var sessions: [String: ProjectSession] = [:]
     private(set) var cli: CLILocation?
     private(set) var cliError: String?
@@ -61,6 +63,8 @@ import Observation
     /// A sidebar click on an app: its App Store Connect page, linked project or not (the page's hero opens the
     /// project). Jumping straight to the project hid the app's live metadata.
     func select(app: ASCApp) async {
+        selectedTeamPage = nil
+        showHome = false
         selectedAppID = app.id
     }
 
@@ -88,6 +92,7 @@ import Observation
 
     /// Finds the CLI and opens the selected project. Called at launch and after the CLI settings change.
     func bootstrap() async {
+        applyLanguage()
         if let path = Self.launchProject { selectedProjectID = store.add(path: path).id }
         await locateCLI()
         // The team's apps load beside the project, not after it.
@@ -146,6 +151,10 @@ import Observation
     /// `AppLanguage.project` follows the selected project's `ui.language`.
     func applyLanguage() {
         LanguageState.shared.apply(setting: settings.language, projectLanguage: selectedSession?.overview?.config?.language)
+        // AppKit's own words (window titles, the menus, open panels) follow this at the next launch.
+        if ProcessInfo.processInfo.environment["VITRIN_DEFAULTS_SUITE"] == nil {
+            if let code = LanguageState.shared.code { UserDefaults.standard.set([code], forKey: "AppleLanguages") } else { UserDefaults.standard.removeObject(forKey: "AppleLanguages") }
+        }
     }
 
     /// Choose a folder with NSOpenPanel.

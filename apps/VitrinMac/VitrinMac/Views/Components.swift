@@ -259,3 +259,40 @@ struct CapsuleTabs<T: Hashable>: View {
         .background(.quaternary.opacity(0.35), in: Capsule())
     }
 }
+
+/// Opens Settings and brings it to the front. `SettingsLink` leaves the window behind the main window and, from the
+/// menu bar panel, behind other apps: the app is not activated and SwiftUI only orders the window in.
+struct SettingsButton<Content: View>: View {
+    @Environment(\.openSettings) private var openSettings
+    /// Also runs on the click (the menu bar panel closes itself).
+    var action: () -> Void = {}
+    @ViewBuilder var label: Content
+    var body: some View {
+        Button { openSettings(); SettingsWindow.bringToFront(); action() } label: { label }
+    }
+}
+
+@MainActor enum SettingsWindow {
+    static func bringToFront() {
+        NSApp.activate()
+        // SwiftUI creates the window on the next pass the first time.
+        Task {
+            try? await Task.sleep(for: .milliseconds(60))
+            NSApp.activate()
+            NSApp.windows.first { $0.identifier?.rawValue == "com_apple_SwiftUI_Settings_window" }?.makeKeyAndOrderFront(nil)
+        }
+    }
+}
+
+/// The app's language: the system's, the project's, or one of the languages it ships in.
+struct LanguagePicker: View {
+    @Binding var selection: AppLanguage
+    var body: some View {
+        Picker(L.t("settings.language"), selection: $selection) {
+            Text(L.t("settings.languageSystem")).tag(AppLanguage.system)
+            Text(L.t("settings.languageProject")).tag(AppLanguage.project)
+            Divider()
+            ForEach(AppLanguage.languages) { l in Text(l.name).tag(l) }
+        }
+    }
+}

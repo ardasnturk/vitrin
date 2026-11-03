@@ -320,7 +320,7 @@ struct BlockerCard: View {
                     }
                     if let install = blocker.params["install"]?.stringValue { CopyCode(text: install) }
                     if blocker.code == "keys-missing" {
-                        SettingsLink { Text(L.t("flow.accountSettings")) }.controlSize(.small).accessibilityIdentifier("flow.accountSettings")
+                        SettingsButton { Text(L.t("flow.accountSettings")) }.controlSize(.small).accessibilityIdentifier("flow.accountSettings")
                     } else if blocker.fixes.isEmpty, blocker.params["install"] == nil, blocker.stage != "upload" {
                         Button(L.t("flow.goToPage")) { model.selectedPage = Pipeline.page(for: blocker.stage) }.controlSize(.small)
                     }

@@ -23,11 +23,20 @@ All notable changes to this project are documented in this file. The format is b
 - Vitrin for Mac: App Store Connect's codes in words, in English and Turkish: languages, countries, categories, states, field names, form fields. Commands, with their titles, come from `Resources/asc-commands.json`; `apps/VitrinMac/docs/asc-komutlari.md` lists which of asc's 1315 commands could not be run yet.
 - Vitrin for Mac: app icons, from each app's newest build.
 
+- Vitrin for Mac: Apple Ads connects inside the app: it makes the key pair, shows the public key to paste, takes the three ids (pasting Apple's block fills them) and signs in. asc installs with a button through Homebrew.
+- Vitrin for Mac: when a key's role forbids something, the app says so and walks through getting one, with the form to add it; Analytics starts Apple's reports with a button. Every tab has a sentence on what it is for, and titles and cards have an ⓘ. "More in App Store Connect" is closed until opened.
+
+- Vitrin for Mac: follows the system language, with the languages of Remote Code: English, German, Spanish, French, Italian, Japanese, Korean, Brazilian Portuguese, Turkish and Simplified Chinese. A system language the app doesn't have falls back to English.
+- Vitrin for Mac: the menu bar panel shows app icons, rejected apps first, and opens an app or Settings in front.
+
+- Vitrin for Mac: create a new app on App Store Connect, from the sidebar or the overview. Apple only allows this through an Apple Account, so the app signs in with the email, password and two-factor code (the password stays with asc in the keychain) and runs `asc web apps create`. The same sign-in creates an Admin API key in one step and shows the App Store Connect analytics dashboards for keys that can't read reports.
+
 ### Fixed
 - **The Team pages no longer push the window's content off screen.** Their header's description had a vertical `fixedSize`; measured at a zero width it grew a letter per line. It is two lines at most now.
 - **The review page no longer reloads in a loop.** Reading the review regenerates `metadata/report.html`, the Studio announced that as a file change, and the page read the review again. The Studio no longer announces the files it derives itself (`report.html`, `store/`, `review-snapshot.json`), and the app redraws the gallery only when its content changed.
 - **`vitrin asc apps` failed on every real account with `ASC API 400: createdAt is not a valid field name`.** App Store Connect does not accept `createdAt` in `fields[appStoreVersions]`; the newest version per platform is now the highest version number. With the field gone, the versions were still empty: a sparse fieldset drops every relationship it does not name, so `fields[apps]` now names `appStoreVersions`. Checked against a real team (38 apps, all with their versions); the tests pin both rules, since the stubbed API had accepted the broken request.
 - Vitrin for Mac: the project row's arrow no longer touches the icon or sits on the first line.
+- Vitrin for Mac: Settings opens in front of the main window; the apps refresh button lines up with the sidebar's status dots.
 
 ## 1.2.0 — 2026-11-03
 

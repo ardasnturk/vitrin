@@ -11,6 +11,7 @@
 		01657CC38DEB346F5292810E /* AppIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F072DDADE9FDE8E22ED817A /* AppIcons.swift */; };
 		04162DCD728995EFF844F68F /* ASCApps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C0B0D88CC3702B332EFCCF /* ASCApps.swift */; };
 		0BFAE15C9FE9A77391F032FD /* AscListingImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A3F41FBC6CAE0D466C60EF /* AscListingImport.swift */; };
+		0C2E33D731366A027E9821E1 /* AppleWebSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3EFB80A6FA75C3A967494C /* AppleWebSession.swift */; };
 		16FE7B8EE832830B24A92163 /* StudioEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA21416BDE031F109E9C8C96 /* StudioEvents.swift */; };
 		1BDCA8D967820E7E9D403278 /* VitrinMacUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED75F4ED390F077ED6DDAC79 /* VitrinMacUITests.swift */; };
 		1CBF3F8E4F8D7EB4B649859C /* UpdateCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2617D41381B1B43B12D982ED /* UpdateCheckerTests.swift */; };
@@ -44,12 +45,16 @@
 		833C66F74CF13CD4808E966A /* AscMoneySections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 239B13E63197E6205B2BAD1C /* AscMoneySections.swift */; };
 		85775490D9326B1BA9FEDFB8 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1CC0C1EE5BD34388C50739E /* OnboardingView.swift */; };
 		8ADFBB8EB97D74D673427D90 /* SSEParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ED2DE5B9BA4D66A3D616C6 /* SSEParserTests.swift */; };
+		8C85B50CF4A41AB70C3BBF61 /* AppleAccountForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752E06D58004A85091315517 /* AppleAccountForm.swift */; };
 		902775EB2A32989DE32095C6 /* asc-apps.json in Resources */ = {isa = PBXBuildFile; fileRef = 6E9D5CDB16DA2B1A46BABA71 /* asc-apps.json */; };
 		90CD6BA696AC79413B12B512 /* CLIRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 881DDD917D5CD5A33E79CB97 /* CLIRunner.swift */; };
+		94A9B57BEDC19E0EFE9C1F17 /* AppleAdsKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 518FE52041E70E85A2D8DE46 /* AppleAdsKey.swift */; };
 		94CCB9FCFCDBD20A8554A89D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A615B339C608275E0690C8 /* AppDelegate.swift */; };
 		97A67230093A24847BEE711E /* CLILocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC082A50AEAD3C99A7E712AF /* CLILocator.swift */; };
 		995AB2D8F86A69A8DF460F75 /* UploadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 412D65A67CF2009541AEFC8E /* UploadView.swift */; };
+		9DEBF170D8890B5F3401ABFC /* AscInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18E48C89E6C1131FF957CC8E /* AscInfo.swift */; };
 		A63A2F8A3F229E7565B4175B /* AppOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05330799116EDBE82AD2E147 /* AppOverviewView.swift */; };
+		B6C12D075547C0AA2391A411 /* NewAppSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A5FE2C9F194704127BD745E /* NewAppSheet.swift */; };
 		B6D3B8E2D462E3870D9217F1 /* StudioProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = EACD137CC67DA4F8B7886237 /* StudioProcess.swift */; };
 		B7F5038EC8F5CF9AFB4252E6 /* Onboarding.swift in Sources */ = {isa = PBXBuildFile; fileRef = F471CF129037F43BFC201D31 /* Onboarding.swift */; };
 		C0AB2ED630D16EF8AB0A41E0 /* ProjectSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 476499AF954F73C7E3B491F9 /* ProjectSession.swift */; };
@@ -74,6 +79,7 @@
 		F4C6C9AFC56ECC63D09AE712 /* TeamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED84FC58FB59E90D503902CC /* TeamView.swift */; };
 		F8807D81811939B7F66851F9 /* Credentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBE13B7B4C070E9A2003F7A0 /* Credentials.swift */; };
 		F9D9D34D2E981B414D2A1E6E /* Limits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40D651EA0B55D06E8A246136 /* Limits.swift */; };
+		FDDCB6D38FA3EF81F65B3C99 /* AppleAdsConnect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39EB0D12A69C6786A8A6857E /* AppleAdsConnect.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -100,6 +106,7 @@
 		05330799116EDBE82AD2E147 /* AppOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppOverviewView.swift; sourceTree = "<group>"; };
 		09C0B0D88CC3702B332EFCCF /* ASCApps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASCApps.swift; sourceTree = "<group>"; };
 		178E50E1F076BEF93183110C /* TestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestSupport.swift; sourceTree = "<group>"; };
+		18E48C89E6C1131FF957CC8E /* AscInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscInfo.swift; sourceTree = "<group>"; };
 		239B13E63197E6205B2BAD1C /* AscMoneySections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscMoneySections.swift; sourceTree = "<group>"; };
 		252E7B6410A6AA6524E12122 /* VitrinMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitrinMacApp.swift; sourceTree = "<group>"; };
 		25EAF5412213B7B53D1F19B6 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -111,6 +118,7 @@
 		3255B591A29D8456D604343C /* ListingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListingView.swift; sourceTree = "<group>"; };
 		35DF5D01E1CD8589A8C793F4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		37D3AC9D274A37B09528BCFB /* FlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowView.swift; sourceTree = "<group>"; };
+		39EB0D12A69C6786A8A6857E /* AppleAdsConnect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleAdsConnect.swift; sourceTree = "<group>"; };
 		3A0337E82A1E296689C01C0D /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		3BB53321E2AC6996F8DDAFA1 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
 		3F072DDADE9FDE8E22ED817A /* AppIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIcons.swift; sourceTree = "<group>"; };
@@ -120,7 +128,9 @@
 		476499AF954F73C7E3B491F9 /* ProjectSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectSession.swift; sourceTree = "<group>"; };
 		48040DA2E36A7D8B5ABD9C0C /* StudioClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudioClient.swift; sourceTree = "<group>"; };
 		49ED2DE5B9BA4D66A3D616C6 /* SSEParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSEParserTests.swift; sourceTree = "<group>"; };
+		4A5FE2C9F194704127BD745E /* NewAppSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewAppSheet.swift; sourceTree = "<group>"; };
 		4ED1D2139A67069C8A5DB50F /* Notifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifier.swift; sourceTree = "<group>"; };
+		518FE52041E70E85A2D8DE46 /* AppleAdsKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleAdsKey.swift; sourceTree = "<group>"; };
 		5250AB42A9090599A20A1D2B /* AscStatusSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscStatusSections.swift; sourceTree = "<group>"; };
 		5BB048CF9E3B96B7FFB1A78B /* OverviewDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverviewDecodingTests.swift; sourceTree = "<group>"; };
 		5E276ADD36183CB2534CD55D /* MainWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindow.swift; sourceTree = "<group>"; };
@@ -129,11 +139,13 @@
 		6E1B5EF1079BAFCD67698F97 /* CredentialsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialsTests.swift; sourceTree = "<group>"; };
 		6E9D5CDB16DA2B1A46BABA71 /* asc-apps.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "asc-apps.json"; sourceTree = "<group>"; };
 		73A615B339C608275E0690C8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		752E06D58004A85091315517 /* AppleAccountForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleAccountForm.swift; sourceTree = "<group>"; };
 		753C7DBD65CAA94F7E2F4BD3 /* AscDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscDataView.swift; sourceTree = "<group>"; };
 		76F172094DDF61E930A998AA /* Sidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sidebar.swift; sourceTree = "<group>"; };
 		78237FAFA376D7A69B870240 /* Design.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Design.swift; sourceTree = "<group>"; };
 		82A0DAF979334D56AA86F2E6 /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 		881DDD917D5CD5A33E79CB97 /* CLIRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIRunner.swift; sourceTree = "<group>"; };
+		8C3EFB80A6FA75C3A967494C /* AppleWebSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleWebSession.swift; sourceTree = "<group>"; };
 		907F24C99792DD5A89398989 /* AscCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscCLI.swift; sourceTree = "<group>"; };
 		92699CD2D9DA59BE49F354BE /* VitrinMacUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VitrinMacUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		992678EDD65CC73FE80DA40F /* AscActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscActions.swift; sourceTree = "<group>"; };
@@ -241,12 +253,15 @@
 			isa = PBXGroup;
 			children = (
 				C205DF1154E737FFBE42FC1D /* Design */,
+				752E06D58004A85091315517 /* AppleAccountForm.swift */,
+				39EB0D12A69C6786A8A6857E /* AppleAdsConnect.swift */,
 				05330799116EDBE82AD2E147 /* AppOverviewView.swift */,
 				992678EDD65CC73FE80DA40F /* AscActions.swift */,
 				F6868DC8DC6036D5BA6F4275 /* AscAnalyticsSections.swift */,
 				6BEFCA587B5461CA45985E16 /* AscBuildSections.swift */,
 				B8608CABDFF5103947E4E614 /* AscCommandShelf.swift */,
 				753C7DBD65CAA94F7E2F4BD3 /* AscDataView.swift */,
+				18E48C89E6C1131FF957CC8E /* AscInfo.swift */,
 				9E96561BEEC0DA4FF1EAD5F8 /* AscListingSections.swift */,
 				239B13E63197E6205B2BAD1C /* AscMoneySections.swift */,
 				5250AB42A9090599A20A1D2B /* AscStatusSections.swift */,
@@ -258,6 +273,7 @@
 				A80B36BCD7531834776B9CD5 /* LogPanel.swift */,
 				5E276ADD36183CB2534CD55D /* MainWindow.swift */,
 				26B23332E85855232EE83F71 /* MenuBarView.swift */,
+				4A5FE2C9F194704127BD745E /* NewAppSheet.swift */,
 				A1CC0C1EE5BD34388C50739E /* OnboardingView.swift */,
 				E00C664CD3439D58B7606489 /* ResearchView.swift */,
 				3BB53321E2AC6996F8DDAFA1 /* ReviewView.swift */,
@@ -302,6 +318,8 @@
 			isa = PBXGroup;
 			children = (
 				3F072DDADE9FDE8E22ED817A /* AppIcons.swift */,
+				518FE52041E70E85A2D8DE46 /* AppleAdsKey.swift */,
+				8C3EFB80A6FA75C3A967494C /* AppleWebSession.swift */,
 				C6D51CAE05B7F00B658B2BA0 /* AppSettings.swift */,
 				09C0B0D88CC3702B332EFCCF /* ASCApps.swift */,
 				CBE4D6DF03D2F9BD630E46C3 /* AscCatalog.swift */,
@@ -411,8 +429,16 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
+				de,
 				en,
+				es,
+				fr,
+				it,
+				ja,
+				ko,
+				"pt-BR",
 				tr,
+				"zh-Hans",
 			);
 			mainGroup = 65A0D08315901B988056FDBD;
 			minimizedProjectReferenceProxies = 1;
@@ -477,6 +503,10 @@
 				3846EF84FDEF0C59295A7420 /* AppModel.swift in Sources */,
 				A63A2F8A3F229E7565B4175B /* AppOverviewView.swift in Sources */,
 				215164E370A42C91EB3C4972 /* AppSettings.swift in Sources */,
+				8C85B50CF4A41AB70C3BBF61 /* AppleAccountForm.swift in Sources */,
+				FDDCB6D38FA3EF81F65B3C99 /* AppleAdsConnect.swift in Sources */,
+				94A9B57BEDC19E0EFE9C1F17 /* AppleAdsKey.swift in Sources */,
+				0C2E33D731366A027E9821E1 /* AppleWebSession.swift in Sources */,
 				DC7A7086AC7F5C3B405724FF /* AscActions.swift in Sources */,
 				E1BE507CA43D0BC7745A13C7 /* AscAnalyticsSections.swift in Sources */,
 				4EFA8FF24070391AD8E2A08B /* AscBuildSections.swift in Sources */,
@@ -484,6 +514,7 @@
 				E9CD866A865396F7839E90DF /* AscCatalog.swift in Sources */,
 				C7F374DBC0A61E024A6B1007 /* AscCommandShelf.swift in Sources */,
 				C9F755B827A362D1986767E5 /* AscDataView.swift in Sources */,
+				9DEBF170D8890B5F3401ABFC /* AscInfo.swift in Sources */,
 				0BFAE15C9FE9A77391F032FD /* AscListingImport.swift in Sources */,
 				C17494C1DB220D0CD7A58F13 /* AscListingSections.swift in Sources */,
 				833C66F74CF13CD4808E966A /* AscMoneySections.swift in Sources */,
@@ -505,6 +536,7 @@
 				56CABFF4FEC52F0C2DCEF426 /* MainWindow.swift in Sources */,
 				D0D070489197641D4988E7FE /* MenuBarView.swift in Sources */,
 				3D1855476A9C6BCD42997C45 /* Models.swift in Sources */,
+				B6C12D075547C0AA2391A411 /* NewAppSheet.swift in Sources */,
 				25FF69CDCC4ECEBC89AFEA7A /* Notifier.swift in Sources */,
 				B7F5038EC8F5CF9AFB4252E6 /* Onboarding.swift in Sources */,
 				85775490D9326B1BA9FEDFB8 /* OnboardingView.swift in Sources */,

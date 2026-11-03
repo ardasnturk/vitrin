@@ -1,14 +1,13 @@
 import Foundation
 
 /// Every asc command the app offers, from `Resources/asc-commands.json` (written by `scripts/asc-catalog.py`): what it
-/// does in both languages, whether it only reads, and what a read needs before it can run. The panels are built from
+/// does in each language, whether it only reads, and what a read needs before it can run. The panels are built from
 /// this, so a page opens at once and needs no `asc --help`.
 struct AscCommand: Decodable, Hashable, Identifiable, Sendable {
     /// `testflight groups list`
     var path: String
-    /// English and Turkish title.
-    var en: String
-    var tr: String
+    /// The title per language.
+    var titles: [String: String]
     /// A read (shown and run in place), not a change.
     var read: Bool
     /// A group of commands, not a command.
@@ -21,7 +20,7 @@ struct AscCommand: Decodable, Hashable, Identifiable, Sendable {
     var words: [String] { path.split(separator: " ").map(String.init) }
     var parent: String { words.dropLast().joined(separator: " ") }
 
-    @MainActor var title: String { (LanguageState.shared.code ?? Bundle.main.preferredLocalizations.first) == "tr" ? tr : en }
+    @MainActor var title: String { titles[LanguageState.shared.current] ?? titles["en"] ?? path }
 }
 
 @MainActor enum AscCatalog {

@@ -54,6 +54,7 @@ struct MainWindow: View {
             }
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { windowWidth = $0 }
+        .sheet(isPresented: Binding(get: { model.showNewApp }, set: { model.showNewApp = $0 })) { NewAppSheet { model.showNewApp = false } }
         .toolbar { toolbar }
         .navigationTitle(model.selectedTeamPage.map { L.t($0.titleKey) } ?? (model.showHome ? "Vitrin" : (model.selectedApp?.name ?? model.selectedProject.map { model.displayName(for: $0) } ?? "Vitrin")))
         .navigationSubtitle(model.showHome || model.selectedTeamPage != nil ? "" : (model.selectedApp?.bundleId ?? model.selectedSession?.overview?.app?.bundleId ?? ""))
@@ -174,7 +175,7 @@ struct StartFailedView: View {
             }
             HStack {
                 Button(L.t("common.retry")) { Task { if let cli = model.cli { await session.restart(cli: cli) } } }.buttonStyle(.borderedProminent)
-                SettingsLink { Text(L.t("settings.title")) }
+                SettingsButton { Text(L.t("settings.title")) }
             }
         }
         .padding(24)

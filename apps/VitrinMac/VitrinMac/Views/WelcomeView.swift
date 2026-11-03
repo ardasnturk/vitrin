@@ -72,7 +72,7 @@ struct HomeView: View {
                 Text(L.t("home.key.detail")).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
-            SettingsLink { Text(L.t("account.add")) }.buttonStyle(GradientButtonStyle(fullWidth: false))
+            SettingsButton { Text(L.t("account.add")) }.buttonStyle(GradientButtonStyle(fullWidth: false))
         }
         .glassCard(padding: 14)
     }
@@ -112,13 +112,16 @@ struct HomeView: View {
             HStack {
                 SectionTitle(L.t("apps.title"))
                 Spacer()
+                if model.connection.isConnected {
+                    Button { model.showNewApp = true } label: { Label(L.t("newapp.title"), systemImage: "plus.app") }.controlSize(.small)
+                }
                 if let at = model.ascApps.loadedAt { Text(L.t("apps.refreshedAt").replacingOccurrences(of: "{time}", with: L.relative(at.ISO8601Format()))).font(.caption).foregroundStyle(.tertiary) }
             }
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 260), spacing: 10)], spacing: 10) {
                 ForEach(apps) { app in
                     Button { Task { await model.select(app: app) } } label: {
                         HStack(spacing: 10) {
-                            AppIconPlaceholder(size: 30)
+                            AppIcon(app: app, size: 30)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(app.name).font(.callout.weight(.medium)).lineLimit(1)
                                 if let v = app.current {
@@ -184,7 +187,7 @@ struct CLIMissingCard: View {
             }
             HStack {
                 Button(L.t("cli.searchAgain")) { Task { await model.locateCLI(); if let p = model.selectedProject { await model.open(p) } } }
-                SettingsLink { Text(L.t("cli.setPath")) }
+                SettingsButton { Text(L.t("cli.setPath")) }
             }
         }
         .frame(maxWidth: 560)

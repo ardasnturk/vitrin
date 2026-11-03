@@ -7,7 +7,7 @@ struct AscSection: View {
     var empty: String? = nil
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            SectionTitle(title)
+            SectionTitle(title, info: "info." + args.prefix(2).joined(separator: "."))
             AscLoad(args: args) { doc, _ in AscDataView(doc: doc, empty: empty) }
         }
     }
@@ -24,7 +24,7 @@ struct ReviewReadiness: View {
             let warnings = (o["warningChecks"]?.arrayValue ?? []).compactMap(\.objectValue)
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
-                    SectionTitle(L.t("asc.ready.title"))
+                    SectionTitle(L.t("asc.ready.title"), info: "info.asc.ready.title")
                     Spacer()
                     if let n = summary["errors"]?.numberValue, n > 0 { Pill(L.t("asc.ready.errors").replacingOccurrences(of: "{n}", with: "\(Int(n))"), .err) }
                     if let n = summary["warnings"]?.numberValue, n > 0 { Pill(L.t("asc.ready.warnings").replacingOccurrences(of: "{n}", with: "\(Int(n))"), .warn) }
@@ -69,7 +69,7 @@ struct ReviewContactCard: View {
             let item = JSONAPI.items(doc).first ?? [:]
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    SectionTitle(L.t("asc.reviewInfo.title"))
+                    SectionTitle(L.t("asc.reviewInfo.title"), info: "info.asc.reviewInfo.title")
                     Spacer()
                     if let id = item["id"]?.stringValue { AscActionButton(action: AscActions.reviewDetails(id: id, item: item), done: reload).controlSize(.small) }
                 }
@@ -88,7 +88,7 @@ struct SubmissionHistory: View {
     var appID: String
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            SectionTitle(L.t("asc.history.submissions"))
+            SectionTitle(L.t("asc.history.submissions"), info: "info.asc.history.submissions")
             AscLoad(args: ["review", "history", "--app", appID]) { doc, _ in
                 let items = (doc.arrayValue ?? []).compactMap(\.objectValue)
                 if items.isEmpty {
@@ -121,7 +121,7 @@ struct VersionHistory: View {
     var appID: String
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            SectionTitle(L.t("asc.history.versions"))
+            SectionTitle(L.t("asc.history.versions"), info: "info.asc.history.versions")
             AscLoad(args: ["versions", "list", "--app", appID, "--limit", "20"]) { doc, _ in
                 ResourceTable(items: JSONAPI.items(doc), columns: [
                     (L.t("asc.field.version"), "versionString", .text), (L.t("asc.field.platform"), "platform", .mono),

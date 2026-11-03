@@ -62,14 +62,30 @@ struct Sidebar: View {
             Section {
                 appsRows
             } header: {
-                HStack {
+                // In line with the title and with the rows' status dots, a fixed square so the header never shifts.
+                HStack(spacing: 0) {
                     Text(L.t("apps.title"))
-                    Spacer()
-                    if model.ascApps.loading { ProgressView().controlSize(.mini) }
-                    else if model.connection.isConnected {
-                        Button { Task { await model.refreshApps() } } label: { Image(systemName: "arrow.clockwise") }
-                            .buttonStyle(.borderless).controlSize(.small).help(L.t("apps.refresh")).accessibilityIdentifier("sidebar.refreshApps")
+                    Spacer(minLength: 8)
+                    if model.connection.isConnected {
+                        Button { model.showNewApp = true } label: {
+                            Image(systemName: "plus").font(.caption2.weight(.semibold)).frame(width: 16, height: 16).contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain).foregroundStyle(.secondary).padding(.trailing, 4)
+                        .help(L.t("newapp.title")).accessibilityIdentifier("sidebar.newApp")
                     }
+                    Group {
+                        if model.ascApps.loading {
+                            ProgressView().controlSize(.mini)
+                        } else if model.connection.isConnected {
+                            Button { Task { await model.refreshApps() } } label: {
+                                Image(systemName: "arrow.clockwise").font(.caption2.weight(.semibold)).frame(width: 16, height: 16).contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain).foregroundStyle(.secondary)
+                            .help(L.t("apps.refresh")).accessibilityIdentifier("sidebar.refreshApps")
+                        }
+                    }
+                    .frame(width: 16, height: 16)
+                    .padding(.trailing, 6)
                 }
             }
 
@@ -134,7 +150,7 @@ struct Sidebar: View {
                 }
                 Spacer(minLength: 4)
                 Circle().fill(accountTone.color).frame(width: 7, height: 7)
-                SettingsLink { Image(systemName: "gearshape") }.buttonStyle(.borderless).help(L.t("settings.title"))
+                SettingsButton { Image(systemName: "gearshape") }.buttonStyle(.borderless).help(L.t("settings.title"))
             }
             HStack(spacing: 6) {
                 if model.locating { ProgressView().controlSize(.mini) }
@@ -181,7 +197,7 @@ struct Sidebar: View {
         if !model.connection.isConnected {
             VStack(alignment: .leading, spacing: 6) {
                 Text(L.t("apps.noKey")).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                SettingsLink { Label(L.t("account.add"), systemImage: "key.horizontal") }.controlSize(.small)
+                SettingsButton { Label(L.t("account.add"), systemImage: "key.horizontal") }.controlSize(.small)
             }
             .padding(.vertical, 2).accessibilityIdentifier("sidebar.appsNoKey")
         } else if let e = model.ascApps.error, model.ascApps.apps.isEmpty {

@@ -7,7 +7,7 @@ struct PriceList: View {
     var key: String
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            SectionTitle(title)
+            SectionTitle(title, info: "info." + args.prefix(3).joined(separator: "."))
             AscLoad(args: args) { doc, _ in
                 let items = (doc.objectValue?[key]?.arrayValue ?? []).compactMap(\.objectValue)
                 if items.isEmpty {

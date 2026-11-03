@@ -45,13 +45,14 @@ enum AscCLI {
     }
 
     /// Runs `asc <args>`. `readOnly` adds `--read-only`, which makes asc refuse any POST, PATCH, PUT or DELETE.
-    @MainActor static func run(_ args: [String], readOnly: Bool = true, timeout: TimeInterval = 180) async throws -> Result {
+    @MainActor static func run(_ args: [String], readOnly: Bool = true, timeout: TimeInterval = 180, extraEnv: [String: String] = [:]) async throws -> Result {
         guard let bin = await path() else { throw Failure(message: L.t("asc.missing")) }
         var env = await ShellEnvironment.environment()
         for (k, v) in authEnvironment() { env[k] = v }
         env["NO_COLOR"] = "1"
         // asc reads ASC_READ_ONLY as well; set it explicitly both ways so the user's shell cannot flip it.
         env["ASC_READ_ONLY"] = readOnly ? "1" : "0"
+        for (k, v) in extraEnv { env[k] = v }
         let r = try await ProcessRunner.run(bin, args, environment: env, cwd: NSTemporaryDirectory(), timeout: timeout)
         return Result(code: r.code, stdout: r.stdout, stderr: r.stderr)
     }

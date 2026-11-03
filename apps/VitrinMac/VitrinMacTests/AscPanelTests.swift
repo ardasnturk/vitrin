@@ -10,7 +10,7 @@ import XCTest
     }
 
     override func tearDown() async throws {
-        LanguageState.shared.apply(setting: .system, projectLanguage: nil)
+        LanguageState.shared.apply(setting: .en, projectLanguage: nil)
     }
 
     func testCodesBecomeWords() {
@@ -111,5 +111,76 @@ import XCTest
             }
         }
         XCTAssertGreaterThan(read, 100)
+    }
+
+    func testEveryLanguageIsPicked() {
+        XCTAssertEqual(LanguageState.supported, ["en", "de", "es", "fr", "it", "ja", "ko", "pt-BR", "tr", "zh-Hans"])
+        LanguageState.shared.apply(setting: .project, projectLanguage: "xx")
+        XCTAssertEqual(LanguageState.shared.current, "en", "a language the app lacks falls back to English")
+        LanguageState.shared.apply(setting: .zhHans, projectLanguage: nil)
+        XCTAssertEqual(LanguageState.shared.current, "zh-Hans")
+        XCTAssertEqual(AscText.language("de"), "德语")
+        LanguageState.shared.apply(setting: .tr, projectLanguage: nil)
+    }
+
+    func testAProblemIsNamed() {
+        XCTAssertEqual(AscProblem("Error: analytics requests: failed to fetch: This request is forbidden for security reasons: The API key in use does not allow this request"), .keyRole)
+        XCTAssertEqual(AscProblem("analytics source is not permitted for the current API key"), .keyRole)
+        XCTAssertEqual(AscProblem("Error: ads: default credentials not found; run 'asc ads auth login' to"), .appleAds)
+        XCTAssertEqual(AscProblem("REQUIRED_AGREEMENTS_MISSING_OR_EXPIRED"), .agreements)
+        XCTAssertEqual(AscProblem("app not found"), .other)
+    }
+
+    func testAppleAdsIdsFillFromTheBlock() throws {
+        let ids = try XCTUnwrap(AppleAdsKey.parse(block: """
+        clientId SEARCHADS.27478e71-3bb0-4588-998c-182e2b405577
+        teamId SEARCHADS.27478e71-3bb0-4588-998c-182e2b405577
+        keyId bacaebda-e219-41ee-a907-e2c25b24d1b2
+        """))
+        XCTAssertEqual(ids.clientId, "SEARCHADS.27478e71-3bb0-4588-998c-182e2b405577")
+        XCTAssertEqual(ids.keyId, "bacaebda-e219-41ee-a907-e2c25b24d1b2")
+        XCTAssertNil(AppleAdsKey.parse(block: "SEARCHADS.27478e71"))
+    }
+
+    func testEveryAreaExplainsItself() {
+        let all = AscAreas.release + AscAreas.listing + AscAreas.visuals + AscAreas.builds + AscAreas.testflight + AscAreas.reviews + AscAreas.money + AscAreas.analytics + AscAreas.more
+            + AscAreas.users + AscAreas.devices + AscAreas.signing + AscAreas.reports + AscAreas.automation + AscAreas.ads + AscAreas.account
+        for g in all { XCTAssertNotEqual(L.t("info.group.\(g)"), "info.group.\(g)", g) }
+    }
+
+    func testABundleIDIsChecked() {
+        XCTAssertTrue(NewAppSheet.validBundleID("com.example.app"))
+        XCTAssertTrue(NewAppSheet.validBundleID("com.my-company.App2"))
+        XCTAssertFalse(NewAppSheet.validBundleID("example"))
+        XCTAssertFalse(NewAppSheet.validBundleID("com.example.*"))
+        XCTAssertFalse(NewAppSheet.validBundleID("com example.app"))
+    }
+
+    func testTheNewKeyNamesItself() {
+        XCTAssertEqual(AscKeyFile.keyID(fileName: "AuthKey_ABC123DEFG.p8"), "ABC123DEFG")
+        XCTAssertNil(AscKeyFile.keyID(fileName: "AuthKey_.p8"))
+        XCTAssertNil(AscKeyFile.keyID(fileName: "other.p8"))
+    }
+
+    func testTheCodeScriptWaitsForTheCode() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let script = dir.appendingPathComponent("code.sh")
+        try AppleWebSession.scriptText(folder: dir.path).write(to: script, atomically: true, encoding: .utf8)
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: "/bin/sh")
+        p.arguments = [script.path]
+        let out = Pipe()
+        p.standardOutput = out
+        try p.run()
+        Thread.sleep(forTimeInterval: 0.7)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: dir.appendingPathComponent("asked").path), "the script says it was asked")
+        XCTAssertTrue(p.isRunning, "and waits")
+        try "123456".write(to: dir.appendingPathComponent("code"), atomically: true, encoding: .utf8)
+        p.waitUntilExit()
+        XCTAssertEqual(String(data: out.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8), "123456")
+        XCTAssertEqual(p.terminationStatus, 0)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: dir.appendingPathComponent("code").path), "the code doesn't stay on disk")
     }
 }

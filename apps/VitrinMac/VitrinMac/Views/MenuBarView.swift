@@ -5,6 +5,7 @@ import SwiftUI
 struct MenuBarView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.dismiss) private var dismiss
     @State private var contentHeight: CGFloat = 200
     @State private var credentials = ASCCredentials.shared
 
@@ -24,7 +25,14 @@ struct MenuBarView: View {
         .background(BrandBackground(intensity: 0.8))
     }
 
-    private var attention: [ASCApp] { model.ascApps.apps.filter { $0.current.map { [.err, .warn, .info].contains(ASCWords.tone($0.state)) } ?? false } }
+    /// The apps that need a look, the most urgent first: rejected, then being prepared, then in review.
+    private var attention: [ASCApp] {
+        let order: [Tone] = [.err, .warn, .info]
+        return model.ascApps.apps
+            .filter { $0.current.map { order.contains(ASCWords.tone($0.state)) } ?? false }
+            .sorted { (order.firstIndex(of: ASCWords.tone($0.current!.state)) ?? 9) < (order.firstIndex(of: ASCWords.tone($1.current!.state)) ?? 9) }
+    }
+    private func count(_ tone: Tone) -> Int { attention.filter { ASCWords.tone($0.current!.state) == tone }.count }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -39,7 +47,8 @@ struct MenuBarView: View {
             }
             HStack(spacing: 6) {
                 stat("square.grid.2x2", model.ascApps.apps.count, L.t("home.stat.apps"))
-                stat("hourglass", attention.filter { ASCWords.tone($0.current!.state) == .info }.count, L.t("home.stat.review"))
+                stat("hourglass", count(.info), L.t("home.stat.review"))
+                stat("xmark.octagon", count(.err), L.t("home.stat.rejected"))
                 stat("bell.badge", model.pendingDecisions, L.t("home.stat.waiting"))
             }
         }
@@ -62,7 +71,7 @@ struct MenuBarView: View {
     private func stat(_ symbol: String, _ value: Int, _ label: String) -> some View {
         VStack(alignment: .leading, spacing: 1) {
             HStack(spacing: 4) { Image(systemName: symbol); Text("\(value)").font(.headline.monospacedDigit()) }
-            Text(label).font(.caption2).opacity(0.85).lineLimit(1)
+            Text(label).font(.caption2).opacity(0.85).lineLimit(1).minimumScaleFactor(0.7)
         }
         .padding(.horizontal, 10).padding(.vertical, 6)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -102,16 +111,24 @@ struct MenuBarView: View {
         if !attention.isEmpty {
             VStack(alignment: .leading, spacing: 6) {
                 SectionTitle(L.t("menu.inASC"))
-                ForEach(attention.prefix(5)) { a in
+                ForEach(attention.prefix(6)) { a in
                     let v = a.current!
-                    HStack(spacing: 8) {
-                        AppIconPlaceholder(size: 22)
-                        Text(a.name).font(.callout).lineLimit(1)
-                        Spacer()
-                        Pill(ASCWords.state(v.state), ASCWords.tone(v.state)).lineLimit(1)
+                    Button { open(a) } label: {
+                        HStack(spacing: 8) {
+                            AppIcon(app: a, size: 26)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(a.name).font(.callout.weight(.semibold)).lineLimit(1)
+                                Text("\(ASCWords.platform(v.platform)) \(v.version)").font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                            }
+                            Spacer(minLength: 6)
+                            Pill(ASCWords.state(v.state), ASCWords.tone(v.state)).lineLimit(1)
+                        }
+                        .contentShape(Rectangle())
                     }
-                    .contentShape(Rectangle())
-                    .onTapGesture { openWindow(id: "main"); NSApp.activate(); Task { await model.select(app: a) } }
+                    .buttonStyle(.plain)
+                }
+                if attention.count > 6 {
+                    Text(L.t("menu.moreApps").replacingOccurrences(of: "{n}", with: "\(attention.count - 6)")).font(.caption).foregroundStyle(.secondary)
                 }
             }
             .glassCard()
@@ -121,7 +138,7 @@ struct MenuBarView: View {
             if model.store.projects.isEmpty { Text(L.t("home.noProjects")).font(.caption).foregroundStyle(.secondary) }
             ForEach(model.store.projects) { p in
                 let o = model.sessions[p.id]?.overview
-                row(symbol: "folder.fill", colors: BadgeColors.warm, title: model.displayName(for: p), detail: o?.next.map { L.stage($0.stage) } ?? p.path) { open(p) }
+                row(symbol: "folder.fill", colors: BadgeColors.warm, app: model.ascApp(for: p), title: model.displayName(for: p), detail: o?.next.map { L.stage($0.stage) } ?? p.path) { open(p) }
             }
         }
         .glassCard()
@@ -135,10 +152,10 @@ struct MenuBarView: View {
         }
     }
 
-    private func row(symbol: String, colors: [Color], title: String, detail: String, badge: Int? = nil, action: @escaping () -> Void) -> some View {
+    private func row(symbol: String, colors: [Color], app: ASCApp? = nil, title: String, detail: String, badge: Int? = nil, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 8) {
-                IconBadge(symbol: symbol, colors: colors, size: 26)
+                if let app { AppIcon(app: app, size: 26) } else { IconBadge(symbol: symbol, colors: colors, size: 26) }
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title).font(.callout.weight(.semibold)).lineLimit(1)
                     Text(detail).font(.caption).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
@@ -153,14 +170,25 @@ struct MenuBarView: View {
     }
 
     private func open(_ p: Project? = nil) {
+        showMainWindow()
+        if let p { Task { await model.open(p) } }
+    }
+
+    private func open(_ app: ASCApp) {
+        showMainWindow()
+        Task { await model.select(app: app) }
+    }
+
+    /// The panel closes itself: a window-style extra stays open while the app it belongs to is in front.
+    private func showMainWindow() {
         openWindow(id: "main")
         NSApp.activate()
-        if let p { Task { await model.open(p) } }
+        dismiss()
     }
 
     private var footer: some View {
         HStack {
-            SettingsLink { Label(L.t("settings.title"), systemImage: "gearshape") }
+            SettingsButton(action: { dismiss() }) { Label(L.t("settings.title"), systemImage: "gearshape") }
             Spacer()
             Text("v\(model.updates.appVersion)").font(.caption).foregroundStyle(.tertiary)
             Spacer()

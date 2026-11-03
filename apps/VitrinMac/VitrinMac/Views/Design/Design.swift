@@ -164,14 +164,19 @@ struct ProgressBar: View {
 /// Small uppercase section title inside a card.
 struct SectionTitle: View {
     let title: String
+    /// A key for the ⓘ next to the title; nothing shows when the key has no text.
+    var info: String?
 
-    init(_ title: String) { self.title = title }
+    init(_ title: String, info: String? = nil) { self.title = title; self.info = info }
 
     var body: some View {
-        Text(title)
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(.secondary)
-            .textCase(.uppercase)
+        HStack(spacing: 5) {
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+            if let info { InfoButton(key: info) }
+        }
     }
 }
 

@@ -4,7 +4,7 @@ import SwiftUI
 /// The app never shows an API code when it can show what the code means.
 @MainActor enum AscText {
     /// The language the app is showing, for Foundation's names (the system language can differ).
-    static var locale: Locale { Locale(identifier: LanguageState.shared.code ?? Bundle.main.preferredLocalizations.first ?? "en") }
+    static var locale: Locale { LanguageState.shared.locale }
 
     /// `de-DE`, `de_DE` → Almanca (Almanya).
     static func language(_ code: String) -> String {

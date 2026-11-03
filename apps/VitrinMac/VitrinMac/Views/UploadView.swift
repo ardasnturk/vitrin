@@ -59,7 +59,7 @@ struct UploadView: View {
                         Pill(toolVersion ?? L.t("common.missing"), toolVersion == nil ? .err : .ok)
                     }
                     Text(L.t("upload.ascHint")).font(.caption).foregroundStyle(.secondary)
-                    if toolVersion == nil { CopyCode(text: AscCLI.installHint) }
+                    if toolVersion == nil { InstallAscButton { Task { await model.refreshApps() } } }
                 }
                 Step(n: 2, ok: keysOk, title: L.t("upload.stepKeys"), actions: AnyView(Button(L.t("job.doctor")) { Task { await session.run("doctor") } }.controlSize(.small).disabled(session.isBusy).cliHelp("vitrin doctor"))) {
                     Text(L.t("upload.keysIntro")).font(.callout).foregroundStyle(.secondary)

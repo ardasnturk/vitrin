@@ -11,29 +11,29 @@ struct StoreSettings: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionTitle(L.t("asc.store.title"))
+            SectionTitle(L.t("asc.store.title"), info: "info.asc.store.title")
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 280), spacing: 12, alignment: .top)], spacing: 12) {
                 AscLoad(args: infoArgs) { doc, reload in
                     let info = JSONAPI.items(doc).first ?? [:]
-                    SettingCard(symbol: "square.grid.2x2.fill", colors: BadgeColors.magic, title: L.t("asc.store.categories")) {
+                    SettingCard(symbol: "square.grid.2x2.fill", colors: BadgeColors.magic, title: L.t("asc.store.categories"), info: "info.asc.store.categories") {
                         row(L.t("asc.store.primary"), category(info, "primaryCategory"))
                         row(L.t("asc.store.secondary"), category(info, "secondaryCategory"))
                         AscActionButton(action: AscActions.categories(app: appID), done: reload).controlSize(.small)
                     }
-                    SettingCard(symbol: "person.crop.circle.badge.checkmark", colors: BadgeColors.warm, title: L.t("asc.store.age")) {
+                    SettingCard(symbol: "person.crop.circle.badge.checkmark", colors: BadgeColors.warm, title: L.t("asc.store.age"), info: "info.asc.store.age") {
                         row(L.t("asc.store.ageRating"), JSONAPI.attr(info, "appStoreAgeRating").map { AscText.value($0.display) } ?? "—")
                         AgeRatingDetails(appID: appID)
                     }
                 }
                 AscLoad(args: ["apps", "content-rights", "view", "--app", appID]) { doc, _ in
                     let value = doc.objectValue?["content_rights_declaration"]?.stringValue ?? ""
-                    SettingCard(symbol: "c.circle.fill", colors: BadgeColors.cool, title: L.t("asc.store.rights")) {
+                    SettingCard(symbol: "c.circle.fill", colors: BadgeColors.cool, title: L.t("asc.store.rights"), info: "info.asc.store.rights") {
                         Text(value.isEmpty ? L.t("asc.store.notSet") : AscText.value(value)).font(.callout)
                     }
                 }
                 AscLoad(args: ["eula", "view", "--app", appID], errorText: L.t("asc.store.standardEula")) { doc, _ in
                     let text = JSONAPI.items(doc).first.map { JSONAPI.text($0, "agreementText") } ?? ""
-                    SettingCard(symbol: "doc.text.fill", colors: BadgeColors.gray, title: L.t("asc.store.eula")) {
+                    SettingCard(symbol: "doc.text.fill", colors: BadgeColors.gray, title: L.t("asc.store.eula"), info: "info.asc.store.eula") {
                         Text(text.isEmpty ? L.t("asc.store.standardEula") : text).font(.callout).lineLimit(4)
                     }
                 }
@@ -63,10 +63,11 @@ private struct SettingCard<Content: View>: View {
     var symbol: String
     var colors: [Color]
     var title: String
+    var info: String? = nil
     @ViewBuilder var content: Content
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) { IconBadge(symbol: symbol, colors: colors, size: 24); Text(title).font(.headline) }
+            HStack(spacing: 8) { IconBadge(symbol: symbol, colors: colors, size: 24); Text(title).font(.headline); if let info { InfoButton(key: info) } }
             content
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

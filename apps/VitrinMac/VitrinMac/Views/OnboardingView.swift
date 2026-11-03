@@ -50,6 +50,11 @@ struct OnboardingView: View {
             }
             .padding(.horizontal, 10)
             Spacer()
+            // The first thing a person may need, so it is on every step.
+            LanguagePicker(selection: Binding(get: { settings.language }, set: { settings.language = $0; model.applyLanguage() }))
+                .labelsHidden()
+                .padding(.horizontal, 18).padding(.bottom, 12)
+                .accessibilityIdentifier("onboarding.language")
             ProgressBar(fraction: Double(tour.step.rawValue) / Double(Onboarding.Step.allCases.count - 1))
                 .padding(.horizontal, 18)
             Text(L.t("onb.stepOf").replacingOccurrences(of: "{n}", with: "\(tour.step.rawValue + 1)").replacingOccurrences(of: "{total}", with: "\(Onboarding.Step.allCases.count)"))
@@ -221,7 +226,7 @@ private struct ToolsStep: View {
                     .disabled(tour.checkingTools)
                 if tour.checkingTools { ProgressView().controlSize(.small) }
                 Spacer()
-                SettingsLink { Text(L.t("onb.tools.cliSettings")) }
+                SettingsButton { Text(L.t("onb.tools.cliSettings")) }
             }
             if tour.missingRequired { Label(L.t("onb.tools.required"), systemImage: "exclamationmark.triangle.fill").foregroundStyle(.orange).font(.callout) }
         }
@@ -504,17 +509,6 @@ private struct ClaudeStep: View {
                     .buttonStyle(.plain)
                 }
             }
-            VStack(alignment: .leading, spacing: 10) {
-                SectionTitle(L.t("settings.language"))
-                Picker(L.t("settings.language"), selection: $settings.language) {
-                    Text(L.t("settings.languageSystem")).tag(AppLanguage.system)
-                    Text(L.t("settings.languageProject")).tag(AppLanguage.project)
-                    Text("English").tag(AppLanguage.en)
-                    Text("Türkçe").tag(AppLanguage.tr)
-                }
-                .labelsHidden().pickerStyle(.segmented)
-            }
-            .glassCard(padding: 14)
             Text(L.t("onb.claude.note")).font(.caption).foregroundStyle(.secondary)
         }
     }

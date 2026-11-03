@@ -194,6 +194,10 @@ struct ActionBar<Content: View>: View {
     static let platforms: [(value: String, label: String)] = [("IOS", "iOS"), ("MAC_OS", "macOS"), ("TV_OS", "tvOS"), ("VISION_OS", "visionOS")]
     static let releaseTypes: [(value: String, label: String)] = [("AFTER_APPROVAL", "After approval"), ("MANUAL", "Manual"), ("SCHEDULED", "Scheduled")]
 
+    static func requestAnalytics(app: String) -> AscAction {
+        AscAction(title: L.t("act.requestAnalytics"), detail: L.t("act.requestAnalytics.detail"), symbol: "chart.xyaxis.line", colors: BadgeColors.deep, command: ["analytics", "request"], fixed: ["--app", app, "--access-type", "ONGOING", "--reuse-existing"])
+    }
+
     // Release
     static func reviewDetails(id: String, item: [String: JSONValue]) -> AscAction {
         AscAction(title: L.t("act.reviewDetails"), detail: L.t("act.reviewDetails.detail"), symbol: "pencil", command: ["review", "details-update"], fixed: ["--id", id], fields: [

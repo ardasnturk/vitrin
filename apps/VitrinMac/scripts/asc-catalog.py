@@ -60,7 +60,7 @@ def main():
             catalog.append({**keep, "group": node["group"]})
             continue
         print("new:", path)
-        catalog.append({"path": path, "en": node["summary"], "tr": node["summary"], "group": node["group"],
+        catalog.append({"path": path, "titles": {"en": node["summary"]}, "group": node["group"],
                         "read": not node["group"] and path.split()[-1] in READ_VERBS,
                         "takes": [f for f in node["flags"] if f == "app"], "needs": []})
     for path in sorted(set(old) - set(nodes)):

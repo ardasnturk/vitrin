@@ -78,7 +78,7 @@ struct TeamView: View {
             }
         case .ads:
             TabPage {
-                AscLoad(args: ["ads", "me", "view"], errorText: L.t("team.ads.login")) { doc, _ in AscDataView(doc: doc) }
+                AppleAdsPage()
             }
         case .account:
             TabPage {

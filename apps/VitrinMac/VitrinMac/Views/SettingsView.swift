@@ -59,6 +59,7 @@ struct SettingsView: View {
             .brandWindowBackground()
         }
         .frame(width: 780, height: 560)
+        .onAppear { SettingsWindow.bringToFront() }
     }
 }
 
@@ -80,12 +81,7 @@ struct GeneralSettings: View {
     var body: some View {
         @Bindable var settings = settings
         Form {
-            Picker(L.t("settings.language"), selection: $settings.language) {
-                Text(L.t("settings.languageSystem")).tag(AppLanguage.system)
-                Text(L.t("settings.languageProject")).tag(AppLanguage.project)
-                Text("English").tag(AppLanguage.en)
-                Text("Türkçe").tag(AppLanguage.tr)
-            }
+            LanguagePicker(selection: $settings.language)
             Text(L.t("settings.languageHint")).font(.caption).foregroundStyle(.secondary)
             Toggle(L.t("settings.menuBar"), isOn: $settings.showMenuBarExtra)
             Toggle(L.t("settings.keepInMenuBar"), isOn: $settings.keepInMenuBar).disabled(!settings.showMenuBarExtra)

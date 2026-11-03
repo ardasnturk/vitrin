@@ -81,7 +81,7 @@ struct AppOverviewView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .environment(\.ascShelf, AscShelfContext(title: L.t("asc.shelf.title"), groups: tab.groups, prefill: ["app": app.id, "version-id": versionID ?? "", "app-id": app.id]))
+            .environment(\.ascShelf, AscShelfContext(title: L.t("asc.shelf.title"), intro: L.t("asc.tab.\(tab.rawValue).intro"), groups: tab.groups, prefill: ["app": app.id, "version-id": versionID ?? "", "app-id": app.id]))
             .id("\(app.id)-\(tab.rawValue)")
         }
         .task(id: app.id) {
@@ -159,9 +159,9 @@ struct ConnectHint: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(model.connection.state == .missingCLI ? L.t("asc.missing") : L.t("asc.connect.title")).font(.headline)
                 Text(L.t("asc.connect.detail")).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                if model.connection.state == .missingCLI { CopyCode(text: AscCLI.installHint) }
+                if model.connection.state == .missingCLI { InstallAscButton { Task { await model.refreshApps() } } }
                 HStack {
-                    SettingsLink { Text(L.t("account.add")) }.buttonStyle(GradientButtonStyle(fullWidth: false))
+                    SettingsButton { Text(L.t("account.add")) }.buttonStyle(GradientButtonStyle(fullWidth: false))
                     Button(L.t("onb.tools.again")) { Task { await model.refreshApps() } }
                 }
             }
@@ -180,6 +180,8 @@ struct AscLoad<Content: View>: View {
     var refresh = 0
     /// Shown instead of asc's message when the read fails (a public lookup for an app not on the App Store yet).
     var errorText: String? = nil
+    /// `asc web` reads go through Apple's web API with POST requests, which `--read-only` refuses.
+    var readOnly = true
     @ViewBuilder var content: (JSONValue, @escaping () -> Void) -> Content
     @State private var value: JSONValue?
     @State private var error: String?
@@ -191,9 +193,7 @@ struct AscLoad<Content: View>: View {
             if let value {
                 content(value) { tick += 1 }
             } else if let error {
-                Label(errorText ?? error, systemImage: errorText == nil ? "exclamationmark.triangle.fill" : "info.circle").foregroundStyle(errorText == nil ? .orange : .secondary).font(.callout)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .glassCard(padding: 14)
+                AscErrorCard(message: error, quiet: errorText) { self.error = nil; tick += 1 }
             } else {
                 HStack(spacing: 8) { ProgressView().controlSize(.small); Text(L.t("asc.loading")).foregroundStyle(.secondary) }
                     .padding(.vertical, 20)
@@ -202,7 +202,7 @@ struct AscLoad<Content: View>: View {
         .task(id: "\(args.joined(separator: " "))#\(tick)#\(refresh)") {
             loading = true
             defer { loading = false }
-            do { value = try await AscCLI.json(args); error = nil } catch { self.error = error.localizedDescription }
+            do { value = try await AscCLI.json(args, readOnly: readOnly); error = nil } catch { self.error = error.localizedDescription }
         }
     }
 }
@@ -275,6 +275,8 @@ struct ResourceTable: View {
 /// A scrolling tab body with the family padding.
 struct AscShelfContext {
     var title = ""
+    /// One sentence on what this tab is for, above its content.
+    var intro = ""
     var groups: [String] = []
     var prefill: [String: String] = [:]
 }
@@ -288,6 +290,7 @@ struct TabPage<Content: View>: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                if !shelf.intro.isEmpty { Text(shelf.intro).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true) }
                 content
                 // The rest of asc for this place: every command of the tab's groups, as forms.
                 if !shelf.groups.isEmpty { AscCommandShelf(title: shelf.title, groups: shelf.groups, prefill: shelf.prefill).padding(.top, 8) }
@@ -313,7 +316,7 @@ private struct AscStatusTab: View {
                         let health = summary["health"]?.stringValue ?? ""
                         IconBadge(symbol: health == "green" ? "checkmark" : health == "red" ? "exclamationmark" : "hourglass", colors: health == "green" ? BadgeColors.fresh : health == "red" ? BadgeColors.alert : BadgeColors.warm, size: 36)
                         VStack(alignment: .leading, spacing: 4) {
-                            SectionTitle(L.t("asc.status.next"))
+                            SectionTitle(L.t("asc.status.next"), info: "info.asc.status.next")
                             Text(summary["nextAction"]?.stringValue ?? "—").font(.title3.weight(.semibold)).fixedSize(horizontal: false, vertical: true)
                             ForEach(Array((summary["blockers"]?.arrayValue ?? []).enumerated()), id: \.offset) { _, b in
                                 Label(b.objectValue?["message"]?.stringValue ?? b.display, systemImage: "exclamationmark.octagon.fill").foregroundStyle(.red).font(.callout)
@@ -380,7 +383,7 @@ private struct AscMetadataTab: View {
                 let versions = JSONAPI.items(doc)
                 VStack(alignment: .leading, spacing: 14) {
                     HStack {
-                        SectionTitle(L.t("asc.meta.version"))
+                        SectionTitle(L.t("asc.meta.version"), info: "info.asc.meta.version")
                         Picker("", selection: Binding(get: { versionID ?? versions.first?["id"]?.stringValue ?? "" }, set: { versionID = $0 })) {
                             ForEach(versions.indices, id: \.self) { i in
                                 let v = versions[i]
@@ -397,7 +400,7 @@ private struct AscMetadataTab: View {
                     } else {
                         Text(L.t("apps.noVersions")).foregroundStyle(.secondary)
                     }
-                    SectionTitle(L.t("asc.meta.appInfo"))
+                    SectionTitle(L.t("asc.meta.appInfo"), info: "info.asc.meta.appInfo")
                     AppInfoEditor(appID: app.id)
                     StoreSettings(appID: app.id)
                 }
@@ -582,10 +585,10 @@ private struct AscTestFlightTab: View {
                     AscActionButton(action: AscActions.removeTester(app: app.id), done: { tick += 1 })
                     if !groups.isEmpty { AscActionButton(action: AscActions.deleteGroup(groups: groups), done: reload) }
                 }
-                SectionTitle(L.t("asc.tf.groups"))
+                SectionTitle(L.t("asc.tf.groups"), info: "info.asc.tf.groups")
                 BetaGroupList(doc: doc)
             }
-            SectionTitle(L.t("asc.tf.testers"))
+            SectionTitle(L.t("asc.tf.testers"), info: "info.asc.tf.testers")
             AscLoad(args: ["testflight", "testers", "list", "--app", app.id, "--limit", "200"], refresh: tick) { doc, _ in
                 ResourceTable(items: JSONAPI.items(doc), columns: [
                     (L.t("asc.field.firstName"), "firstName", .text), (L.t("asc.field.lastName"), "lastName", .text),
@@ -689,7 +692,7 @@ private struct AscMoneyTab: View {
                 HStack(spacing: 14) {
                     IconBadge(symbol: "dollarsign", colors: BadgeColors.fresh, size: 36)
                     VStack(alignment: .leading, spacing: 2) {
-                        SectionTitle(L.t("act.price"))
+                        SectionTitle(L.t("act.price"), info: "info.act.price")
                         Text(o["isFree"]?.boolValue == true ? L.t("act.free") : "\(o["customerPrice"]?.display ?? "—") \(o["currency"]?.display ?? "")").font(.title2.bold())
                         Text("\(L.t("act.baseTerritory")): \(AscText.territory(o["baseTerritory"]?.display ?? "")) · \(L.t("act.proceeds")): \(o["proceeds"]?.display ?? "—")").font(.caption).foregroundStyle(.secondary)
                     }
@@ -811,6 +814,8 @@ private struct AscAnalyticsTab: View {
     var app: ASCApp
     var body: some View {
         TabPage {
+            WebAnalytics(appID: app.id)
+            AnalyticsAccess(appID: app.id)
             WeeklyInsights(appID: app.id)
             PerformanceOverview(appID: app.id)
         }

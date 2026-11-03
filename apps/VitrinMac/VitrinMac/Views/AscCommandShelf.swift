@@ -8,11 +8,26 @@ struct AscCommandShelf: View {
     var title: String
     var groups: [String]
     var prefill: [String: String] = [:]
+    /// Closed by default: the page first shows what matters; the choice is remembered across pages.
+    @AppStorage("ascShelfOpen") private var open = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionTitle(title)
-            ForEach(groups, id: \.self) { g in AscGroupCard(path: g, prefill: prefill) }
+            Button { withAnimation(.easeOut(duration: 0.15)) { open.toggle() } } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "chevron.right").font(.caption2.weight(.bold)).foregroundStyle(.secondary).rotationEffect(.degrees(open ? 90 : 0))
+                    Text(title).font(.callout.weight(.medium))
+                    Text(L.t("asc.shelf.count").replacingOccurrences(of: "{n}", with: "\(groups.count)")).font(.caption).foregroundStyle(.secondary)
+                    Spacer()
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("asc.shelf.toggle")
+            if open {
+                Text(L.t("asc.shelf.intro")).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                ForEach(groups, id: \.self) { g in AscGroupCard(path: g, prefill: prefill) }
+            }
         }
     }
 }
@@ -29,7 +44,7 @@ private struct AscGroupCard: View {
                 HStack(spacing: 10) {
                     IconBadge(symbol: AscAreas.symbol(path), colors: BadgeColors.gray, size: 26)
                     VStack(alignment: .leading, spacing: 1) {
-                        Text(AscAreas.title(path)).font(.headline)
+                        HStack(spacing: 5) { Text(AscAreas.title(path)).font(.headline); InfoButton(key: "info.group.\(path)") }
                         Text(AscCatalog.counts(path)).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                     }
                     Spacer()
