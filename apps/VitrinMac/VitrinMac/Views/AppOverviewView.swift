@@ -691,27 +691,17 @@ private struct AscMoneyTab: View {
                     VStack(alignment: .leading, spacing: 2) {
                         SectionTitle(L.t("act.price"))
                         Text(o["isFree"]?.boolValue == true ? L.t("act.free") : "\(o["customerPrice"]?.display ?? "—") \(o["currency"]?.display ?? "")").font(.title2.bold())
-                        Text("\(L.t("act.baseTerritory")): \(o["baseTerritory"]?.display ?? "—") · \(L.t("act.proceeds")): \(o["proceeds"]?.display ?? "—")").font(.caption).foregroundStyle(.secondary)
+                        Text("\(L.t("act.baseTerritory")): \(AscText.territory(o["baseTerritory"]?.display ?? "")) · \(L.t("act.proceeds")): \(o["proceeds"]?.display ?? "—")").font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
                 }
                 .glassCard(padding: 14)
             }
-            SectionTitle(L.t("asc.money.subscriptions"))
-            AscLoad(args: ["subscriptions", "list", "--app", app.id, "--paginate"]) { doc, _ in
-                ResourceTable(items: JSONAPI.items(doc), columns: [
-                    (L.t("asc.field.name"), "name", .text), (L.t("asc.field.productId"), "productId", .mono),
-                    (L.t("asc.field.subscriptionPeriod"), "subscriptionPeriod", .mono), (L.t("asc.field.state"), "state", .state),
-                ], empty: L.t("asc.empty"))
-            }
-            SectionTitle(L.t("asc.money.iap"))
-            AscLoad(args: ["iap", "list", "--app", app.id, "--paginate"]) { doc, _ in
-                ResourceTable(items: JSONAPI.items(doc), columns: [
-                    (L.t("asc.field.name"), "name", .text), (L.t("asc.field.productId"), "productId", .mono),
-                    (L.t("asc.field.inAppPurchaseType"), "inAppPurchaseType", .mono), (L.t("asc.field.state"), "state", .state),
-                ], empty: L.t("asc.empty"))
-            }
-            Text(L.t("asc.money.more")).font(.caption).foregroundStyle(.secondary)
+            PriceList(title: L.t("asc.money.subscriptions"), args: ["subscriptions", "pricing", "summary", "--app", app.id], key: "subscriptions")
+            AscSection(title: L.t("asc.money.groups"), args: ["subscriptions", "groups", "list", "--app", app.id], empty: L.t("asc.money.noGroups"))
+            PriceList(title: L.t("asc.money.iap"), args: ["iap", "pricing", "summary", "--app", app.id], key: "iaps")
+            AscSection(title: L.t("asc.money.promoted"), args: ["iap", "promoted-purchases", "list", "--app", app.id], empty: L.t("asc.money.noPromoted"))
+            AscSection(title: L.t("asc.money.availability"), args: ["pricing", "availability", "view", "--app", app.id])
         }
     }
 }
