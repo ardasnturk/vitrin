@@ -159,7 +159,7 @@ struct ConnectHint: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(model.connection.state == .missingCLI ? L.t("asc.missing") : L.t("asc.connect.title")).font(.headline)
                 Text(L.t("asc.connect.detail")).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                if model.connection.state == .missingCLI { InstallAscButton { Task { await model.refreshApps() } } }
+                if model.connection.state == .missingCLI { ToolInstallButton(tool: .asc) }
                 HStack {
                     SettingsButton { Text(L.t("account.add")) }.buttonStyle(GradientButtonStyle(fullWidth: false))
                     Button(L.t("onb.tools.again")) { Task { await model.refreshApps() } }

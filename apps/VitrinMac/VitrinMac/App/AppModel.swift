@@ -13,6 +13,9 @@ import Observation
     /// Who App Store Connect requests run as (Vitrin's key, asc's own login, or nobody).
     let connection = AscConnection()
     let icons = AppIconStore()
+    let installer = ToolInstaller()
+    /// Counts the finished installs, for the pages that list what is on this Mac.
+    private(set) var installRevision = 0
     /// The new app sheet.
     var showNewApp = false
     private(set) var sessions: [String: ProjectSession] = [:]
@@ -107,6 +110,18 @@ import Observation
         let args = CommandLine.arguments
         if let i = args.firstIndex(of: "--project"), i + 1 < args.count { return args[i + 1] }
         return ProcessInfo.processInfo.environment["VITRIN_PROJECT"]
+    }
+
+    /// Installs tools, then reads again everything that depends on them.
+    func install(_ tools: [LocalTool]) async {
+        await installer.install(tools, appVersion: updates.appVersion) {
+            await locateCLI()
+            await connection.refresh()
+            installRevision += 1
+        }
+        Task { await refreshApps() }
+        if let p = selectedProject { await open(p) }
+        await selectedSession?.refresh()
     }
 
     func locateCLI() async {

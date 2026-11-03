@@ -227,6 +227,11 @@ private struct ToolsStep: View {
                 if tour.checkingTools { ProgressView().controlSize(.small) }
                 Spacer()
                 SettingsButton { Text(L.t("onb.tools.cliSettings")) }
+                if tour.missing.count > 1 {
+                    Button(L.t("onb.tools.installAll")) { Task { await model.install(tour.missing) } }
+                        .buttonStyle(GradientButtonStyle(fullWidth: false)).disabled(model.installer.busy)
+                        .accessibilityIdentifier("tool.installAll")
+                }
             }
             if tour.missingRequired { Label(L.t("onb.tools.required"), systemImage: "exclamationmark.triangle.fill").foregroundStyle(.orange).font(.callout) }
         }
@@ -243,7 +248,7 @@ private struct ToolsStep: View {
                     Pill(L.t("onb.need.\(t.need)"), t.need == .required ? .warn : .neutral)
                 }
                 Text(L.t(t.purposeKey)).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                if !t.found { CopyCode(text: t.install) }
+                if !t.found { ToolInstallButton(tool: t.tool, prominent: t.need == .required) { Task { await tour.checkTools(cli: model.cli) } } }
             }
             Spacer()
             if let p = t.path { Text(p).font(.caption.monospaced()).foregroundStyle(.tertiary).lineLimit(1).truncationMode(.middle).frame(maxWidth: 200, alignment: .trailing) }

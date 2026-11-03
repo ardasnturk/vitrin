@@ -27,7 +27,7 @@ struct ClaudePanel: View {
             if !available {
                 VStack(spacing: 8) {
                     Text(L.t("claude.missing")).foregroundStyle(.secondary).multilineTextAlignment(.center)
-                    CopyCode(text: "npm install -g @anthropic-ai/claude-code")
+                    ToolInstallButton(tool: .claude)
                 }.padding(16)
                 Spacer()
             } else if session.claudeRuns.isEmpty {

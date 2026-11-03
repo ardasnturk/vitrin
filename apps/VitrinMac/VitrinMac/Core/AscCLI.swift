@@ -32,8 +32,6 @@ enum AscCLI {
         }
     }
 
-    static let installHint = "brew install asc"
-
     /// The asc executable on the login shell's PATH.
     static func path() async -> String? { await ShellEnvironment.which("asc") }
 

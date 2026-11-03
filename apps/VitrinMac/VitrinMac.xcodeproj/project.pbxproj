@@ -28,6 +28,7 @@
 		33F2783440EC511CB7579C86 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25EAF5412213B7B53D1F19B6 /* SettingsView.swift */; };
 		3846EF84FDEF0C59295A7420 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31457BDA652BD723EE7815F6 /* AppModel.swift */; };
 		3BABDFA9389D5246FE3DC9C8 /* overview-ritim.json in Resources */ = {isa = PBXBuildFile; fileRef = 2A98C23CC09E90604C2ADA8F /* overview-ritim.json */; };
+		3BB3D48D682277F6EA6010D9 /* ToolInstallButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26B543FF356622151F5B1B20 /* ToolInstallButton.swift */; };
 		3D1855476A9C6BCD42997C45 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51F56DBCAA368ACDF451597 /* Models.swift */; };
 		4A592BF0BA965DEAB1CBBC0F /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0821F25BF977420819CA929 /* WelcomeView.swift */; };
 		4DB13C31678BAFDC2B7F8986 /* Sidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76F172094DDF61E930A998AA /* Sidebar.swift */; };
@@ -55,6 +56,7 @@
 		995AB2D8F86A69A8DF460F75 /* UploadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 412D65A67CF2009541AEFC8E /* UploadView.swift */; };
 		9DEBF170D8890B5F3401ABFC /* AscInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18E48C89E6C1131FF957CC8E /* AscInfo.swift */; };
 		A63A2F8A3F229E7565B4175B /* AppOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05330799116EDBE82AD2E147 /* AppOverviewView.swift */; };
+		A74572103D06B2B4AA1C0018 /* ToolInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9575609DEC6358FE7AF6E2 /* ToolInstaller.swift */; };
 		B6C12D075547C0AA2391A411 /* NewAppSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A5FE2C9F194704127BD745E /* NewAppSheet.swift */; };
 		B6D3B8E2D462E3870D9217F1 /* StudioProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = EACD137CC67DA4F8B7886237 /* StudioProcess.swift */; };
 		B7F5038EC8F5CF9AFB4252E6 /* Onboarding.swift in Sources */ = {isa = PBXBuildFile; fileRef = F471CF129037F43BFC201D31 /* Onboarding.swift */; };
@@ -77,6 +79,7 @@
 		E9CD866A865396F7839E90DF /* AscCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBE4D6DF03D2F9BD630E46C3 /* AscCatalog.swift */; };
 		EE7F39DE57B3D619CC9D499A /* JSONValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B74D68F1B0BD20A23DC2231D /* JSONValueTests.swift */; };
 		F0EF0B60BBCD4062BD01892D /* FlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37D3AC9D274A37B09528BCFB /* FlowView.swift */; };
+		F20AEA2B3E75226659FFE9BE /* ToolInstallerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 206AEA8A45B0B3FD4DBC8559 /* ToolInstallerTests.swift */; };
 		F4C6C9AFC56ECC63D09AE712 /* TeamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED84FC58FB59E90D503902CC /* TeamView.swift */; };
 		F8807D81811939B7F66851F9 /* Credentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBE13B7B4C070E9A2003F7A0 /* Credentials.swift */; };
 		F9D9D34D2E981B414D2A1E6E /* Limits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40D651EA0B55D06E8A246136 /* Limits.swift */; };
@@ -108,11 +111,13 @@
 		09C0B0D88CC3702B332EFCCF /* ASCApps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASCApps.swift; sourceTree = "<group>"; };
 		178E50E1F076BEF93183110C /* TestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestSupport.swift; sourceTree = "<group>"; };
 		18E48C89E6C1131FF957CC8E /* AscInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscInfo.swift; sourceTree = "<group>"; };
+		206AEA8A45B0B3FD4DBC8559 /* ToolInstallerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolInstallerTests.swift; sourceTree = "<group>"; };
 		239B13E63197E6205B2BAD1C /* AscMoneySections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscMoneySections.swift; sourceTree = "<group>"; };
 		252E7B6410A6AA6524E12122 /* VitrinMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitrinMacApp.swift; sourceTree = "<group>"; };
 		25EAF5412213B7B53D1F19B6 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		2617D41381B1B43B12D982ED /* UpdateCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckerTests.swift; sourceTree = "<group>"; };
 		26B23332E85855232EE83F71 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		26B543FF356622151F5B1B20 /* ToolInstallButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolInstallButton.swift; sourceTree = "<group>"; };
 		2A98C23CC09E90604C2ADA8F /* overview-ritim.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "overview-ritim.json"; sourceTree = "<group>"; };
 		2E0F98EB10502D837CFE213C /* StudioHandshakeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudioHandshakeTests.swift; sourceTree = "<group>"; };
 		31457BDA652BD723EE7815F6 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
@@ -180,6 +185,7 @@
 		ED84FC58FB59E90D503902CC /* TeamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamView.swift; sourceTree = "<group>"; };
 		F471CF129037F43BFC201D31 /* Onboarding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Onboarding.swift; sourceTree = "<group>"; };
 		F6868DC8DC6036D5BA6F4275 /* AscAnalyticsSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscAnalyticsSections.swift; sourceTree = "<group>"; };
+		FE9575609DEC6358FE7AF6E2 /* ToolInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolInstaller.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -215,6 +221,7 @@
 				49ED2DE5B9BA4D66A3D616C6 /* SSEParserTests.swift */,
 				2E0F98EB10502D837CFE213C /* StudioHandshakeTests.swift */,
 				178E50E1F076BEF93183110C /* TestSupport.swift */,
+				206AEA8A45B0B3FD4DBC8559 /* ToolInstallerTests.swift */,
 				2617D41381B1B43B12D982ED /* UpdateCheckerTests.swift */,
 			);
 			path = VitrinMacTests;
@@ -292,6 +299,7 @@
 				25EAF5412213B7B53D1F19B6 /* SettingsView.swift */,
 				76F172094DDF61E930A998AA /* Sidebar.swift */,
 				ED84FC58FB59E90D503902CC /* TeamView.swift */,
+				26B543FF356622151F5B1B20 /* ToolInstallButton.swift */,
 				412D65A67CF2009541AEFC8E /* UploadView.swift */,
 				01E20EED87A8F2960D1D0B50 /* VisualsView.swift */,
 				E0821F25BF977420819CA929 /* WelcomeView.swift */,
@@ -360,6 +368,7 @@
 				48040DA2E36A7D8B5ABD9C0C /* StudioClient.swift */,
 				AA21416BDE031F109E9C8C96 /* StudioEvents.swift */,
 				EACD137CC67DA4F8B7886237 /* StudioProcess.swift */,
+				FE9575609DEC6358FE7AF6E2 /* ToolInstaller.swift */,
 				017A34E4C1024DA1FBE3F5CF /* UpdateChecker.swift */,
 			);
 			path = Core;
@@ -507,6 +516,7 @@
 				8ADFBB8EB97D74D673427D90 /* SSEParserTests.swift in Sources */,
 				6EF806F1907DC9ADD2A48AF1 /* StudioHandshakeTests.swift in Sources */,
 				66098835DA01703BD923ACA6 /* TestSupport.swift in Sources */,
+				F20AEA2B3E75226659FFE9BE /* ToolInstallerTests.swift in Sources */,
 				1CBF3F8E4F8D7EB4B649859C /* UpdateCheckerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -568,6 +578,8 @@
 				16FE7B8EE832830B24A92163 /* StudioEvents.swift in Sources */,
 				B6D3B8E2D462E3870D9217F1 /* StudioProcess.swift in Sources */,
 				F4C6C9AFC56ECC63D09AE712 /* TeamView.swift in Sources */,
+				3BB3D48D682277F6EA6010D9 /* ToolInstallButton.swift in Sources */,
+				A74572103D06B2B4AA1C0018 /* ToolInstaller.swift in Sources */,
 				E8254E33EAAE1294E05AAF77 /* UpdateChecker.swift in Sources */,
 				995AB2D8F86A69A8DF460F75 /* UploadView.swift in Sources */,
 				5F90AB4B1153ED5592C566E6 /* VisualsView.swift in Sources */,

@@ -156,6 +156,7 @@ struct CLISettings: View {
                 TextField(L.t("settings.cliPath"), text: $settings.cliPath, prompt: Text("…/dist/bin.js or /opt/homebrew/bin/vitrin"))
                 TextField(L.t("settings.checkout"), text: $settings.vitrinCheckout, prompt: Text("/path/to/vitrin"))
                 Text(L.t("settings.cliHint")).font(.caption).foregroundStyle(.secondary)
+                if model.cli == nil, !model.locating { ToolInstallButton(tool: .vitrin, prominent: false) }
                 Button(L.t("cli.searchAgain")) { Task { await model.locateCLI() } }
             }
             Section(L.t("settings.tools")) {
@@ -166,7 +167,9 @@ struct CLISettings: View {
                         HStack {
                             Image(systemName: o.installed ? "checkmark.circle.fill" : "circle").foregroundStyle(o.installed ? .green : .secondary)
                             Text(o.label).font(.callout)
-                            if !o.installed { CopyCode(text: o.install) }
+                            if !o.installed {
+                                if let tool = LocalTool(hint: o.install) { ToolInstallButton(tool: tool, prominent: false) { Task { await runDoctor() } } } else { CopyCode(text: o.install) }
+                            }
                             if u.recommended == o.uploader { Pill(L.t("settings.recommended"), .accent) }
                         }
                     }
@@ -219,6 +222,7 @@ struct UpdateSettings: View {
                     Text(r.assets.map(\.name).joined(separator: ", ")).font(.caption.monospaced()).foregroundStyle(.secondary)
                 }
                 Text(L.t("updates.cliHint")).font(.caption).foregroundStyle(.secondary)
+                if let v = model.cli?.version, v != u.appVersion { ToolInstallButton(tool: .vitrin, prominent: false) }
             }
             Section("Sparkle") {
                 TextField(L.t("updates.appcast"), text: $settings.appcastURL)

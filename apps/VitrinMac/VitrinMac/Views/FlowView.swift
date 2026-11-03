@@ -318,7 +318,9 @@ struct BlockerCard: View {
                         Button(L.fix(fix, blocker)) { Task { await session.run(fix.command, args: fix.args) } }
                             .buttonStyle(primary && i == 0 ? AnyButtonStyle(.borderedProminent) : AnyButtonStyle(.bordered)).controlSize(.small).disabled(session.isBusy)
                     }
-                    if let install = blocker.params["install"]?.stringValue { CopyCode(text: install) }
+                    if let install = blocker.params["install"]?.stringValue {
+                        if let tool = LocalTool(hint: install) { ToolInstallButton(tool: tool, prominent: false) } else { CopyCode(text: install) }
+                    }
                     if blocker.code == "keys-missing" {
                         SettingsButton { Text(L.t("flow.accountSettings")) }.controlSize(.small).accessibilityIdentifier("flow.accountSettings")
                     } else if blocker.fixes.isEmpty, blocker.params["install"] == nil, blocker.stage != "upload" {

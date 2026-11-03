@@ -38,6 +38,9 @@ enum CLIError: LocalizedError, Sendable {
 enum ShellEnvironment {
     nonisolated(unsafe) private static var cached: [String: String]?
 
+    /// After an install: the next lookup sees the new tool (a folder that did not exist before joins the PATH).
+    static func invalidate() { cached = nil }
+
     static func environment() async -> [String: String] {
         if let cached { return cached }
         var env = ProcessInfo.processInfo.environment
@@ -45,7 +48,7 @@ enum ShellEnvironment {
         var path = env["PATH"] ?? "/usr/bin:/bin:/usr/sbin:/sbin"
         if let shellPath = await loginShellPath(), !shellPath.isEmpty { path = shellPath }
         // Homebrew, nvm and the usual user bins, even when the login shell did not say so.
-        var extra = ["/opt/homebrew/bin", "/usr/local/bin", "\(home)/.local/bin", "\(home)/.local/share/vitrin/bin"]
+        var extra = ["/opt/homebrew/bin", "/usr/local/bin", "\(home)/.local/bin", "\(CLILocator.home)/bin", "\(CLILocator.home)/node/bin"]
         if let nvm = try? FileManager.default.contentsOfDirectory(atPath: "\(home)/.nvm/versions/node") {
             for v in nvm.sorted(by: { $0.compare($1, options: .numeric) == .orderedDescending }) { extra.append("\(home)/.nvm/versions/node/\(v)/bin") }
         }
@@ -76,6 +79,12 @@ enum ShellEnvironment {
 enum CLILocator {
     static let minimumNode = 22
 
+    /// Where Vitrin keeps what it installs: `${VITRIN_HOME:-~/.local/share/vitrin}`, as the launcher reads it.
+    static var home: String {
+        let env = ProcessInfo.processInfo.environment
+        return env["VITRIN_HOME"] ?? "\(env["XDG_DATA_HOME"] ?? "\(FileManager.default.homeDirectoryForCurrentUser.path)/.local/share")/vitrin"
+    }
+
     /// Node.js 22+: the first `node` on the PATH that is new enough.
     static func node() async throws -> String {
         let env = await ShellEnvironment.environment()
@@ -94,9 +103,7 @@ enum CLILocator {
 
     /// The plugin install: `${VITRIN_HOME:-~/.local/share/vitrin}/<version>/node_modules/@ardasnturk/vitrin/dist/bin.js`, newest version.
     static func pluginInstall() -> String? {
-        let env = ProcessInfo.processInfo.environment
-        let home = FileManager.default.homeDirectoryForCurrentUser.path
-        let base = env["VITRIN_HOME"] ?? "\(env["XDG_DATA_HOME"] ?? "\(home)/.local/share")/vitrin"
+        let base = home
         guard let versions = try? FileManager.default.contentsOfDirectory(atPath: base) else { return nil }
         for v in versions.filter({ $0.first?.isNumber == true }).sorted(by: { $0.compare($1, options: .numeric) == .orderedDescending }) {
             let entry = "\(base)/\(v)/node_modules/@ardasnturk/vitrin/dist/bin.js"

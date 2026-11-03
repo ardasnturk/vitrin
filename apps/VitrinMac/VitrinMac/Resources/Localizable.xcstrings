@@ -88193,70 +88193,6 @@
         }
       }
     },
-    "asc.installing" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Installing with Homebrew…"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Homebrew ile kuruluyor…"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Installation mit Homebrew …"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Instalando con Homebrew…"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Installation avec Homebrew…"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Installazione con Homebrew…"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Homebrew でインストール中…"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Homebrew로 설치하는 중…"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Instalando com o Homebrew…"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在通过 Homebrew 安装…"
-          }
-        }
-      }
-    },
     "asc.key.agreements" : {
       "localizations" : {
         "en" : {
@@ -91069,70 +91005,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "更多选项"
-          }
-        }
-      }
-    },
-    "asc.noBrew" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Homebrew isn't installed. Get it from brew.sh, then try again."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Homebrew kurulu değil. brew.sh adresinden kurup yeniden deneyin."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Homebrew ist nicht installiert. Laden Sie es von brew.sh und versuchen Sie es erneut."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Homebrew no está instalado. Consíguelo en brew.sh y vuelve a intentarlo."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Homebrew n’est pas installé. Récupérez-le sur brew.sh, puis réessayez."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Homebrew non è installato. Scaricalo da brew.sh, poi riprova."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Homebrew がインストールされていません。brew.sh から入手して、もう一度お試しください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Homebrew가 설치되어 있지 않습니다. brew.sh에서 설치한 후 다시 시도하세요."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O Homebrew não está instalado. Baixe-o em brew.sh e tente novamente."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "尚未安装 Homebrew。请从 brew.sh 获取，然后重试。"
           }
         }
       }
@@ -104006,125 +103878,61 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The app runs the Vitrin command line tool, which needs Node.js 22 or newer."
+            "value" : "The app runs the Vitrin command line tool. One click installs it here, along with Node.js if this Mac needs it."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uygulama Vitrin komut satırı aracını çalıştırır; bunun için Node.js 22 veya daha yenisi gerekir."
+            "value" : "Uygulama Vitrin komut satırı aracını çalıştırır. Tek tıkla buradan kurulur; bu Mac'te Node.js yoksa o da kurulur."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Die App führt das Vitrin-Befehlszeilentool aus, das Node.js 22 oder neuer benötigt."
+            "value" : "Die App nutzt das Vitrin-Befehlszeilentool. Ein Klick installiert es hier, bei Bedarf auch Node.js."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La app ejecuta la herramienta de línea de comandos de Vitrin, que necesita Node.js 22 o posterior."
+            "value" : "La app usa la herramienta de línea de comandos de Vitrin. Con un clic se instala aquí, junto con Node.js si este Mac lo necesita."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L’app exécute l’outil en ligne de commande Vitrin, qui nécessite Node.js 22 ou ultérieur."
+            "value" : "L'app utilise l'outil en ligne de commande Vitrin. Un clic l'installe ici, avec Node.js si ce Mac en a besoin."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L’app esegue lo strumento a riga di comando di Vitrin, che richiede Node.js 22 o successivo."
+            "value" : "L'app usa lo strumento a riga di comando di Vitrin. Con un clic si installa qui, insieme a Node.js se questo Mac ne ha bisogno."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "アプリは Vitrin のコマンドラインツールを実行します。そのため Node.js 22 以降が必要です。"
+            "value" : "このアプリは Vitrin コマンドラインツールを実行します。ここからワンクリックでインストールでき、必要なら Node.js も一緒に入ります。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "앱은 Vitrin 명령줄 도구를 실행하며, 이 도구에는 Node.js 22 이상이 필요합니다."
+            "value" : "이 앱은 Vitrin 명령줄 도구를 실행합니다. 여기서 클릭 한 번으로 설치되며, 필요하면 Node.js도 함께 설치됩니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O app executa a ferramenta de linha de comando do Vitrin, que exige o Node.js 22 ou mais recente."
+            "value" : "O app usa a ferramenta de linha de comando do Vitrin. Um clique a instala aqui, junto com o Node.js se este Mac precisar."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "此 App 会运行 Vitrin 命令行工具，它需要 Node.js 22 或更高版本。"
-          }
-        }
-      }
-    },
-    "cli.installNode" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1. Install Node.js (nodejs.org or Homebrew):"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1. Node.js kurun (nodejs.org ya da Homebrew):"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1. Node.js installieren (nodejs.org oder Homebrew):"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1. Instala Node.js (nodejs.org o Homebrew):"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1. Installez Node.js (nodejs.org ou Homebrew) :"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1. Installa Node.js (nodejs.org o Homebrew):"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1. Node.js をインストールします (nodejs.org または Homebrew):"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1. Node.js 설치(nodejs.org 또는 Homebrew):"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1. Instale o Node.js (nodejs.org ou Homebrew):"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1. 安装 Node.js（nodejs.org 或 Homebrew）："
+            "value" : "本应用运行 Vitrin 命令行工具。点按一下即可在此安装,如有需要会同时安装 Node.js。"
           }
         }
       }
@@ -104189,70 +103997,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "或者在 Claude Code 中安装 Vitrin 插件并运行一次 /vitrin：App 也能找到该安装。"
-          }
-        }
-      }
-    },
-    "cli.installVitrin" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2. Install Vitrin:"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2. Vitrin’i kurun:"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2. Vitrin installieren:"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2. Instala Vitrin:"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2. Installez Vitrin :"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2. Installa Vitrin:"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2. Vitrin をインストールします:"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2. Vitrin 설치:"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2. Instale o Vitrin:"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2. 安装 Vitrin："
           }
         }
       }
@@ -104381,70 +104125,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在查找 Vitrin CLI…"
-          }
-        }
-      }
-    },
-    "cli.needsNode" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Install Node.js 22 or newer from nodejs.org, then try again."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "nodejs.org adresinden Node.js 22 veya üstünü kurup yeniden deneyin."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Installieren Sie Node.js 22 oder neuer von nodejs.org und versuchen Sie es erneut."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Instala Node.js 22 o posterior desde nodejs.org y vuelve a intentarlo."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Installez Node.js 22 ou une version ultérieure depuis nodejs.org, puis réessayez."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Installa Node.js 22 o successivo da nodejs.org, poi riprova."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "nodejs.org から Node.js 22 以降をインストールして、もう一度お試しください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "nodejs.org에서 Node.js 22 이상을 설치한 후 다시 시도하세요."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Instale o Node.js 22 ou mais recente em nodejs.org e tente novamente."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "请从 nodejs.org 安装 Node.js 22 或更高版本，然后重试。"
           }
         }
       }
@@ -104765,6 +104445,134 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "设置路径…"
+          }
+        }
+      }
+    },
+    "cli.stage.browser" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Downloading the browser that renders screenshots…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ekran görüntülerini oluşturan tarayıcı indiriliyor…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Browser für die Screenshots wird geladen…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descargando el navegador que genera las capturas…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Téléchargement du navigateur qui génère les captures…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download del browser che genera gli screenshot…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スクリーンショットを描画するブラウザをダウンロード中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "스크린샷을 렌더링하는 브라우저 다운로드 중…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baixando o navegador que gera as capturas…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在下载用于渲染截图的浏览器…"
+          }
+        }
+      }
+    },
+    "cli.stage.packages" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installing packages, about 450 MB in all…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paketler kuruluyor, toplam yaklaşık 450 MB…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pakete werden installiert, insgesamt etwa 450 MB…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalando paquetes, unos 450 MB en total…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installation des paquets, environ 450 Mo au total…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installazione dei pacchetti, circa 450 MB in totale…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パッケージをインストール中(合計約 450 MB)…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "패키지 설치 중(총 약 450MB)…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalando pacotes, cerca de 450 MB no total…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在安装软件包,共约 450 MB…"
           }
         }
       }
@@ -135041,66 +134849,130 @@
         }
       }
     },
-    "onb.tools.required" : {
+    "onb.tools.installAll" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Install the required tools, then check again."
+            "value" : "Install everything missing"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zorunlu araçları kurun, sonra yeniden denetleyin."
+            "value" : "Eksiklerin hepsini kur"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Installieren Sie die erforderlichen Tools und prüfen Sie dann erneut."
+            "value" : "Alles Fehlende installieren"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Instala las herramientas necesarias y vuelve a comprobar."
+            "value" : "Instalar todo lo que falta"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Installez les outils requis, puis vérifiez à nouveau."
+            "value" : "Installer tout ce qui manque"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Installa gli strumenti richiesti, poi controlla di nuovo."
+            "value" : "Installa tutto ciò che manca"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "必要なツールをインストールしてから、もう一度確認してください。"
+            "value" : "不足分をすべてインストール"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "필요한 도구를 설치한 다음 다시 확인하세요."
+            "value" : "없는 항목 모두 설치"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Instale as ferramentas necessárias e verifique novamente."
+            "value" : "Instalar tudo o que falta"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请安装所需工具，然后重新检查。"
+            "value" : "安装所有缺少的工具"
+          }
+        }
+      }
+    },
+    "onb.tools.required" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Install the required tools with the buttons above to go on."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Devam etmek için zorunlu araçları yukarıdaki butonlarla kurun."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installieren Sie die erforderlichen Tools mit den Tasten oben."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instala las herramientas obligatorias con los botones de arriba para continuar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installez les outils requis avec les boutons ci-dessus pour continuer."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installa gli strumenti richiesti con i pulsanti qui sopra per continuare."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "続けるには、上のボタンで必須ツールをインストールしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "계속하려면 위 버튼으로 필수 도구를 설치하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instale as ferramentas obrigatórias com os botões acima para continuar."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请使用上方按钮安装必需的工具后继续。"
           }
         }
       }
@@ -147969,6 +147841,262 @@
         }
       }
     },
+    "tool.install.claude" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Install Claude Code"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code'u kur"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code installieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar Claude Code"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installer Claude Code"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installa Claude Code"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code をインストール"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code 설치"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar Claude Code"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安装 Claude Code"
+          }
+        }
+      }
+    },
+    "tool.install.ffmpeg" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Install ffmpeg"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ffmpeg'i kur"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ffmpeg installieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar ffmpeg"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installer ffmpeg"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installa ffmpeg"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ffmpeg をインストール"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ffmpeg 설치"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar ffmpeg"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安装 ffmpeg"
+          }
+        }
+      }
+    },
+    "tool.install.node" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Install Node.js"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Node.js'i kur"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Node.js installieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar Node.js"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installer Node.js"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installa Node.js"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Node.js をインストール"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Node.js 설치"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar Node.js"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安装 Node.js"
+          }
+        }
+      }
+    },
+    "tool.installing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installing {name}…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "{name} kuruluyor…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "{name} wird installiert…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalando {name}…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installation de {name}…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installazione di {name}…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "{name} をインストール中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "{name} 설치 중…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalando {name}…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在安装 {name}…"
+          }
+        }
+      }
+    },
     "updates.app" : {
       "localizations" : {
         "en" : {
@@ -148422,61 +148550,61 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Releases on GitHub (ardasnturk/vitrin) carry the CLI tarball and SHA256SUMS. Update the CLI with npm install -g @ardasnturk/vitrin@latest, or by updating the Claude Code plugin."
+            "value" : "Releases on GitHub (ardasnturk/vitrin) carry the CLI tarball and SHA256SUMS. Each app version installs its own Vitrin CLI with the button here, or update the Claude Code plugin."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GitHub sürümleri (ardasnturk/vitrin) CLI tarball’ını ve SHA256SUMS’u taşır. CLI’ı npm install -g @ardasnturk/vitrin@latest ile ya da Claude Code eklentisini güncelleyerek güncelleyin."
+            "value" : "GitHub sürümleri (ardasnturk/vitrin) CLI tarball'ını ve SHA256SUMS'u taşır. Her uygulama sürümü kendi Vitrin CLI'ını buradaki butonla kurar; Claude Code eklentisini güncellemek de yeterlidir."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Releases auf GitHub (ardasnturk/vitrin) enthalten das CLI-Tarball und SHA256SUMS. Aktualisieren Sie die CLI mit npm install -g @ardasnturk/vitrin@latest oder durch ein Update des Claude-Code-Plug-ins."
+            "value" : "GitHub-Releases (ardasnturk/vitrin) enthalten das CLI-Tarball und SHA256SUMS. Jede App-Version installiert ihre Vitrin CLI mit der Taste hier, oder aktualisieren Sie das Claude-Code-Plugin."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Los lanzamientos en GitHub (ardasnturk/vitrin) incluyen el tarball de la CLI y SHA256SUMS. Actualiza la CLI con npm install -g @ardasnturk/vitrin@latest, o actualizando el plugin de Claude Code."
+            "value" : "Las versiones de GitHub (ardasnturk/vitrin) incluyen el tarball de la CLI y SHA256SUMS. Cada versión de la app instala su Vitrin CLI con el botón de aquí, o actualiza el plugin de Claude Code."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les versions sur GitHub (ardasnturk/vitrin) contiennent l’archive de la CLI et SHA256SUMS. Mettez à jour la CLI avec npm install -g @ardasnturk/vitrin@latest, ou en mettant à jour le plug-in Claude Code."
+            "value" : "Les versions GitHub (ardasnturk/vitrin) contiennent le tarball de la CLI et SHA256SUMS. Chaque version de l'app installe sa Vitrin CLI avec le bouton ici, ou mettez à jour le plugin Claude Code."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I rilasci su GitHub (ardasnturk/vitrin) includono il tarball della CLI e SHA256SUMS. Aggiorna la CLI con npm install -g @ardasnturk/vitrin@latest, oppure aggiornando il plugin di Claude Code."
+            "value" : "Le release su GitHub (ardasnturk/vitrin) includono il tarball della CLI e SHA256SUMS. Ogni versione dell'app installa la sua Vitrin CLI con il pulsante qui, oppure aggiorna il plugin di Claude Code."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GitHub (ardasnturk/vitrin) のリリースに、CLI の tarball と SHA256SUMS が含まれます。CLI の更新は npm install -g @ardasnturk/vitrin@latest か、Claude Code プラグインの更新で行えます。"
+            "value" : "GitHub のリリース(ardasnturk/vitrin)には CLI の tarball と SHA256SUMS が含まれます。アプリの各バージョンは、ここのボタンで対応する Vitrin CLI をインストールします。Claude Code プラグインの更新でも構いません。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GitHub(ardasnturk/vitrin)의 릴리스에 CLI tarball과 SHA256SUMS가 포함되어 있습니다. npm install -g @ardasnturk/vitrin@latest 명령이나 Claude Code 플러그인 업데이트로 CLI를 업데이트하세요."
+            "value" : "GitHub 릴리스(ardasnturk/vitrin)에는 CLI tarball과 SHA256SUMS가 포함됩니다. 앱의 각 버전은 여기 버튼으로 자신의 Vitrin CLI를 설치하며, Claude Code 플러그인을 업데이트해도 됩니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Os lançamentos no GitHub (ardasnturk/vitrin) trazem o tarball da CLI e o SHA256SUMS. Atualize a CLI com npm install -g @ardasnturk/vitrin@latest ou atualizando o plugin do Claude Code."
+            "value" : "As versões no GitHub (ardasnturk/vitrin) trazem o tarball da CLI e SHA256SUMS. Cada versão do app instala sua Vitrin CLI com o botão aqui, ou atualize o plugin do Claude Code."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GitHub（ardasnturk/vitrin）上的发布版本包含 CLI 压缩包和 SHA256SUMS。请用 npm install -g @ardasnturk/vitrin@latest 更新 CLI，或更新 Claude Code 插件。"
+            "value" : "GitHub 发布版本(ardasnturk/vitrin)包含 CLI tarball 和 SHA256SUMS。每个应用版本可通过此处的按钮安装对应的 Vitrin CLI,也可以更新 Claude Code 插件。"
           }
         }
       }

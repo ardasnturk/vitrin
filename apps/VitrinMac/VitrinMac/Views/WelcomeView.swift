@@ -178,7 +178,7 @@ struct CLIMissingCard: View {
         Card(L.t("cli.notFound"), accent: true) {
             if let e = model.cliError { Text(e).font(.callout).foregroundStyle(.secondary) }
             Text(L.t("cli.installIntro")).font(.callout)
-            InstallCLIButton()
+            ToolInstallButton(tool: .vitrin)
             Text(L.t("cli.installPlugin")).font(.callout).foregroundStyle(.secondary)
             HStack {
                 Button(L.t("cli.searchAgain")) { Task { await model.locateCLI(); if let p = model.selectedProject { await model.open(p) } } }

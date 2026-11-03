@@ -25,12 +25,12 @@ import Observation
     /// One local tool the pipeline uses, found on the login shell's PATH.
     struct Tool: Identifiable, Hashable {
         enum Need { case required, recommended, optional }
-        var id: String
+        var tool: LocalTool
         var name: String
         var purposeKey: String
         var need: Need
-        var install: String
         var path: String?
+        var id: LocalTool { tool }
         var found: Bool { path != nil }
     }
 
@@ -47,13 +47,14 @@ import Observation
         defer { checkingTools = false }
         func which(_ t: String) async -> String? { await ShellEnvironment.which(t) }
         var list: [Tool] = []
-        list.append(Tool(id: "node", name: "Node.js 22+", purposeKey: "onb.tool.node", need: .required, install: "brew install node", path: try? await CLILocator.node()))
-        list.append(Tool(id: "vitrin", name: "Vitrin CLI", purposeKey: "onb.tool.vitrin", need: .required, install: "npm install -g @ardasnturk/vitrin", path: cli.map { $0.version.map { "v\($0)" } ?? $0.executable }))
-        list.append(Tool(id: "claude", name: "Claude Code", purposeKey: "onb.tool.claude", need: .recommended, install: "npm install -g @anthropic-ai/claude-code", path: await which("claude")))
-        list.append(Tool(id: "asc", name: "asc CLI", purposeKey: "onb.tool.uploader", need: .recommended, install: AscCLI.installHint, path: await which("asc")))
-        list.append(Tool(id: "ffmpeg", name: "ffmpeg", purposeKey: "onb.tool.ffmpeg", need: .optional, install: "brew install ffmpeg", path: await which("ffmpeg")))
+        list.append(Tool(tool: .node, name: "Node.js 22+", purposeKey: "onb.tool.node", need: .required, path: try? await CLILocator.node()))
+        list.append(Tool(tool: .vitrin, name: "Vitrin CLI", purposeKey: "onb.tool.vitrin", need: .required, path: cli.map { $0.version.map { "v\($0)" } ?? $0.executable }))
+        list.append(Tool(tool: .claude, name: "Claude Code", purposeKey: "onb.tool.claude", need: .recommended, path: await which("claude")))
+        list.append(Tool(tool: .asc, name: "asc CLI", purposeKey: "onb.tool.uploader", need: .recommended, path: await which("asc")))
+        list.append(Tool(tool: .ffmpeg, name: "ffmpeg", purposeKey: "onb.tool.ffmpeg", need: .optional, path: await which("ffmpeg")))
         tools = list
     }
 
     var missingRequired: Bool { tools.contains { $0.need == .required && !$0.found } }
+    var missing: [LocalTool] { tools.filter { !$0.found }.map(\.tool) }
 }
