@@ -29,7 +29,20 @@ import SwiftUI
             if t != key { return t }
         }
         if let p = platforms[s] { return p }
+        if let d = device(s) { return d }
         return s.lowercased().split(separator: "_").map { $0.prefix(1).uppercased() + $0.dropFirst() }.joined(separator: " ")
+    }
+
+    /// Screenshot and preview display types: `APP_IPHONE_55`, `IPAD_PRO_129` → iPhone 5.5", iPad Pro 12.9".
+    /// Device names read the same in every language, and new sizes need no entry.
+    static func device(_ s: String) -> String? {
+        var t = s
+        for prefix in ["IMESSAGE_APP_", "APP_"] where t.hasPrefix(prefix) { t = String(t.dropFirst(prefix.count)) }
+        if let m = t.wholeMatch(of: /IPHONE_(\d)(\d)/) { return "iPhone \(m.1).\(m.2)\"" }
+        if let m = t.wholeMatch(of: /IPAD_(\d)(\d)/) { return "iPad \(m.1).\(m.2)\"" }
+        if let m = t.wholeMatch(of: /IPAD_(\d{2})(\d)/) { return "iPad \(m.1).\(m.2)\"" }
+        if let m = t.wholeMatch(of: /IPAD_PRO(?:_\dGEN)?_(\d{2})(\d)/) { return "iPad Pro \(m.1).\(m.2)\"" }
+        return nil
     }
 
     private static let platforms = ["IOS": "iOS", "MAC_OS": "macOS", "TV_OS": "tvOS", "VISION_OS": "visionOS", "WATCH_OS": "watchOS", "UNIVERSAL": "Universal"]

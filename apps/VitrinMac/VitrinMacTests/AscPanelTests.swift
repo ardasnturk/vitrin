@@ -183,4 +183,13 @@ import XCTest
         XCTAssertEqual(p.terminationStatus, 0)
         XCTAssertFalse(FileManager.default.fileExists(atPath: dir.appendingPathComponent("code").path), "the code doesn't stay on disk")
     }
+
+    func testDeviceTypesReadAsDevices() {
+        XCTAssertEqual(AscText.value("APP_IPHONE_55"), "iPhone 5.5\"")
+        XCTAssertEqual(AscText.value("IPHONE_40"), "iPhone 4.0\"")
+        XCTAssertEqual(AscText.value("APP_IPAD_97"), "iPad 9.7\"")
+        XCTAssertEqual(AscText.value("APP_IPAD_105"), "iPad 10.5\"")
+        XCTAssertEqual(AscText.value("IPAD_PRO_129"), "iPad Pro 12.9\"")
+        XCTAssertEqual(AscText.device("APP_IPAD_PRO_6GEN_129"), "iPad Pro 12.9\"")
+    }
 }
