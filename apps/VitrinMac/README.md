@@ -4,6 +4,11 @@ A native macOS app over the Vitrin pipeline: add a mobile app's repository, run 
 Claude's questions, edit the store text, look at the screenshots and App Previews, review and approve, and upload to
 App Store Connect, all from one window. It keeps running in the menu bar and checks GitHub for new releases.
 
+With the App Store Connect key entered once (Settings → Account), the sidebar starts with the team's apps, read from
+the API through `vitrin asc apps --json`: no project folder is needed to see what is on the team, which version each
+app is at and in what state. An app whose bundle id matches a local project's `vitrin.config.yaml` opens that
+project; any other opens a read-only overview with a button that links a folder.
+
 ![Flow](docs/screenshots/flow.jpg)
 
 ## Requirements
@@ -49,7 +54,8 @@ server and removes the file; the app sends it when a project is closed, when it 
 
 | Layer | Files | What it does |
 | --- | --- | --- |
-| CLI | `Core/CLILocator.swift`, `Core/CLIRunner.swift` | Finds Node.js 22+ and the CLI through the login shell's PATH; runs `vitrin <cmd> --json` (exit 0 ok, 1 failed, 2 needs input) for `doctor --tools` and `uploader`. |
+| CLI | `Core/CLILocator.swift`, `Core/CLIRunner.swift` | Finds Node.js 22+ and the CLI through the login shell's PATH; runs `vitrin <cmd> --json` (exit 0 ok, 1 failed, 2 needs input) for `doctor --tools`, `uploader` and `asc apps`. |
+| Apps | `Core/ASCApps.swift`, `Views/AppOverviewView.swift` | The team's apps from App Store Connect (`vitrin asc apps --json` with the account key, outside any project), refreshed at launch, after the key changes and on demand; the bundle id of each local project's `vitrin.config.yaml` links a row to its project. |
 | Studio | `Core/StudioProcess.swift`, `Core/StudioClient.swift`, `Core/StudioEvents.swift` | The process and its handshake; the API client (`/api/overview`, `/api/jobs`, `/api/file`, `/api/claude`, `/api/questions/answer`, `/api/review`, `/api/approve`, `/api/reject`, `/files/…`); the SSE stream (`log`, `job`, `claude`, `changed`, `remotion`), parsed byte by byte. |
 | State | `Core/ProjectSession.swift`, `Core/ProjectStore.swift`, `App/AppModel.swift`, `Core/AppSettings.swift` | One `@Observable` session per open project (overview, running job, log lines, Claude runs, toasts); the persistent project list (`~/Library/Application Support/Vitrin/projects.json`); the root model; preferences. |
 | Models | `Core/Models.swift`, `Core/JSONValue.swift`, `Core/Limits.swift` | The Studio's JSON by hand, statuses kept as strings so a newer server never breaks decoding; the App Store Connect text limits. |
@@ -60,6 +66,7 @@ server and removes the file; the app sends it when a project is closed, when it 
 
 ### Pages
 
+- **Apps** (the sidebar's first section): every app on the team with its bundle id, the newest App Store version and its state; a link badge when a local project has that bundle id. Selecting an unlinked app shows `AppOverviewView`: platforms, the newest version and state per platform, SKU, primary language, the App Store Connect id, *Open in App Store Connect*, and *Link a project folder*, which is the same folder picker as *Add project…*. Without a key the section says where to enter one; a refresh button sits in the section header and in the toolbar.
 - **Flow**: the next step first (Claude's question, a blocker with its one-click fixes, a brief for Claude, the approve or upload click, or the stage to run), then the stages in Preparation / Content / Check and publish with the status the server computed, and what waits for you.
 - **Research**: the keyword candidates per language (relevance, popularity, competition, score, own rank; sortable) and the competitors with the terms Claude found in their names.
 - **Store text**: name, subtitle, promotional text, keywords (UTF-8 bytes), description and What's New with the App Store Connect counters; validation issues next to their fields; saved through the Studio, which validates against the schema.
@@ -94,7 +101,8 @@ xcodebuild test -scheme VitrinMac -destination 'platform=macOS' -derivedDataPath
 
 - **VitrinMacTests** (unit tests, hosted in the app): `UpdateChecker.compare`, `JSONValue` round trips, the SSE parser
   (`SSEParser`), `Overview` decoding from `Fixtures/overview-ritim.json` (a real `GET /api/overview` of
-  `examples/Ritim`), and `StudioHandshakeTests`, which starts the real CLI on `examples/Ritim`, reads the handshake,
+  `examples/Ritim`), `ASCAppsTests` (the `vitrin asc apps --json` output from `Fixtures/asc-apps.json`, the state
+  words and tones, the bundle id read from `vitrin.config.yaml`, the key's environment without a project), and `StudioHandshakeTests`, which starts the real CLI on `examples/Ritim`, reads the handshake,
   checks the token gate (403 without, 202 with the token, an unknown command fails with "Unknown command") and that
   `SIGTERM` removes the token file. The scheme gives the host app `VITRIN_UITEST=1`, its own UserDefaults suite and
   `VITRIN_APP_SUPPORT=build-test/test-support`, so a test run never touches your projects or calls GitHub.
@@ -122,5 +130,6 @@ None of that is in this repository yet; `SparkleUpdater` marks where it plugs in
 ## Not done
 
 - Code signing with a team, notarization, a DMG and a Sparkle feed.
-- App Store Connect management beyond what the CLI does (`asc` is used through `vitrin upload`).
+- App Store Connect management beyond the app list (`asc apps`) and what `vitrin upload` does; the rest of the roadmap
+  in `docs/yonetim-paneli-yol-haritasi.md` (live listing, TestFlight, reviews) is not started.
 - Remotion Studio from the app (the Studio's `/api/remotion` is modelled, not shown).

@@ -8,12 +8,16 @@ import Observation
     let store = ProjectStore()
     let settings = AppSettings.shared
     let updates = UpdateChecker()
+    /// The team's apps from App Store Connect (Settings → Account key), shown above the projects.
+    let ascApps = ASCAppList()
     private(set) var sessions: [String: ProjectSession] = [:]
     private(set) var cli: CLILocation?
     private(set) var cliError: String?
     private(set) var locating = false
     var selectedProjectID: String? { didSet { settings.lastProjectID = selectedProjectID; applyLanguage() } }
     var selectedPage: ProjectPage = .flow
+    /// An App Store Connect app without a linked project folder, shown read-only; nil while a project page is open.
+    var selectedAppID: String?
     var showLog = true
     var showClaude = false
 
@@ -24,6 +28,35 @@ import Observation
 
     var selectedProject: Project? { store.project(selectedProjectID) }
     var selectedSession: ProjectSession? { selectedProjectID.flatMap { sessions[$0] } }
+    var selectedApp: ASCApp? { ascApps.app(selectedAppID) }
+
+    /// The local project whose `vitrin.config.yaml` names the app's bundle id (the open Studio's overview first).
+    func linkedProject(for app: ASCApp) -> Project? {
+        if let s = sessions.values.first(where: { $0.overview?.app?.bundleId == app.bundleId }) { return s.project }
+        return store.projects.first { ProjectConfigFile.bundleId(inProjectAt: $0.path) == app.bundleId }
+    }
+
+    /// The App Store Connect app a project is linked to, for its row and title.
+    func ascApp(for project: Project) -> ASCApp? {
+        let id = sessions[project.id]?.overview?.app?.bundleId ?? ProjectConfigFile.bundleId(inProjectAt: project.path)
+        return id.flatMap { id in ascApps.apps.first { $0.bundleId == id } }
+    }
+
+    /// A sidebar click on an app: its project when one is linked, else the read-only overview.
+    func select(app: ASCApp) async {
+        if let p = linkedProject(for: app) {
+            selectedAppID = nil
+            await open(p)
+        } else {
+            selectedAppID = app.id
+        }
+    }
+
+    /// Reads the team's apps again (launch, key change, the refresh button).
+    func refreshApps() async {
+        await ascApps.refresh(cli: cli)
+        if let id = selectedAppID, ascApps.app(id) == nil, ascApps.error == nil { selectedAppID = nil }
+    }
 
     func session(for project: Project) -> ProjectSession {
         if let s = sessions[project.id] { return s }
@@ -32,8 +65,10 @@ import Observation
         return s
     }
 
-    /// After the account key changed: every running Studio restarts, so its environment carries the new key.
+    /// After the account key changed: the app list is read again and every running Studio restarts, so its
+    /// environment carries the new key.
     func restartSessions() async {
+        Task { await refreshApps() }
         guard let cli else { return }
         for s in sessions.values where s.isReady || s.loadError != nil { await s.restart(cli: cli) }
     }
@@ -42,6 +77,8 @@ import Observation
     func bootstrap() async {
         if let path = Self.launchProject { selectedProjectID = store.add(path: path).id }
         await locateCLI()
+        // The team's apps load beside the project, not after it.
+        Task { await refreshApps() }
         await updates.checkIfDue()
         if let p = selectedProject { await open(p) }
     }
@@ -68,6 +105,7 @@ import Observation
     }
 
     func open(_ project: Project) async {
+        selectedAppID = nil
         selectedProjectID = project.id
         guard let cli, project.exists else { return }
         let s = session(for: project)

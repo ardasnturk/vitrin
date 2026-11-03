@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -47,6 +47,14 @@ describe('analyze merge', () => {
 });
 
 describe('cli', () => {
+  it('asc apps works in a folder without a project and stops with exit 2 without a key', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'vitrin-cli-asc-'));
+    const res = await vitrin(dir, 'asc', 'apps');
+    expect(res.code).toBe(2);
+    expect(res.out).toContain('ASC_KEY_ID');
+    expect(readdirSync(dir)).toEqual([]);
+  }, 120_000);
+
   it('doctor stops with exit 2 and a list of missing keys', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'vitrin-cli-'));
     writeFileSync(join(dir, 'vitrin.config.yaml'), 'app:\n  bundleId: com.example.app\nurls: {}\n');

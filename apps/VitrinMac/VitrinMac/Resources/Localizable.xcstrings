@@ -5792,6 +5792,598 @@
           }
         }
       }
+    },
+    "apps.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apps"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uygulamalar"
+          }
+        }
+      }
+    },
+    "apps.noKey": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add the App Store Connect key in Settings → Account to see the team’s apps."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Takımın uygulamalarını görmek için App Store Connect anahtarını Ayarlar → Hesap’a ekleyin."
+          }
+        }
+      }
+    },
+    "apps.refresh": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refresh the apps"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uygulamaları yenile"
+          }
+        }
+      }
+    },
+    "apps.loading": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading the team’s apps…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Takımın uygulamaları okunuyor…"
+          }
+        }
+      }
+    },
+    "apps.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No apps on this team."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu takımda uygulama yok."
+          }
+        }
+      }
+    },
+    "apps.loadFailed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The apps could not be read."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uygulamalar okunamadı."
+          }
+        }
+      }
+    },
+    "apps.linked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Linked to the project “{project}”"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“{project}” projesine bağlı"
+          }
+        }
+      }
+    },
+    "apps.linkProject": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Link a project folder"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Proje klasörü bağla"
+          }
+        }
+      }
+    },
+    "apps.linkHint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Link the folder of this app’s repository to write its store text and render its screenshots and videos with Vitrin. Vitrin recognises the folder by the bundle id in vitrin.config.yaml."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mağaza metnini yazmak, ekran görüntülerini ve videolarını Vitrin ile üretmek için bu uygulamanın depo klasörünü bağlayın. Vitrin klasörü vitrin.config.yaml’daki bundle id ile tanır."
+          }
+        }
+      }
+    },
+    "apps.openProject": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the project"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Projeyi aç"
+          }
+        }
+      }
+    },
+    "apps.openASC": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open in App Store Connect"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store Connect’te aç"
+          }
+        }
+      }
+    },
+    "apps.versions": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store versions"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store sürümleri"
+          }
+        }
+      }
+    },
+    "apps.noVersions": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No App Store version yet."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Henüz App Store sürümü yok."
+          }
+        }
+      }
+    },
+    "apps.sku": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SKU"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SKU"
+          }
+        }
+      }
+    },
+    "apps.primaryLocale": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primary language"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Birincil dil"
+          }
+        }
+      }
+    },
+    "apps.ascId": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store Connect ID"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store Connect kimliği"
+          }
+        }
+      }
+    },
+    "apps.refreshedAt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read from App Store Connect {time}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store Connect’ten {time} okundu"
+          }
+        }
+      }
+    },
+    "ascState.READY_FOR_SALE": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready for Sale"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Satışta"
+          }
+        }
+      }
+    },
+    "ascState.READY_FOR_DISTRIBUTION": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready for Distribution"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dağıtıma hazır"
+          }
+        }
+      }
+    },
+    "ascState.PREPARE_FOR_SUBMISSION": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prepare for Submission"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gönderime hazırlanıyor"
+          }
+        }
+      }
+    },
+    "ascState.WAITING_FOR_REVIEW": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for Review"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İnceleme bekliyor"
+          }
+        }
+      }
+    },
+    "ascState.IN_REVIEW": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In Review"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İncelemede"
+          }
+        }
+      }
+    },
+    "ascState.PENDING_DEVELOPER_RELEASE": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pending Developer Release"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geliştirici yayınını bekliyor"
+          }
+        }
+      }
+    },
+    "ascState.PENDING_APPLE_RELEASE": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pending Apple Release"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple yayınını bekliyor"
+          }
+        }
+      }
+    },
+    "ascState.PROCESSING_FOR_DISTRIBUTION": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Processing for Distribution"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dağıtım için işleniyor"
+          }
+        }
+      }
+    },
+    "ascState.PROCESSING_FOR_APP_STORE": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Processing for App Store"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store için işleniyor"
+          }
+        }
+      }
+    },
+    "ascState.WAITING_FOR_EXPORT_COMPLIANCE": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for Export Compliance"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dışa aktarım uyumu bekliyor"
+          }
+        }
+      }
+    },
+    "ascState.REJECTED": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rejected"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reddedildi"
+          }
+        }
+      }
+    },
+    "ascState.DEVELOPER_REJECTED": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Developer Rejected"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geliştirici reddetti"
+          }
+        }
+      }
+    },
+    "ascState.METADATA_REJECTED": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metadata Rejected"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meta veriler reddedildi"
+          }
+        }
+      }
+    },
+    "ascState.INVALID_BINARY": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid Binary"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geçersiz ikili"
+          }
+        }
+      }
+    },
+    "ascState.REMOVED_FROM_SALE": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Removed from Sale"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Satıştan kaldırıldı"
+          }
+        }
+      }
+    },
+    "ascState.DEVELOPER_REMOVED_FROM_SALE": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Removed from Sale by the Developer"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geliştirici satıştan kaldırdı"
+          }
+        }
+      }
+    },
+    "ascState.REPLACED_WITH_NEW_VERSION": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replaced with a New Version"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni sürümle değiştirildi"
+          }
+        }
+      }
+    },
+    "ascState.ACCEPTED": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accepted"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kabul edildi"
+          }
+        }
+      }
+    },
+    "ascState.NOT_APPLICABLE": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not Applicable"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uygulanamaz"
+          }
+        }
+      }
+    },
+    "apps.cliTooOld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vitrin CLI {version} does not know “asc apps”; Vitrin 1.3 or newer is needed (Settings → Vitrin CLI)."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vitrin CLI {version} “asc apps” komutunu bilmiyor; Vitrin 1.3 ya da üstü gerekir (Ayarlar → Vitrin CLI)."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

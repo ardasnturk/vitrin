@@ -36,14 +36,16 @@ struct MainWindow: View {
             }
         }
         .toolbar { toolbar }
-        .navigationTitle(model.selectedProject?.name ?? "Vitrin")
-        .navigationSubtitle(model.selectedSession?.overview?.app?.bundleId ?? "")
+        .navigationTitle(model.selectedApp?.name ?? model.selectedProject?.name ?? "Vitrin")
+        .navigationSubtitle(model.selectedApp?.bundleId ?? model.selectedSession?.overview?.app?.bundleId ?? "")
         .onChange(of: model.selectedSession?.overview?.config?.language) { model.applyLanguage() }
         .onChange(of: model.settings.language) { model.applyLanguage() }
     }
 
     @ViewBuilder private var detail: some View {
-        if model.cli == nil && !model.locating && model.store.projects.isEmpty == false {
+        if let app = model.selectedApp {
+            AppOverviewView(app: app)
+        } else if model.cli == nil && !model.locating && model.store.projects.isEmpty == false {
             CLIMissingView()
         } else if let project = model.selectedProject {
             ProjectDetail(project: project, session: model.session(for: project))
@@ -54,7 +56,10 @@ struct MainWindow: View {
 
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
-            if let s = model.selectedSession {
+            if model.selectedApp != nil {
+                if model.ascApps.loading { ProgressView().controlSize(.small) }
+                Button { Task { await model.refreshApps() } } label: { Image(systemName: "arrow.clockwise") }.help(L.t("apps.refresh")).disabled(model.ascApps.loading).accessibilityIdentifier("toolbar.refreshApps")
+            } else if let s = model.selectedSession {
                 // What runs is said where it runs: the job in the log bar, Claude in its column; the toolbar only hints.
                 if s.job != nil || s.claudeRunning { ProgressView().controlSize(.small).help(s.job.map { L.job($0) } ?? L.t("claude.busy")) }
                 Button { Task { await s.refresh() } } label: { Image(systemName: "arrow.clockwise") }.help(L.t("common.refresh")).disabled(!s.isReady).accessibilityIdentifier("toolbar.refresh")

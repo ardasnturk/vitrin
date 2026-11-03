@@ -4,6 +4,7 @@ import { Command } from 'commander';
 import pc from 'picocolors';
 import { approvalStage, approveCommand } from './approval.js';
 import { createContext, EXIT, NeedsInput, studioRunRefusal, type GlobalOptions } from './context.js';
+import { ascAppsCommand } from './commands/asc.js';
 import { runDoctor } from './commands/doctor.js';
 import { initCommand } from './commands/init.js';
 import { mockupsCommand } from './commands/mockups.js';
@@ -82,6 +83,13 @@ program
       return res.exitCode;
     }),
   );
+
+const asc = program.command('asc').description('App Store Connect, read-only, with the key from the environment or .env; works in any folder');
+asc
+  .command('apps')
+  .description("the team's apps with the newest App Store version and its state per platform")
+  .option('--json', 'machine-readable output')
+  .action(action(async (o: { json?: boolean }) => ascAppsCommand({ cwd: globals().cwd, json: o.json || globals().json })));
 
 program.command('analyze').description('reads the Xcode project → metadata/app_profile.json').action(action(async () => analyzeCommand(await createContext(globals()))));
 

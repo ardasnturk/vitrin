@@ -76,8 +76,13 @@ enum AppSupport {
     /// The variables for a CLI run in `root`: the stored key, unless the project's own `.env` sets ASC_KEY_ID (then the
     /// project's key is the one the user meant, and `loadEnv` would let ours override it).
     func environment(forProject root: String) -> [String: String] {
-        guard let k = key else { return [:] }
         if Self.dotenvNames(at: URL(fileURLWithPath: root).appendingPathComponent(".env")).contains("ASC_KEY_ID") { return [:] }
+        return environment()
+    }
+
+    /// The variables for a CLI run outside any project (`vitrin asc apps`): the stored key, or nothing.
+    func environment() -> [String: String] {
+        guard let k = key else { return [:] }
         return ["ASC_KEY_ID": k.keyId, "ASC_ISSUER_ID": k.issuerId, "ASC_KEY_PATH": k.keyPath]
     }
 

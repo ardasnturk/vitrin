@@ -1,0 +1,37 @@
+{
+  "generatedAt": "2026-11-03T18:40:12.000Z",
+  "apps": [
+    {
+      "id": "6447000001",
+      "bundleId": "com.jastech.acorn",
+      "name": "Acorn",
+      "sku": "ACORN",
+      "primaryLocale": "tr",
+      "platforms": [],
+      "versions": []
+    },
+    {
+      "id": "6447000002",
+      "bundleId": "com.jastech.ritim",
+      "name": "Ritim",
+      "sku": "RITIM1",
+      "primaryLocale": "en-US",
+      "platforms": ["IOS", "MAC_OS"],
+      "versions": [
+        { "id": "v2", "platform": "IOS", "version": "2.0.0", "state": "PREPARE_FOR_SUBMISSION", "createdAt": "2026-10-20T10:00:00Z" },
+        { "id": "v3", "platform": "MAC_OS", "version": "1.0.0", "state": "IN_REVIEW", "createdAt": "2026-10-01T10:00:00Z" }
+      ]
+    },
+    {
+      "id": "6447000003",
+      "bundleId": "com.jastech.zed",
+      "name": "Zed",
+      "sku": "ZED",
+      "primaryLocale": "de-DE",
+      "platforms": ["VISION_OS"],
+      "versions": [
+        { "id": "v5", "platform": "VISION_OS", "version": "3.1", "state": "SOMETHING_NEW" }
+      ]
+    }
+  ]
+}

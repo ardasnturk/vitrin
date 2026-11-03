@@ -1,16 +1,36 @@
 import SwiftUI
 
-/// Projects, each with its pages; a dot per page tells the most urgent stage status on it.
+/// The team's App Store Connect apps, then the projects, each with its pages; a dot per page tells the most urgent
+/// stage status on it.
 struct Sidebar: View {
     @Environment(AppModel.self) private var model
+    @State private var credentials = ASCCredentials.shared
 
     var body: some View {
         @Bindable var model = model
-        List(selection: Binding(get: { Selection(project: model.selectedProjectID, page: model.selectedPage) }, set: { sel in
+        List(selection: Binding(get: { model.selectedAppID.map { Selection(app: $0) } ?? Selection(project: model.selectedProjectID, page: model.selectedPage) }, set: { sel in
             guard let sel else { return }
+            if let appID = sel.app {
+                if let app = model.ascApps.app(appID) { Task { await model.select(app: app) } }
+                return
+            }
+            model.selectedAppID = nil
             if let id = sel.project, id != model.selectedProjectID, let p = model.store.project(id) { Task { await model.open(p) } }
             model.selectedPage = sel.page
         })) {
+            Section {
+                appsRows
+            } header: {
+                HStack {
+                    Text(L.t("apps.title"))
+                    Spacer()
+                    if model.ascApps.loading { ProgressView().controlSize(.mini) }
+                    else if credentials.isSet {
+                        Button { Task { await model.refreshApps() } } label: { Image(systemName: "arrow.clockwise") }
+                            .buttonStyle(.borderless).controlSize(.small).help(L.t("apps.refresh")).accessibilityIdentifier("sidebar.refreshApps")
+                    }
+                }
+            }
             Section(L.t("projects.title")) {
                 ForEach(model.store.projects) { project in
                     DisclosureGroup(isExpanded: Binding(get: { model.selectedProjectID == project.id }, set: { if $0 { Task { await model.open(project) } } })) {
@@ -57,7 +77,36 @@ struct Sidebar: View {
 
     struct Selection: Hashable {
         var project: String?
-        var page: ProjectPage
+        var page: ProjectPage = .flow
+        /// An App Store Connect app row (then `project` and `page` are not used).
+        var app: String?
+    }
+
+    /// One line without a key; the error line; the apps, each linked to its project when one has the bundle id.
+    @ViewBuilder private var appsRows: some View {
+        if !credentials.isSet {
+            VStack(alignment: .leading, spacing: 4) {
+                Label(L.t("apps.noKey"), systemImage: "key").font(.callout).foregroundStyle(.secondary)
+                SettingsLink { Text(L.t("settings.account")) }.controlSize(.small)
+            }
+            .padding(.vertical, 2).accessibilityIdentifier("sidebar.appsNoKey")
+        } else if let e = model.ascApps.error, model.ascApps.apps.isEmpty {
+            Label { Text(e).lineLimit(3) } icon: { Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange) }
+                .font(.caption).foregroundStyle(.secondary).help(e)
+        } else if model.ascApps.apps.isEmpty && !model.ascApps.loading && model.ascApps.loadedAt != nil {
+            Text(L.t("apps.empty")).font(.callout).foregroundStyle(.secondary)
+        } else if model.ascApps.apps.isEmpty {
+            Text(L.t("apps.loading")).font(.callout).foregroundStyle(.secondary)
+        } else {
+            ForEach(model.ascApps.apps) { app in
+                AppRow(app: app, linked: model.linkedProject(for: app))
+                    .tag(Selection(app: app.id))
+                    .contextMenu {
+                        Button(L.t("apps.openASC")) { NSWorkspace.shared.open(app.ascURL) }
+                        if model.linkedProject(for: app) == nil { Button(L.t("apps.linkProject")) { model.pickProjectFolder() } }
+                    }
+            }
+        }
     }
 
     @ViewBuilder private func badge(project: Project, page: ProjectPage) -> some View {
@@ -109,5 +158,40 @@ struct ProjectRow: View {
                 else if s.isReady { StatusDot(tone: s.connected ? .ok : .warn) }
             }
         }
+    }
+}
+
+/// An App Store Connect app: a placeholder icon, the name, the bundle id, the current version with its state, and a
+/// link badge when a local project has this bundle id.
+struct AppRow: View {
+    var app: ASCApp
+    var linked: Project?
+    var body: some View {
+        HStack(spacing: 8) {
+            AppIconPlaceholder(size: 20)
+            VStack(alignment: .leading, spacing: 1) {
+                HStack(spacing: 4) {
+                    Text(app.name).lineLimit(1)
+                    if let linked { Image(systemName: "link").font(.caption2).foregroundStyle(.secondary).help(L.t("apps.linked").replacingOccurrences(of: "{project}", with: linked.name)) }
+                }
+                Text(app.bundleId).font(.caption2).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
+            }
+            Spacer(minLength: 4)
+            if let v = app.current {
+                Pill("\(v.version) · \(ASCWords.state(v.state))", ASCWords.tone(v.state)).lineLimit(1).help("\(ASCWords.platform(v.platform)) \(v.version): \(ASCWords.state(v.state))")
+            }
+        }
+        .accessibilityIdentifier("sidebar.app.\(app.bundleId)")
+    }
+}
+
+/// The icon the API does not give (the Studio's overview has the project's); a rounded dashed app shape.
+struct AppIconPlaceholder: View {
+    var size: CGFloat
+    var body: some View {
+        RoundedRectangle(cornerRadius: size * 0.22)
+            .fill(Color.accentColor.opacity(0.12))
+            .overlay(Image(systemName: "app.dashed").font(.system(size: size * 0.6)).foregroundStyle(Color.accentColor.opacity(0.7)))
+            .frame(width: size, height: size)
     }
 }
