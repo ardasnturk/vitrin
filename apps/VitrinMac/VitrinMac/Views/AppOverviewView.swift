@@ -610,6 +610,9 @@ private struct AscReviewsTab: View {
             AscLoad(args: ["reviews", "ratings", "--app", app.id, "--all"], errorText: L.t("act.ratingsNone")) { doc, _ in
                 RatingsCard(doc: doc)
             }
+            AscLoad(args: ["reviews", "summarizations", "--app", app.id, "--platform", app.current?.platform ?? "IOS", "--limit", "5"], errorText: L.t("asc.reviews.noSummary")) { doc, _ in
+                if !JSONAPI.items(doc).isEmpty { AscDataView(doc: doc) }
+            }
             HStack(spacing: 12) {
                 Toggle(L.t("act.onlyUnanswered"), isOn: $onlyUnanswered).toggleStyle(.switch).controlSize(.small)
                 Picker(L.t("act.stars"), selection: $stars) {
@@ -629,7 +632,7 @@ private struct AscReviewsTab: View {
                             Text(String(repeating: "★", count: Int(JSONAPI.attr(r, "rating")?.numberValue ?? 0)) + String(repeating: "☆", count: 5 - Int(JSONAPI.attr(r, "rating")?.numberValue ?? 0))).foregroundStyle(.orange)
                             Text(JSONAPI.text(r, "title")).font(.headline)
                             Spacer()
-                            Text("\(JSONAPI.text(r, "reviewerNickname")) · \(JSONAPI.text(r, "territory")) · \(JSONAPI.date(JSONAPI.text(r, "createdDate")))").font(.caption).foregroundStyle(.secondary)
+                            Text("\(JSONAPI.text(r, "reviewerNickname")) · \(AscText.territory(JSONAPI.text(r, "territory"))) · \(JSONAPI.date(JSONAPI.text(r, "createdDate")))").font(.caption).foregroundStyle(.secondary)
                         }
                         Text(JSONAPI.text(r, "body")).font(.callout).textSelection(.enabled).fixedSize(horizontal: false, vertical: true)
                         Button { replyTo = r } label: { Label(L.t("asc.reviews.reply"), systemImage: "arrowshape.turn.up.left") }.controlSize(.small)
@@ -776,7 +779,7 @@ private struct RatingsCard: View {
             if !countries.isEmpty {
                 VStack(alignment: .trailing, spacing: 2) {
                     ForEach(Array(countries.enumerated()), id: \.offset) { _, c in
-                        Text("\((c["country"]?.stringValue ?? c["countryCode"]?.stringValue ?? "").uppercased()) · \(c["averageRating"]?.numberValue.map { String(format: "%.1f", $0) } ?? "—") · \(Int(c["ratingCount"]?.numberValue ?? 0))")
+                        Text("\(AscText.territory(c["country"]?.stringValue ?? c["countryCode"]?.stringValue ?? "")) · \(c["averageRating"]?.numberValue.map { String(format: "%.1f", $0) } ?? "—") · \(Int(c["ratingCount"]?.numberValue ?? 0))")
                             .font(.caption.monospacedDigit()).foregroundStyle(.secondary)
                     }
                 }
