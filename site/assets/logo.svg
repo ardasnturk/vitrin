@@ -1,13 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Vitrin">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#7B6CFF"/>
-      <stop offset="1" stop-color="#FF8A6B"/>
+      <stop offset="0" stop-color="#FF9E33"/>
+      <stop offset=".55" stop-color="#FA6B61"/>
+      <stop offset="1" stop-color="#ED5C9E"/>
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="15" fill="url(#g)"/>
-  <!-- Storefront awning -->
-  <path d="M14 20h36l-3 7a4 4 0 0 1-7.5 0 4 4 0 0 1-7.5 0 4 4 0 0 1-7.5 0 4 4 0 0 1-7.5 0z" fill="#fff" opacity=".95"/>
-  <!-- V -->
-  <path d="M21 32l11 15 11-15" fill="none" stroke="#fff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect width="64" height="64" rx="14.5" fill="url(#g)"/>
+  <!-- The shop window -->
+  <path fill="#fff" fill-rule="evenodd" d="M17.5 31h29a1.5 1.5 0 0 1 1.5 1.5V49a2.5 2.5 0 0 1-2.5 2.5h-27A2.5 2.5 0 0 1 16 49V32.5a1.5 1.5 0 0 1 1.5-1.5zM20.5 35.5a1 1 0 0 0-1 1V44a1 1 0 0 0 1 1h12.5a1 1 0 0 0 1-1v-7.500a1 1 0 0 0-1-1zM38.500 35.500a1 1 0 0 0-1 1v15h7v-15a1 1 0 0 0-1-1z"/>
+  <!-- The awning: four scalloped stripes -->
+  <path fill="#fff" d="M19 13.500h6.750L24 27.500a4.750 4.750 0 0 1-9.500 0z"/>
+  <path fill="#FFE1CF" d="M25.750 13.500H32v14a4 4 0 0 1-8 0z"/>
+  <path fill="#fff" d="M32 13.500h6.250L40 27.500a4 4 0 0 1-8 0z"/>
+  <path fill="#FFE1CF" d="M38.250 13.500H45l4.500 14a4.750 4.750 0 0 1-9.500 0z"/>
 </svg>
