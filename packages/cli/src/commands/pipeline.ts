@@ -5,7 +5,7 @@ import { runResearch, totalScore } from '@vitrin/research';
 import { AppMetadata, AppProfile, ArtDirection, CppSuggestions, ExperimentPlan, KeywordPlan, LocaleMetadata, ShotList, StylePreset, VideoPlan, type CustomProductPage, type Experiment, type ExperimentTreatment, type Issue, type Platform, type TargetFamily, type ValidationReport } from '@vitrin/schemas';
 import { strayLocaleDirs, validateAll } from '@vitrin/validate';
 import { previewPropsFor, remotionCliPath, renderVideos, VIDEO_DIR } from '@vitrin/video';
-import { exportFastlaneMetadata, pruneStrayLocales } from '@vitrin/upload';
+import { exportStoreMetadata, pruneStrayLocales } from '@vitrin/upload';
 import { readdir, readFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import pc from 'picocolors';
@@ -135,7 +135,7 @@ export async function writeCommand(ctx: Ctx): Promise<number> {
   await refreshKeywordTotals(ctx);
   // Folders of locales dropped from app.locales are Vitrin's own leftovers: remove them before they fail validation.
   const pruned = await pruneStrayLocales(ctx.paths, ctx.config);
-  if (pruned.length) log.ok(`Removed metadata/store/metadata/${pruned.length === 1 ? pruned[0] : `{${pruned.join(',')}}`}: not in app.locales any more, so deliver must not upload ${pruned.length === 1 ? 'it' : 'them'}.`);
+  if (pruned.length) log.ok(`Removed metadata/store/metadata/${pruned.length === 1 ? pruned[0] : `{${pruned.join(',')}}`}: not in app.locales any more, so ${pruned.length === 1 ? 'it is' : 'they are'} not uploaded.`);
   const report = await validateAll(ctx.paths, ctx.config, { text: true, claims: true, images: false, videos: false });
   const issues = report.issues.filter((i) => !i.code.startsWith('shot.') && !i.code.startsWith('badge.') && !i.code.startsWith('video.'));
   printIssues(issues);
@@ -145,7 +145,7 @@ export async function writeCommand(ctx: Ctx): Promise<number> {
   }
   const metadata = await loadLocaleMetadata(ctx);
   const app = await readJson(ctx.paths.appMetadata, AppMetadata);
-  const written = await exportFastlaneMetadata(ctx.paths, ctx.config, app, metadata);
+  const written = await exportStoreMetadata(ctx.paths, ctx.config, app, metadata);
   await ctx.state.mark('write', hashValue({ metadata, app, urls: ctx.config.urls }), written.map((w) => relative(ctx.root, w)));
   await closeBrief(ctx, 'write');
   log.ok(`Wrote metadata/store/metadata (${written.length} files)`);
@@ -667,11 +667,11 @@ async function designSamples(ctx: Ctx, profile: AppProfile, opts: DesignOptions)
   for (const s of res.samples) log.ok(`${s.letter}  ${s.name} (${s.style}) — ${s.files.map((f) => relative(ctx.root, f)).join(', ')}`);
   log.ok(`Contact sheet: ${relative(ctx.root, res.contactSheet)}`);
   log.ok(`Store preview with store, design and appearance menus (${[target, ...extraTargets].map((t) => t.id).join(', ')}): ${relative(ctx.root, res.storePreview.html)} · ${relative(ctx.root, res.storePreview.png)}`);
-  log.info(`Samples: ${locale}, ${target.id}. Open the store preview for the user (store-preview.html; show store-preview.png in the chat) and ask which design (A/B/C/D) to use; write it into art-direction.json (options[] + selected). Only after they approved a design: ask how to upload (vitrin uploader), then which store languages and formats to produce (vitrin select --locales … --targets …) before \`vitrin design\`.`);
+  log.info(`Samples: ${locale}, ${target.id}. Open the store preview for the user (store-preview.html; show store-preview.png in the chat) and ask which design (A/B/C/D) to use; write it into art-direction.json (options[] + selected). Only after they approved a design: ask which store languages and formats to produce (vitrin select --locales … --targets …) before \`vitrin design\`.`);
   return EXIT.OK;
 }
 
-/** Render folders of locales dropped from app.locales (only images and videos Vitrin made): deliver would upload them too. */
+/** Render folders of locales dropped from app.locales (only images and videos Vitrin made): they would be uploaded too. */
 async function pruneStrayRenders(ctx: Ctx, dir: string): Promise<void> {
   for (const extra of await strayLocaleDirs(dir, ctx.config.app.locales)) {
     const files = (await readdir(join(dir, extra))).filter((f) => !f.startsWith('.'));

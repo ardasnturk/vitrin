@@ -71,8 +71,6 @@ enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
         case "drop-locales": return t("fix.dropLocales")
         case "set-primary": return t("fix.setPrimary").replacingOccurrences(of: "{locale}", with: fix.args["primaryLocale"]?.display ?? "")
         case "add-primary": return t("fix.addPrimary").replacingOccurrences(of: "{locale}", with: b.param("primary"))
-        case "use-asc": return t("fix.useAsc")
-        case "use-deliver": return t("fix.useDeliver")
         default: return fix.id
         }
     }

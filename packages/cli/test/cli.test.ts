@@ -14,7 +14,9 @@ const run = promisify(execFile);
 
 async function vitrin(cwd: string, ...args: string[]): Promise<{ code: number; out: string }> {
   try {
-    const r = await run('node', [BIN, ...args], { cwd, env: { ...process.env, ASC_KEY_ID: '', ASC_ISSUER_ID: '', ASC_KEY_PATH: '', ASC_KEY_CONTENT_BASE64: '' } });
+    // No Vitrin key and no asc login either: asc reads neither the keychain nor a config file (hermetic on any machine).
+    const noAscLogin = { ASC_BYPASS_KEYCHAIN: '1', ASC_CONFIG_PATH: join(tmpdir(), 'vitrin-no-asc-config.json'), ASC_PROFILE: '' };
+    const r = await run('node', [BIN, ...args], { cwd, env: { ...process.env, ASC_KEY_ID: '', ASC_ISSUER_ID: '', ASC_KEY_PATH: '', ASC_KEY_CONTENT_BASE64: '', ...noAscLogin } });
     return { code: 0, out: r.stdout + r.stderr };
   } catch (err) {
     const e = err as { code: number; stdout: string; stderr: string };
@@ -32,6 +34,12 @@ describe('doctor helpers', () => {
   it('treats ASC_KEY_CONTENT_BASE64 as an alternative to ASC_KEY_PATH', () => {
     expect(missingUploadKeys({}).map((k) => k.name)).toEqual(['ASC_KEY_ID', 'ASC_ISSUER_ID', 'ASC_KEY_PATH']);
     expect(missingUploadKeys({ ASC_KEY_ID: 'a', ASC_ISSUER_ID: 'b', ASC_KEY_CONTENT_BASE64: 'c' })).toEqual([]);
+  });
+
+  it('needs no ASC key when asc has its own login, unless a Vitrin key is half set', () => {
+    expect(missingUploadKeys({}, ['ios'], { ascLogin: true })).toEqual([]);
+    expect(missingUploadKeys({ ASC_KEY_ID: 'a' }, ['ios'], { ascLogin: true }).map((k) => k.name)).toEqual(['ASC_ISSUER_ID', 'ASC_KEY_PATH']);
+    expect(missingUploadKeys({}, ['ios', 'android'], { ascLogin: true }).map((k) => k.name)).toEqual(['GOOGLE_PLAY_JSON_KEY_PATH']);
   });
 });
 

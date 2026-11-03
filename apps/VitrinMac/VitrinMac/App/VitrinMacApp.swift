@@ -28,6 +28,9 @@ struct VitrinMacApp: App {
             CommandGroup(after: .appInfo) {
                 Button(L.t("updates.checkNow")) { Task { await model.updates.check() } }
             }
+            CommandGroup(replacing: .help) {
+                Button(L.t("onb.showAgain")) { settings.onboardingDone = false }
+            }
         }
 
         MenuBarExtra(isInserted: Binding(get: { settings.showMenuBarExtra }, set: { settings.showMenuBarExtra = $0 })) {
@@ -36,8 +39,10 @@ struct VitrinMacApp: App {
                 .environment(settings)
                 .environment(language)
         } label: {
-            Image(systemName: model.pendingDecisions > 0 ? "rectangle.portrait.badge.plus" : (model.runningJob != nil ? "rectangle.portrait.and.arrow.right" : "rectangle.portrait"))
+            Image(systemName: model.pendingDecisions > 0 ? "storefront.fill" : "storefront")
+                .symbolEffect(.pulse, isActive: model.runningJob != nil)
         }
+        .menuBarExtraStyle(.window)
 
         Settings {
             SettingsView()

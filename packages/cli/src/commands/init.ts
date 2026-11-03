@@ -1,15 +1,15 @@
 import { analyzeProject, locateProject } from '@vitrin/analyzer';
 import { appPaths, ensureVitrinGitignore, ensureWorkspace, existsSync, WorkspaceTaken, loadConfig, log, storefrontForLocale, writeText } from '@vitrin/core';
-import { UploaderEnum, uploaderOf } from '@vitrin/schemas';
-import { installFastlaneTemplates } from '@vitrin/upload';
+import { ASC_INSTALL_HINT } from '@vitrin/upload';
 import { relative, resolve } from 'node:path';
 import { stringify } from 'yaml';
 import { NeedsInput } from '../context.js';
 
 // Secrets, caches and machine-local pipeline state stay out of git; the JSON Claude writes is meant to be committed.
 
+/** `uploader` is accepted for older callers only: App Store uploads always use the asc CLI, nothing is stored. */
 export async function initCommand(opts: { cwd?: string; force?: boolean; uploader?: string; language?: string }): Promise<number> {
-  if (opts.uploader && !(UploaderEnum.options as readonly string[]).includes(opts.uploader)) throw new Error(`Unknown uploader: ${opts.uploader}. Valid: ${UploaderEnum.options.join(', ')}.`);
+  if (opts.uploader && opts.uploader !== 'asc') log.warn(`--uploader ${opts.uploader} was removed: App Store uploads always use the asc CLI (${ASC_INSTALL_HINT}).`);
   const root = resolve(opts.cwd ?? process.cwd());
   const paths = appPaths(root);
   log.step(`Vitrin setup: ${root}`);
@@ -71,8 +71,8 @@ export async function initCommand(opts: { cwd?: string; force?: boolean; uploade
         simulators: {},
       },
       video: { enabled: true, loops: true },
-      // upload.uploader (asc | deliver) is the user's choice: `vitrin uploader`, then `vitrin select --uploader`.
-      upload: { ...(opts.uploader ? { uploader: opts.uploader } : {}), platform: 'ios' },
+      // App Store uploads use the asc CLI (no uploader choice); Google Play uses fastlane supply.
+      upload: { platform: 'ios' },
     };
     const header = [
       '# Vitrin configuration — non-secret values only. Keys live in .env.',
@@ -94,14 +94,8 @@ export async function initCommand(opts: { cwd?: string; force?: boolean; uploade
   if (gi.changed) log.ok('.gitignore: wrote the Vitrin block (secrets and generated files are not committed).');
   if (gi.trackedIgnored.length) log.warn(`Already tracked but now ignored: ${gi.trackedIgnored.map((g) => g.path).join(', ')} — to stop tracking: git rm -r --cached ${gi.trackedIgnored.map((g) => g.path).join(' ')}`);
 
-  // fastlane files are written only once the user picked fastlane (vitrin select --uploader) or at the upload.
-  const config = loadConfig(paths.config);
-  if (config.upload.uploader && uploaderOf(config) !== 'asc') {
-    const installed = await installFastlaneTemplates(paths, opts.force);
-    for (const f of installed) log.ok(`Wrote ${relative(root, f)}`);
-  }
   if (detectedAndroid) log.dim('Google Play uploads use fastlane supply; its Fastfile is written only when the upload is prepared.');
-  if (!config.upload.uploader) log.info('How the listing is uploaded (asc CLI or fastlane) is asked after the user approved a design.');
+  log.dim(`App Store uploads use the asc CLI (${ASC_INSTALL_HINT}); it is needed only for the upload.`);
   log.info('\nNext step: `vitrin doctor --tools` (keys are needed only for the upload).');
   return 0;
 }

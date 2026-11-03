@@ -23,10 +23,14 @@ struct UploadView: View {
         }
     }
 
-    private var uploader: String? { overview.config?.uploader }
-    private var toolVersion: String? { uploader == "asc" ? overview.tools.asc : uploader != nil ? overview.tools.fastlane : nil }
-    private var uploaderOk: Bool { uploader != nil && toolVersion != nil }
-    private var keysOk: Bool { overview.missingKeys.isEmpty }
+    /// asc is the one uploader; it only has to be installed.
+    private var toolVersion: String? { overview.tools.asc }
+    private var uploaderOk: Bool { toolVersion != nil }
+    /// The App Store keys count as present when the app is connected (Vitrin's key or asc's own login); the
+    /// Google Play key still comes from the project's .env.
+    private var ascKeyNames: Set<String> { ["ASC_KEY_ID", "ASC_ISSUER_ID", "ASC_KEY_PATH", "ASC_KEY_CONTENT_BASE64"] }
+    private var missingKeys: [String] { overview.missingKeys.filter { !(model.connection.isConnected && ascKeyNames.contains($0)) } }
+    private var keysOk: Bool { missingKeys.isEmpty }
     private var approved: Bool { overview.approval?.valid ?? false }
     private var planOk: Bool { planJob?.status == "ok" }
     private var uploaded: ApprovalSummary.Upload? { overview.approval?.upload }
@@ -37,8 +41,8 @@ struct UploadView: View {
         let platforms = overview.app?.platforms ?? ["ios"]
         var names = platforms.contains(where: { $0 != "android" }) ? ["ASC_KEY_ID", "ASC_ISSUER_ID", "ASC_KEY_PATH"] : []
         if platforms.contains("android") { names.append("GOOGLE_PLAY_JSON_KEY_PATH") }
-        for m in overview.missingKeys where !names.contains(m) { names.append(m) }
-        return names.map { ($0, !overview.missingKeys.contains($0)) }
+        for m in missingKeys where !names.contains(m) { names.append(m) }
+        return names.map { ($0, !missingKeys.contains($0)) }
     }
 
     var body: some View {
@@ -49,13 +53,13 @@ struct UploadView: View {
                     Text(L.t("upload.intro")).foregroundStyle(.secondary)
                 }
                 Step(n: 1, ok: uploaderOk, title: L.t("upload.stepUploader")) {
-                    Picker("", selection: Binding(get: { uploader ?? "" }, set: { v in Task { await session.run("select", args: ["uploader": .string(v)]) } })) {
-                        Text("asc CLI \(overview.tools.asc.map { "· \($0)" } ?? "· \(L.t("common.missing"))")").tag("asc")
-                        Text("fastlane deliver \(overview.tools.fastlane.map { "· \($0)" } ?? "· \(L.t("common.missing"))")").tag("deliver")
-                    }.pickerStyle(.radioGroup).disabled(session.isBusy)
-                    Text(L.t(uploader == "asc" ? "upload.ascHint" : "upload.deliverHint")).font(.caption).foregroundStyle(.secondary)
-                    if uploader == nil { Text(L.t("blocker.uploader-unset")).font(.callout).foregroundStyle(.red) }
-                    if let u = uploader, toolVersion == nil { CopyCode(text: u == "asc" ? "brew install asc" : "bundle install") }
+                    HStack(spacing: 8) {
+                        IconBadge(symbol: "terminal.fill", colors: BadgeColors.deep, size: 22)
+                        Text("asc CLI").font(.callout.weight(.medium))
+                        Pill(toolVersion ?? L.t("common.missing"), toolVersion == nil ? .err : .ok)
+                    }
+                    Text(L.t("upload.ascHint")).font(.caption).foregroundStyle(.secondary)
+                    if toolVersion == nil { CopyCode(text: AscCLI.installHint) }
                 }
                 Step(n: 2, ok: keysOk, title: L.t("upload.stepKeys"), actions: AnyView(Button(L.t("job.doctor")) { Task { await session.run("doctor") } }.controlSize(.small).disabled(session.isBusy).cliHelp("vitrin doctor"))) {
                     Text(L.t("upload.keysIntro")).font(.callout).foregroundStyle(.secondary)

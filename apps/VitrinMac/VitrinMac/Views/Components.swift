@@ -14,14 +14,17 @@ struct Card<Content: View>: View {
         self.content = content()
     }
     var body: some View {
+        // A glass card on the brand background; the accent card (the next step) carries the gradient on its edge.
         VStack(alignment: .leading, spacing: 10) {
-            if let title { Text(title).font(.headline) }
+            if let title { SectionTitle(title) }
             content
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 10).fill(accent ? Color.accentColor.opacity(0.08) : Color(nsColor: .controlBackgroundColor)))
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(accent ? Color.accentColor.opacity(0.4) : Color(nsColor: .separatorColor), lineWidth: 1))
+        .glassCard(padding: 14)
+        .overlay {
+            if accent {
+                RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Brand.gradient, lineWidth: 1.5)
+            }
+        }
     }
 }
 
@@ -65,11 +68,7 @@ struct Pill: View {
         self.tone = tone
     }
     var body: some View {
-        Text(text)
-            .font(.caption.weight(.medium))
-            .padding(.horizontal, 8).padding(.vertical, 3)
-            .background(Capsule().fill(tone.color.opacity(0.15)))
-            .foregroundStyle(tone == .neutral ? Color.secondary : tone.color)
+        StatusPill(text: Text(text), color: tone == .neutral ? .gray : tone.color)
     }
 }
 
@@ -224,5 +223,39 @@ extension View {
     /// Shows the CLI command behind a control when developer mode is on.
     func cliHelp(_ cmd: String) -> some View {
         self.help(AppSettings.shared.developerMode ? cmd : "")
+    }
+}
+
+/// Capsule tabs that scroll sideways when they do not fit: the page tabs and the language rows, instead of a
+/// segmented control whose minimum width pushed the window's columns around.
+struct CapsuleTabs<T: Hashable>: View {
+    var items: [T]
+    @Binding var selection: T
+    var title: (T) -> String
+    var mono = false
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 4) {
+                ForEach(items, id: \.self) { item in
+                    let on = item == selection
+                    Button { selection = item } label: {
+                        Text(title(item))
+                            .font(mono ? .callout.monospaced() : .callout)
+                            .fontWeight(on ? .semibold : .regular)
+                            .lineLimit(1)
+                            .padding(.horizontal, 11).padding(.vertical, 5)
+                            .background(on ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(.clear), in: Capsule())
+                            .overlay { if on { Capsule().strokeBorder(.white.opacity(0.15), lineWidth: 0.5) } }
+                            .contentShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(2)
+        }
+        // A horizontal ScrollView is flexible in height too; without this it takes the page's whole height.
+        .fixedSize(horizontal: false, vertical: true)
+        .background(.quaternary.opacity(0.35), in: Capsule())
     }
 }

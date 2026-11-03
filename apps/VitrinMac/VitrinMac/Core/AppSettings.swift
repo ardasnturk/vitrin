@@ -26,6 +26,8 @@ import Observation
     var claudeModel: String { didSet { d.set(claudeModel, forKey: "claudeModel") } }
     var lastUpdateCheck: Date? { didSet { d.set(lastUpdateCheck, forKey: "lastUpdateCheck") } }
     var lastProjectID: String? { didSet { d.set(lastProjectID, forKey: "lastProjectID") } }
+    /// The welcome tour ran to the end (or was skipped). The UI tests start with it done.
+    var onboardingDone: Bool { didSet { d.set(onboardingDone, forKey: "onboardingDone") } }
 
     private init() {
         let env = ProcessInfo.processInfo.environment
@@ -43,5 +45,6 @@ import Observation
         claudeModel = d.string(forKey: "claudeModel") ?? ""
         lastUpdateCheck = d.object(forKey: "lastUpdateCheck") as? Date
         lastProjectID = d.string(forKey: "lastProjectID")
+        onboardingDone = d.object(forKey: "onboardingDone") as? Bool ?? testing
     }
 }

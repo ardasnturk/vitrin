@@ -1,47 +1,31 @@
 import SwiftUI
 
-/// The team's App Store Connect apps, then the projects, each with its pages; a dot per page tells the most urgent
-/// stage status on it.
+/// The sidebar in the Remote Code family look: an overview row, the local projects with their pages, the team's App
+/// Store Connect apps (each row a gradient badge), and the account and CLI state at the bottom.
 struct Sidebar: View {
     @Environment(AppModel.self) private var model
     @State private var credentials = ASCCredentials.shared
 
     var body: some View {
-        @Bindable var model = model
-        List(selection: Binding(get: { model.selectedAppID.map { Selection(app: $0) } ?? Selection(project: model.selectedProjectID, page: model.selectedPage) }, set: { sel in
-            guard let sel else { return }
-            if let appID = sel.app {
-                if let app = model.ascApps.app(appID) { Task { await model.select(app: app) } }
-                return
-            }
-            model.selectedAppID = nil
-            if let id = sel.project, id != model.selectedProjectID, let p = model.store.project(id) { Task { await model.open(p) } }
-            model.selectedPage = sel.page
-        })) {
+        List(selection: Binding(get: { current }, set: { sel in select(sel) })) {
+            Label { Text(L.t("home.title")) } icon: { IconBadge(symbol: "square.grid.2x2.fill", colors: BadgeColors.brand) }
+                .padding(.vertical, 2)
+                .tag(Selection(home: true))
+                .accessibilityIdentifier("sidebar.home")
+
             Section {
-                appsRows
-            } header: {
-                HStack {
-                    Text(L.t("apps.title"))
-                    Spacer()
-                    if model.ascApps.loading { ProgressView().controlSize(.mini) }
-                    else if credentials.isSet {
-                        Button { Task { await model.refreshApps() } } label: { Image(systemName: "arrow.clockwise") }
-                            .buttonStyle(.borderless).controlSize(.small).help(L.t("apps.refresh")).accessibilityIdentifier("sidebar.refreshApps")
-                    }
-                }
-            }
-            Section(L.t("projects.title")) {
                 ForEach(model.store.projects) { project in
-                    DisclosureGroup(isExpanded: Binding(get: { model.selectedProjectID == project.id }, set: { if $0 { Task { await model.open(project) } } })) {
-                        ForEach(ProjectPage.allCases) { page in
+                    DisclosureGroup(isExpanded: Binding(get: { model.selectedProjectID == project.id && !model.showHome && model.selectedAppID == nil }, set: { if $0 { Task { await model.open(project) } } })) {
+                        // The App Store Connect page only for a project linked to an app of the team.
+                        ForEach(ProjectPage.allCases.filter { $0 != .asc || model.ascApp(for: project) != nil }) { page in
                             Label {
                                 HStack {
                                     Text(L.t(page.titleKey))
                                     Spacer()
                                     badge(project: project, page: page)
                                 }
-                            } icon: { Image(systemName: page.symbol) }
+                            } icon: { IconBadge(symbol: page.badgeSymbol, colors: page.badgeColors, size: 20) }
+                            .padding(.vertical, 1)
                             .tag(Selection(project: project.id, page: page))
                         }
                     } label: {
@@ -56,23 +40,113 @@ struct Sidebar: View {
                             }
                     }
                 }
+                Button { model.pickProjectFolder() } label: {
+                    Label { Text(L.t("projects.add")).foregroundStyle(.secondary) } icon: { Image(systemName: "plus").foregroundStyle(.secondary) }
+                }
+                .buttonStyle(.borderless)
+                .accessibilityIdentifier("sidebar.addProject")
+            } header: {
+                Text(L.t("projects.title"))
             }
+            Section(L.t("team.title")) {
+                ForEach(TeamPage.allCases) { p in
+                    Label { Text(L.t(p.titleKey)) } icon: { IconBadge(symbol: p.symbol, colors: p.colors) }
+                        .padding(.vertical, 1)
+                        .tag(Selection(team: p.rawValue))
+                        .accessibilityIdentifier("sidebar.team.\(p.rawValue)")
+                }
+            }
+            Section {
+                appsRows
+            } header: {
+                HStack {
+                    Text(L.t("apps.title"))
+                    Spacer()
+                    if model.ascApps.loading { ProgressView().controlSize(.mini) }
+                    else if model.connection.isConnected {
+                        Button { Task { await model.refreshApps() } } label: { Image(systemName: "arrow.clockwise") }
+                            .buttonStyle(.borderless).controlSize(.small).help(L.t("apps.refresh")).accessibilityIdentifier("sidebar.refreshApps")
+                    }
+                }
+            }
+
         }
         .listStyle(.sidebar)
-        .safeAreaInset(edge: .bottom) {
-            VStack(alignment: .leading, spacing: 6) {
-                Button { model.pickProjectFolder() } label: { Label(L.t("projects.add"), systemImage: "plus") }.buttonStyle(.borderless).accessibilityIdentifier("sidebar.addProject")
-                HStack(spacing: 6) {
-                    if model.locating { ProgressView().controlSize(.mini) }
-                    if !model.locating { Image(systemName: model.cli == nil ? "exclamationmark.circle" : "checkmark.circle").foregroundStyle(model.cli == nil ? .orange : .green) }
-                    Text(model.cli.map { "Vitrin CLI \($0.version ?? "")" } ?? L.t(model.locating ? "cli.locating" : "cli.notFound")).font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                }
-                .help(model.cli?.displayPath ?? model.cliError ?? "")
-            }
-            .padding(10)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.bar)
+        .safeAreaInset(edge: .bottom) { footer }
+    }
+
+    private var current: Selection? {
+        if let t = model.selectedTeamPage { return Selection(team: t.rawValue) }
+        if model.showHome || (model.selectedAppID == nil && model.selectedProjectID == nil) { return Selection(home: true) }
+        if let a = model.selectedAppID { return Selection(app: a) }
+        return Selection(project: model.selectedProjectID, page: model.selectedPage)
+    }
+
+    private func select(_ sel: Selection?) {
+        guard let sel else { return }
+        if let t = sel.team.flatMap(TeamPage.init(rawValue:)) {
+            model.selectedAppID = nil
+            model.selectedTeamPage = t
+            return
         }
+        model.selectedTeamPage = nil
+        if sel.home {
+            model.selectedAppID = nil
+            model.showHome = true
+            return
+        }
+        if let appID = sel.app {
+            if let app = model.ascApps.app(appID) { Task { await model.select(app: app) } }
+            return
+        }
+        model.selectedAppID = nil
+        model.showHome = false
+        if let id = sel.project, id != model.selectedProjectID || model.sessions[id]?.isReady != true, let p = model.store.project(id) { Task { await model.open(p) } }
+        model.selectedPage = sel.page
+    }
+
+    /// The key and the CLI, the way Promo Studio shows its account: a badge, a line, a dot and the gear.
+    private var footer: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                IconBadge(symbol: "key.horizontal.fill", colors: model.connection.isConnected ? BadgeColors.cool : BadgeColors.gray, size: 22)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(model.connection.isConnected ? L.t("account.connected") : L.t("account.none")).font(.callout.weight(.medium)).lineLimit(1)
+                    Text(accountDetail).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                }
+                Spacer(minLength: 4)
+                Circle().fill(accountTone.color).frame(width: 7, height: 7)
+                SettingsLink { Image(systemName: "gearshape") }.buttonStyle(.borderless).help(L.t("settings.title"))
+            }
+            HStack(spacing: 6) {
+                if model.locating { ProgressView().controlSize(.mini) }
+                else { Image(systemName: model.cli == nil ? "exclamationmark.circle" : "terminal").foregroundStyle(model.cli == nil ? .orange : .secondary) }
+                Text(model.cli.map { "Vitrin CLI \($0.version ?? "")" } ?? L.t(model.locating ? "cli.locating" : "cli.notFound")).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+            }
+            .help(model.cli?.displayPath ?? model.cliError ?? "")
+        }
+        .padding(.horizontal, 14).padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.bar)
+    }
+
+    private var accountDetail: String {
+        let keyId: String
+        switch model.connection.state {
+        case .vitrinKey(let id): keyId = id
+        case .ascLogin(let name, let id): keyId = "asc · \(name) · \(id)"
+        case .missingCLI: return L.t("asc.missing")
+        default: return L.t("account.noneDetail")
+        }
+        if model.ascApps.loading { return L.t("apps.loading") }
+        if model.ascApps.error != nil { return L.t("account.error") }
+        return L.t("account.apps").replacingOccurrences(of: "{n}", with: "\(model.ascApps.apps.count)") + " · \(keyId)"
+    }
+
+    private var accountTone: Tone {
+        guard model.connection.isConnected else { return .neutral }
+        if model.ascApps.error != nil { return .err }
+        return model.ascApps.loadedAt != nil ? .ok : .warn
     }
 
     struct Selection: Hashable {
@@ -80,14 +154,16 @@ struct Sidebar: View {
         var page: ProjectPage = .flow
         /// An App Store Connect app row (then `project` and `page` are not used).
         var app: String?
+        var home = false
+        var team: String?
     }
 
     /// One line without a key; the error line; the apps, each linked to its project when one has the bundle id.
     @ViewBuilder private var appsRows: some View {
-        if !credentials.isSet {
-            VStack(alignment: .leading, spacing: 4) {
-                Label(L.t("apps.noKey"), systemImage: "key").font(.callout).foregroundStyle(.secondary)
-                SettingsLink { Text(L.t("settings.account")) }.controlSize(.small)
+        if !model.connection.isConnected {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(L.t("apps.noKey")).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                SettingsLink { Label(L.t("account.add"), systemImage: "key.horizontal") }.controlSize(.small)
             }
             .padding(.vertical, 2).accessibilityIdentifier("sidebar.appsNoKey")
         } else if let e = model.ascApps.error, model.ascApps.apps.isEmpty {
@@ -133,19 +209,46 @@ struct Sidebar: View {
     }
 }
 
+extension ProjectPage {
+    /// The filled symbol on the page's sidebar badge and page header.
+    var badgeSymbol: String {
+        switch self {
+        case .flow: return "point.3.connected.trianglepath.dotted"
+        case .research: return "magnifyingglass"
+        case .listing: return "text.alignleft"
+        case .visuals: return "photo.fill.on.rectangle.fill"
+        case .review: return "checkmark.seal.fill"
+        case .upload: return "arrow.up"
+        case .asc: return "storefront.fill"
+        }
+    }
+    var badgeColors: [Color] {
+        switch self {
+        case .flow: return BadgeColors.brand
+        case .research: return BadgeColors.deep
+        case .listing: return BadgeColors.magic
+        case .visuals: return BadgeColors.warm
+        case .review: return BadgeColors.fresh
+        case .upload: return BadgeColors.cool
+        case .asc: return BadgeColors.deep
+        }
+    }
+}
+
 struct ProjectRow: View {
+    @Environment(AppModel.self) private var model
     var project: Project
     var session: ProjectSession?
     var body: some View {
         HStack(spacing: 8) {
             if let s = session, let o = s.overview, let icon = o.app?.icon, let url = s.client?.fileURL(icon) {
-                AsyncImage(url: url) { img in img.resizable() } placeholder: { Image(systemName: "app.dashed") }
-                    .frame(width: 20, height: 20).clipShape(RoundedRectangle(cornerRadius: 5))
+                AsyncImage(url: url) { img in img.resizable() } placeholder: { IconBadge(symbol: "app.fill", colors: BadgeColors.warm) }
+                    .frame(width: 22, height: 22).clipShape(RoundedRectangle(cornerRadius: 22 * 0.26, style: .continuous))
             } else {
-                Image(systemName: project.hasConfig ? "app.badge.checkmark" : "folder").frame(width: 20)
+                IconBadge(symbol: project.hasConfig ? "app.fill" : "folder.fill", colors: BadgeColors.warm)
             }
             VStack(alignment: .leading, spacing: 1) {
-                Text(session?.overview?.app?.name ?? project.name).lineLimit(1)
+                Text(model.displayName(for: project)).font(.body.weight(.medium)).lineLimit(1)
                 if let s = session {
                     if let j = s.job { Text(L.job(j)).font(.caption2).foregroundStyle(.secondary).lineLimit(1) }
                     else if let n = s.overview?.next { Text(L.stage(n.stage)).font(.caption2).foregroundStyle(.secondary).lineLimit(1) }
@@ -158,40 +261,45 @@ struct ProjectRow: View {
                 else if s.isReady { StatusDot(tone: s.connected ? .ok : .warn) }
             }
         }
+        .padding(.vertical, 2)
     }
 }
 
-/// An App Store Connect app: a placeholder icon, the name, the bundle id, the current version with its state, and a
-/// link badge when a local project has this bundle id.
+/// An App Store Connect app: a badge, the name, the version and its state, a coloured dot, and a link badge when a
+/// local project has this bundle id.
 struct AppRow: View {
     var app: ASCApp
     var linked: Project?
     var body: some View {
         HStack(spacing: 8) {
-            AppIconPlaceholder(size: 20)
+            AppIconPlaceholder(size: 22)
             VStack(alignment: .leading, spacing: 1) {
                 HStack(spacing: 4) {
                     Text(app.name).lineLimit(1)
                     if let linked { Image(systemName: "link").font(.caption2).foregroundStyle(.secondary).help(L.t("apps.linked").replacingOccurrences(of: "{project}", with: linked.name)) }
                 }
-                Text(app.bundleId).font(.caption2).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
+                if let v = app.current {
+                    Text("\(v.version) · \(ASCWords.state(v.state))").font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                } else {
+                    Text(app.bundleId).font(.caption2).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
+                }
             }
             Spacer(minLength: 4)
-            if let v = app.current {
-                Pill("\(v.version) · \(ASCWords.state(v.state))", ASCWords.tone(v.state)).lineLimit(1).help("\(ASCWords.platform(v.platform)) \(v.version): \(ASCWords.state(v.state))")
-            }
+            if let v = app.current { Circle().fill(ASCWords.tone(v.state).color).frame(width: 7, height: 7).help("\(ASCWords.platform(v.platform)) \(v.version): \(ASCWords.state(v.state))") }
         }
+        .padding(.vertical, 1)
         .accessibilityIdentifier("sidebar.app.\(app.bundleId)")
     }
 }
 
-/// The icon the API does not give (the Studio's overview has the project's); a rounded dashed app shape.
+/// The icon the API does not give (the Studio's overview has the project's): a badge in the team colours.
 struct AppIconPlaceholder: View {
     var size: CGFloat
     var body: some View {
-        RoundedRectangle(cornerRadius: size * 0.22)
-            .fill(Color.accentColor.opacity(0.12))
-            .overlay(Image(systemName: "app.dashed").font(.system(size: size * 0.6)).foregroundStyle(Color.accentColor.opacity(0.7)))
+        RoundedRectangle(cornerRadius: size * 0.26, style: .continuous)
+            .fill(LinearGradient(colors: BadgeColors.cool, startPoint: .topLeading, endPoint: .bottomTrailing))
+            .overlay(Image(systemName: "app.fill").font(.system(size: size * 0.5, weight: .semibold)).foregroundStyle(.white))
             .frame(width: size, height: size)
+            .accessibilityHidden(true)
     }
 }

@@ -96,7 +96,7 @@ export interface StageView {
   reason?: string;
 }
 
-export type BlockerCode = 'config-error' | 'stray-locales' | 'primary-locale' | 'ffmpeg-missing' | 'claude-missing' | 'uploader-unset' | 'uploader-missing' | 'keys-missing' | 'design-choice';
+export type BlockerCode = 'config-error' | 'stray-locales' | 'primary-locale' | 'ffmpeg-missing' | 'claude-missing' | 'uploader-missing' | 'keys-missing' | 'design-choice';
 
 export interface Blocker {
   code: BlockerCode;
@@ -174,7 +174,7 @@ export interface Overview {
   cpp: Record<string, Record<string, RenderedFile[]>>;
   samples?: { styles: string[]; contactSheet?: string; storePreview?: string; generatedAt?: string; options: Array<{ letter: string; style: string; name: string }> };
   mockups?: { index?: string; screens: RenderedFile[] };
-  tools: { asc: string | null; fastlane: string | null; ruby: string | null; bundler: string | null; brew?: string | null; claude: string | null; ffmpeg: string | null };
+  tools: { asc: string | null; ascLogin?: boolean; fastlane: string | null; ruby: string | null; bundler: string | null; brew?: string | null; claude: string | null; ffmpeg: string | null };
   missingKeys: string[];
   enums: { presets: string[]; emphasis: string[]; archetypes: string[]; framings: string[]; scenes: string[]; videoStyles: string[]; transitions: string[]; badgeTypes: string[] };
   job: JobSummary | null;

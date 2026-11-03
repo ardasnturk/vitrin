@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildInventory, checkApproval, recordApproval, syncFastlaneMetadata } from '../src/approval.js';
+import { buildInventory, checkApproval, recordApproval, syncStoreMetadata } from '../src/approval.js';
 import { createContext } from '../src/context.js';
 import { makeFixture } from './fixture.js';
 
@@ -20,7 +20,7 @@ describe('Google Play export under approval', () => {
     writeFileSync(join(playDir, 'app.json'), JSON.stringify({ track: 'production' }));
     const ctx = await createContext({ cwd: fx.root });
 
-    expect(await syncFastlaneMetadata(ctx)).toBe(true);
+    expect(await syncStoreMetadata(ctx)).toBe(true);
     const title = join(fx.root, 'metadata', 'store', 'metadata', 'android', 'en-US', 'title.txt');
     expect(readFileSync(title, 'utf8')).toBe('Ritim: Habit Tracker\n');
     const inv = await buildInventory(ctx);
@@ -30,7 +30,7 @@ describe('Google Play export under approval', () => {
     expect((await checkApproval(ctx)).ok).toBe(true);
 
     writeFileSync(join(playDir, 'en-US.json'), JSON.stringify({ ...listing, title: 'Ritim: Daily Habits' }));
-    await syncFastlaneMetadata(ctx);
+    await syncStoreMetadata(ctx);
     const res = await checkApproval(ctx);
     expect(res.ok).toBe(false);
     expect(res.changed).toContain('metadata/store/metadata/android/en-US/title.txt');

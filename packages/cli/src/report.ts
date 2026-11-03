@@ -16,12 +16,11 @@ import {
   type InAppEventSpec,
   type Issue,
   type LocaleMetadata,
-  uploaderOf,
 } from '@vitrin/schemas';
 import { readdir, stat } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
 import type { z } from 'zod';
-import { buildInventory, checkApproval, summarize, syncFastlaneMetadata, writeSnapshot, type Inventory, type InventoryItem } from './approval.js';
+import { buildInventory, checkApproval, summarize, syncStoreMetadata, writeSnapshot, type Inventory, type InventoryItem } from './approval.js';
 import type { Ctx } from './context.js';
 import { loadLocaleMetadata } from './commands/pipeline.js';
 import { fill, loadUiText, UI_EN, type UiText } from './i18n.js';
@@ -104,8 +103,8 @@ function rejectControl(item: InventoryItem): string {
 export async function buildReport(ctx: Ctx, opts: { inventory?: Inventory; text?: UiText } = {}): Promise<string> {
   T = opts.text ?? (await loadUiText(ctx)).text;
   const p = ctx.paths;
-  // Refresh metadata/store/metadata so the text shown is byte-for-byte what deliver will read.
-  if (!opts.inventory) await syncFastlaneMetadata(ctx);
+  // Refresh metadata/store/metadata so the text shown is byte-for-byte what the upload reads.
+  if (!opts.inventory) await syncStoreMetadata(ctx);
   const inv = opts.inventory ?? (await buildInventory(ctx));
   const profile = await readJsonIfExists(p.profile, AppProfile).catch(() => undefined);
   const competitors = await readJsonIfExists(p.competitors, Competitors).catch(() => undefined);
@@ -342,13 +341,7 @@ export async function buildReport(ctx: Ctx, opts: { inventory?: Inventory; text?
   }
 
   // ---------------------------------------------------------------- summary: exactly what goes where
-  const chosen = uploaderOf(ctx.config);
-  const uploader =
-    chosen === 'asset-library'
-      ? 'deliver (text) + App Asset Library (media)'
-      : chosen === 'asc'
-        ? 'asc CLI (text and media) + App Asset Library (iPhone Duo)'
-        : 'fastlane deliver';
+  const uploader = 'asc CLI (text and media) + App Asset Library (iPhone Duo)';
   const dest = (store: string, kind: string) =>
     store === 'google-play'
       ? 'Google Play · fastlane supply'

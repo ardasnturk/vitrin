@@ -7,7 +7,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import type { AddressInfo } from 'node:net';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path';
-import { buildInventory, checkApproval, recordApproval, recordRejections, summarize, syncFastlaneMetadata } from '../approval.js';
+import { buildInventory, checkApproval, recordApproval, recordRejections, summarize, syncStoreMetadata } from '../approval.js';
 import { createContext, NeedsInput } from '../context.js';
 import { buildReport } from '../report.js';
 import { answerPrompt, briefPrompt, ClaudeRunner, type RunLabel } from './claude.js';
@@ -193,6 +193,8 @@ class RemotionStudio {
 
 /** The brief a stage writes, where the name differs (capture writes screens.md). */
 const STAGE_BRIEF: Record<string, string> = { capture: 'screens' };
+/** Files under metadata/ that reading the review regenerates; they are not announced as changes. */
+const DERIVED = ['report.html', 'store', 'review-snapshot.json'];
 /** A Claude Code model alias (`opus`) or full name (`claude-opus-5-5`), as `claude --model` takes it. */
 const CLAUDE_MODEL = /^[A-Za-z0-9._:-]{1,64}$/;
 
@@ -225,6 +227,10 @@ export async function startStudioServer(root: string, opts: { port?: number; hos
       watcher = watch(watchDir, { recursive: true }, (_ev, file) => {
         const f = typeof file === 'string' ? file.split(sep).join('/') : '';
         if (f.startsWith('.cache/')) return;
+        // Derived outputs the Studio itself rewrites whenever a page reads the review (/api/review, /api/state):
+        // announcing them made the review page reload, read the review again, rewrite them, and loop for ever.
+        // A job that changes them ends with its own job event, which the pages listen to.
+        if (DERIVED.some((d) => f === d || f.startsWith(d + '/'))) return;
         changed.add(`metadata/${f}`);
         if (timer) clearTimeout(timer);
         timer = setTimeout(() => {
@@ -277,7 +283,7 @@ export async function startStudioServer(root: string, opts: { port?: number; hos
   /** The review gallery's state and decisions, the contract report.html's buttons use (same as `vitrin review --serve`). */
   async function reviewState() {
     const ctx = await createContext({ cwd: root });
-    await syncFastlaneMetadata(ctx);
+    await syncStoreMetadata(ctx);
     const inv = await buildInventory(ctx);
     await buildReport(ctx, { inventory: inv });
     const approval = await checkApproval(ctx, inv);

@@ -250,7 +250,7 @@ Open the store preview for the user (\`open metadata/design-samples/store-previe
     "preset": "liquid-glass-aurora", "brand": { "primary": "${brand[0] ?? '#5B4BE8'}"${brand[1] ? `, "secondary": "${brand[1]}"` : ''} } }],
   "selected": "picked", "selectionReason": "The user chose B." }
 \`\`\`
-Only now — after the user approved a design — ask how the listing should be uploaded (\`vitrin uploader --json\`: asc CLI or fastlane; if the chosen tool is missing, say it will be installed first and install it only after their yes), store it with \`vitrin select --uploader asc|deliver\`, then ask which store languages and which formats to produce (\`vitrin platforms --json\` → \`locales\`, \`formats\`) and store them with \`vitrin select --locales … --targets …\`. Only now capture and render the rest.
+Only now — after the user approved a design — ask which store languages and which formats to produce (\`vitrin platforms --json\` → \`locales\`, \`formats\`) and store them with \`vitrin select --locales … --targets …\`. Only now capture and render the rest.
 
 | Preset | Name | Surface | Device |
 |---|---|---|---|

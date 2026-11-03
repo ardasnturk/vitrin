@@ -3,7 +3,7 @@ import { uploaderOf, type CppSuggestions, type Experiment, type LocaleMetadata, 
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { isEditableVersion, type AscClient } from './asc-client.js';
-import { ASC_PLATFORM, applePlatformsOf, deliverAcceptsPreview, platformsFromConfig, routeAssets, type DeliverPlatform, type RenderedAsset } from './platforms.js';
+import { ASC_PLATFORM, applePlatformsOf, platformsFromConfig, routeAssets, type AppStorePlatform, type RenderedAsset } from './platforms.js';
 import { resolveScope, type StoreScope } from './scope.js';
 import { classicTypeFor, displayTypesFor, perTypeRoute } from './display-types.js';
 import { buildPlayPlan, type PlayImageIssue, type PlayImageSet, type PlayInputs } from './play.js';
@@ -15,21 +15,24 @@ export interface PlanItem {
   area: 'metadata' | 'screenshots' | 'previews' | 'creatives' | 'cpp' | 'events' | 'experiments' | 'app';
   /** Missing = app-store (kept optional so older plan files still read). */
   store?: Store;
-  /** deliver platform for App Store items that belong to one version (ios, osx, appletvos, xros). */
+  /** App Store version platform for items that belong to one version (ios, osx, appletvos, xros). */
   platform?: string;
   locale?: string;
   field?: string;
   change: ChangeKind;
   local?: string;
   remote?: string;
-  /** asc-api: Vitrin's own ASC API calls (classic screenshot/preview sets, CPP, events); asc-cli: the asc uploader. */
-  via: 'deliver' | 'asset-library' | 'asc-api' | 'asc-cli' | 'supply';
+  /**
+   * asc-cli: the asc CLI (text, classic screenshot/preview sets); asset-library: the App Asset Library (Duo,
+   * creatives); asc-api: Vitrin's own ASC API calls (CPP, events, tests); supply: Google Play.
+   */
+  via: 'asset-library' | 'asc-api' | 'asc-cli' | 'supply';
   note?: string;
 }
 
-/** One App Store version (one deliver run). */
+/** One App Store version. */
 export interface PlatformPlan {
-  platform: DeliverPlatform;
+  platform: AppStorePlatform;
   ascPlatform: string;
   version?: { id: string; versionString: string; state: string };
   /** True when this platform was never released (App Store Connect rejects release notes then). */
@@ -42,11 +45,12 @@ export interface UploadPlan {
   appId?: string;
   /** The iOS version (or the first Apple platform's) — kept for single-platform callers. */
   version?: { id: string; versionString: string; state: string };
-  uploader: 'deliver' | 'asset-library' | 'asc';
+  /** Always `asc` (kept in the plan file for readers of older plans). */
+  uploader: 'asc';
   remoteKnown: boolean;
   /** True when the app was never released (App Store Connect rejects release notes then). */
   firstRelease?: boolean;
-  /** Every Apple platform that gets a deliver run, iOS first. */
+  /** Every App Store version of the app, iOS first. */
   platforms: PlatformPlan[];
   /** Google Play part, when the app ships on Android. */
   play?: { packageName?: string; track: string; versionCode?: number; remoteKnown: boolean; warnings: string[] };
@@ -81,7 +85,7 @@ function short(v: string): string {
   return one.length > 60 ? `${one.slice(0, 57)}…` : one;
 }
 
-const PLATFORM_LABEL: Record<DeliverPlatform, string> = { ios: 'iOS', osx: 'macOS', appletvos: 'tvOS', xros: 'visionOS' };
+const PLATFORM_LABEL: Record<AppStorePlatform, string> = { ios: 'iOS', osx: 'macOS', appletvos: 'tvOS', xros: 'visionOS' };
 
 /** True when the run uploads anything to this App Store version. */
 export function isActive(s: StoreScope['apple'][number] | undefined): boolean {
@@ -115,7 +119,7 @@ export async function buildPlan(opts: {
   platforms?: Platform[];
   /** Rendered files (collectRenderedAssets). Without them the screenshot folders are counted per target. */
   assets?: RenderedAsset[];
-  /** Targets enabled for the app; a deliver overwrite is used only when a run carries all of them. */
+  /** Targets enabled for the app (the plan names the ones a run leaves untouched). */
   enabledTargets?: RenderTarget[];
   play?: PlayPlanInput;
 }): Promise<UploadPlan> {
@@ -124,12 +128,12 @@ export async function buildPlan(opts: {
   const platforms = opts.platforms ?? platformsFromConfig(config.upload.platform);
   const apple = applePlatformsOf(platforms);
   const scope = opts.assets
-    ? resolveScope({ shipping: platforms, selection: config.selection, assets: opts.assets, enabledTargets: opts.enabledTargets ?? [], locales: config.app.locales, uploader })
+    ? resolveScope({ shipping: platforms, selection: config.selection, assets: opts.assets, enabledTargets: opts.enabledTargets ?? [], locales: config.app.locales })
     : undefined;
-  const scopeOf = (p: DeliverPlatform) => scope?.apple.find((s) => s.platform === p);
+  const scopeOf = (p: AppStorePlatform) => scope?.apple.find((s) => s.platform === p);
   const plan: UploadPlan = { generatedAt: new Date().toISOString(), bundleId: opts.bundleId, uploader, remoteKnown: false, platforms: apple.map((p) => ({ platform: p, ascPlatform: ASC_PLATFORM[p] })), items: [], blockers: [], scope };
 
-  const versionLocs = new Map<DeliverPlatform, Loc[]>();
+  const versionLocs = new Map<AppStorePlatform, Loc[]>();
   let infoLocs: Loc[] = [];
   if (client && apple.length) {
     const app = await client.findApp(opts.bundleId);
@@ -167,8 +171,8 @@ export async function buildPlan(opts: {
 
   // ---- App Store text: app info once (shared by every platform), version text per platform ----
   const textPlatforms = plan.platforms.filter((pp) => !scope || scopeOf(pp.platform)?.metadata);
-  const textVia: PlanItem['via'] = uploader === 'asc' ? 'asc-cli' : 'deliver';
-  if (textPlatforms.length && uploader === 'asc') {
+  const textVia: PlanItem['via'] = 'asc-cli';
+  if (textPlatforms.length) {
     plan.items.push({ area: 'app', change: 'skip', via: 'asc-cli', note: 'asc metadata push does not upload categories, copyright or review information; they stay as they are in App Store Connect' });
   }
   if (textPlatforms.length) {
@@ -207,7 +211,7 @@ export async function buildPlan(opts: {
     }
   }
 
-  // ---- Screenshots / previews per platform — deliver replaces sets (overwrite_screenshots: true) ----
+  // ---- Screenshots / previews per platform — one display type at a time ----
   if (opts.assets && scope) {
     const routed = routeAssets(opts.assets.filter((a) => config.app.locales.includes(a.locale)));
     for (const p of apple) {
@@ -223,10 +227,7 @@ export async function buildPlan(opts: {
       }
       for (const g of groups.values()) {
         const isShot = g.kind === 'screenshot';
-        const mode = isShot ? ps.screenshots : ps.previews;
-        // deliver has no preview type for Mac/TV/Vision, so those are always replaced one set at a time.
-        const viaDeliver = uploader === 'deliver' && mode === 'replace-all' && (isShot || deliverAcceptsPreview(p, g.file));
-        const route = viaDeliver ? 'deliver' : perTypeRoute(g.target, uploader);
+        const route = perTypeRoute(g.target);
         const classicType = classicTypeFor(g.target);
         const al = displayTypesFor(g.target.id)?.assetLibrary;
         if (route === 'none') {
@@ -234,19 +235,15 @@ export async function buildPlan(opts: {
         }
         const what = isShot ? 'screenshot' : 'preview';
         const note =
-          route === 'deliver'
-            ? isShot
-              ? `replaces EVERY screenshot set of ${g.locale} on ${PLATFORM_LABEL[p]} (deliver overwrite)`
-              : `replaces every App Preview set of ${g.locale} on ${PLATFORM_LABEL[p]} (deliver overwrite); processing can take up to 24 hours`
-            : route === 'classic'
-              ? `replaces only the ${classicType} ${what} set of ${g.locale}; other display types stay untouched (${uploader === 'asc' ? `asc ${isShot ? 'screenshots' : 'video-previews'} upload --replace` : `${isShot ? 'appScreenshotSets' : 'appPreviewSets'} API`})${isShot ? '' : '; processing can take up to 24 hours'}`
-              : route === 'asset-library'
-                ? `replaces only the ${al!.placementType} placements of ${al!.platform}/${al!.displayClass} in ${g.locale}; other display types stay untouched (App Asset Library, placementGroup from refData)`
-                : `cannot be replaced on its own`;
-        const via: PlanItem['via'] = route === 'deliver' ? 'deliver' : route === 'classic' ? (uploader === 'asc' ? 'asc-cli' : 'asc-api') : 'asset-library';
+          route === 'classic'
+            ? `replaces only the ${classicType} ${what} set of ${g.locale}; other display types stay untouched (asc ${isShot ? 'screenshots' : 'video-previews'} upload --replace)${isShot ? '' : '; processing can take up to 24 hours'}`
+            : route === 'asset-library'
+              ? `replaces only the ${al!.placementType} placements of ${al!.platform}/${al!.displayClass} in ${g.locale}; other display types stay untouched (App Asset Library, placementGroup from refData)`
+              : `cannot be replaced on its own`;
+        const via: PlanItem['via'] = route === 'classic' ? 'asc-cli' : 'asset-library';
         plan.items.push({ area: isShot ? 'screenshots' : 'previews', platform: p, locale: g.locale, field: g.target.id, change: 'update', local: `${g.n} ${isShot ? 'images' : 'videos'}`, via, note });
       }
-      for (const u of ps.untouched) plan.items.push({ area: 'app', platform: p, change: 'skip', via: 'deliver', note: u });
+      for (const u of ps.untouched) plan.items.push({ area: 'app', platform: p, change: 'skip', via: 'asc-cli', note: u });
     }
   } else {
     for (const locale of config.app.locales) {
@@ -258,11 +255,11 @@ export async function buildPlan(opts: {
         byTarget.set(t, (byTarget.get(t) ?? 0) + 1);
       }
       for (const [t, n] of byTarget) {
-        plan.items.push({ area: 'screenshots', locale, field: t, change: 'update', local: `${n} images`, via: uploader === 'asc' ? 'asc-cli' : uploader, note: 'replaces the existing set' });
+        plan.items.push({ area: 'screenshots', locale, field: t, change: 'update', local: `${n} images`, via: 'asc-cli', note: 'replaces the existing set' });
       }
       const pdir = join(opts.paths.appPreviews, locale);
       const previews = existsSync(pdir) ? (await readdir(pdir)).filter((f) => /\.(mp4|mov)$/.test(f)) : [];
-      if (previews.length) plan.items.push({ area: 'previews', locale, change: 'update', local: previews.join(', '), via: uploader === 'asc' ? 'asc-cli' : uploader, note: 'processing can take up to 24 hours' });
+      if (previews.length) plan.items.push({ area: 'previews', locale, change: 'update', local: previews.join(', '), via: 'asc-cli', note: 'processing can take up to 24 hours' });
     }
   }
 
@@ -306,10 +303,10 @@ export async function buildPlan(opts: {
 }
 
 function sectionOf(it: PlanItem, multi: boolean): string {
-  if (it.area === 'app' && it.change === 'skip') return `untouched · ${it.store === 'google-play' ? 'Google Play' : (PLATFORM_LABEL[it.platform as DeliverPlatform] ?? it.platform ?? 'App Store')}`;
+  if (it.area === 'app' && it.change === 'skip') return `untouched · ${it.store === 'google-play' ? 'Google Play' : (PLATFORM_LABEL[it.platform as AppStorePlatform] ?? it.platform ?? 'App Store')}`;
   if (it.store === 'google-play') return `Google Play · ${it.area}`;
   // With a single Apple platform the suffix only splits shared app info from version text; leave it out.
-  return it.platform && multi ? `${it.area} · ${PLATFORM_LABEL[it.platform as DeliverPlatform] ?? it.platform}` : it.area;
+  return it.platform && multi ? `${it.area} · ${PLATFORM_LABEL[it.platform as AppStorePlatform] ?? it.platform}` : it.area;
 }
 
 export function formatPlan(plan: UploadPlan): string {

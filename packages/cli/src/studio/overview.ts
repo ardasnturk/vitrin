@@ -1,5 +1,5 @@
 import { appPaths, existsSync, loadConfig, loadEnv, readJsonIfExists, StateStore, vitrinVersion, which, type AppPaths } from '@vitrin/core';
-import { AppProfile, ApprovalManifest, Archetype, BadgeType, BeatScene, EmphasisStyle, Framing, StudioQuestions, StylePreset, ValidationReport, VideoStyle, VideoTransition, type StudioQuestion, type VitrinConfig } from '@vitrin/schemas';
+import { AppProfile, ApprovalManifest, Archetype, BadgeType, BeatScene, EmphasisStyle, Framing, StudioQuestions, StylePreset, uploaderOf, ValidationReport, VideoStyle, VideoTransition, type StudioQuestion, type VitrinConfig } from '@vitrin/schemas';
 import { strayLocaleDirs } from '@vitrin/validate';
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, relative, resolve, sep } from 'node:path';
@@ -42,7 +42,7 @@ export interface StageView {
   reason?: string;
 }
 
-export type BlockerCode = 'config-error' | 'stray-locales' | 'primary-locale' | 'ffmpeg-missing' | 'claude-missing' | 'uploader-unset' | 'uploader-missing' | 'keys-missing' | 'design-choice';
+export type BlockerCode = 'config-error' | 'stray-locales' | 'primary-locale' | 'ffmpeg-missing' | 'claude-missing' | 'uploader-missing' | 'keys-missing' | 'design-choice';
 
 /**
  * Something that stops a stage or waits for the user's decision, with the one-click fixes the Studio offers for it.
@@ -207,7 +207,7 @@ export async function buildOverview(root: string): Promise<Overview> {
       locales: config.app.locales,
       primaryLocale: config.app.primaryLocale,
       language: config.ui?.language ?? null,
-      uploader: config.upload.uploader ?? null,
+      uploader: uploaderOf(config),
       capture: config.capture.mode,
       screens: config.capture.screens,
       selection: config.selection ?? {},
@@ -217,7 +217,7 @@ export async function buildOverview(root: string): Promise<Overview> {
     };
     if (profile) base.platforms = platformsReport(config, profile);
     const env = loadEnv(paths.env);
-    base.missingKeys = missingUploadKeys(env, profile ? profile.app.platforms : ['ios']).map((k) => k.name);
+    base.missingKeys = missingUploadKeys(env, profile ? profile.app.platforms : ['ios'], { ascLogin: base.tools.ascLogin }).map((k) => k.name);
     if (!base.app && config.app.bundleId) base.app = { name: config.app.bundleId, bundleId: config.app.bundleId, kind: 'unknown', platforms: [] };
   }
   const state = await StateStore.load(paths.state).catch(() => undefined);
@@ -302,7 +302,7 @@ export async function buildOverview(root: string): Promise<Overview> {
   }
   if (base.configError) base.blockers.push({ code: 'config-error', severity: 'error', stage: 'analyze', params: { message: base.configError }, fixes: [] });
   if (config) {
-    base.blockers.push(...(await localeBlockers(paths, config, base.listing)), ...toolBlockers(base, config));
+    base.blockers.push(...(await localeBlockers(paths, config, base.listing)), ...toolBlockers(base, config, profile?.app.platforms ?? ['ios']));
     base.questions = (await readJsonIfExists(paths.questions, StudioQuestions).catch(() => undefined))?.questions ?? [];
     // When Claude asked about the design itself, its question replaces the guess from the samples.
     const choice = base.questions.some((q) => q.stage === 'design') ? undefined : designChoice(base, await mtime(paths.artDirection));
@@ -432,13 +432,13 @@ export function nextStep(flow: StageView[], blockers: Blocker[], finalized = fal
 }
 
 /**
- * Store folders of locales that are not in app.locales (validate fails on them: deliver would upload them too), and
+ * Store folders of locales that are not in app.locales (validate fails on them: they would be uploaded too), and
  * a primary locale outside the store locales (copy and captures fall back to it).
  */
 async function localeBlockers(paths: AppPaths, config: VitrinConfig, listing: string[]): Promise<Blocker[]> {
   const out: Blocker[] = [];
   const locales = config.app.locales;
-  const metadata = (await strayLocaleDirs(paths.fastlaneMetadata, locales)).filter((d) => d !== 'default' && d !== 'android');
+  const metadata = (await strayLocaleDirs(paths.storeMetadata, locales)).filter((d) => d !== 'default' && d !== 'android');
   const screenshots = await strayLocaleDirs(paths.screenshots, locales);
   const previews = await strayLocaleDirs(paths.appPreviews, locales);
   const stray = [...new Set([...metadata, ...screenshots, ...previews])].sort();
@@ -471,20 +471,16 @@ async function localeBlockers(paths: AppPaths, config: VitrinConfig, listing: st
   return out;
 }
 
-function toolBlockers(o: Pick<Overview, 'tools' | 'missingKeys'>, config: VitrinConfig): Blocker[] {
+function toolBlockers(o: Pick<Overview, 'tools' | 'missingKeys'>, config: VitrinConfig, platforms: string[]): Blocker[] {
   const out: Blocker[] = [];
   const assets = config.selection?.assets;
   const video = (!assets || assets.includes('previews') || assets.includes('creatives')) && (config.video.enabled || Boolean(assets?.includes('previews')));
   if (video && !o.tools.ffmpeg) out.push({ code: 'ffmpeg-missing', severity: 'error', stage: 'video', params: { install: 'brew install ffmpeg' }, fixes: [] });
   if (!o.tools.claude) out.push({ code: 'claude-missing', severity: 'warning', stage: 'analyze', params: { install: 'npm install -g @anthropic-ai/claude-code' }, fixes: [] });
-  const uploader = config.upload.uploader;
-  if (!uploader) {
-    const asc = { id: 'use-asc', command: 'select', args: { uploader: 'asc' } };
-    const deliver = { id: 'use-deliver', command: 'select', args: { uploader: 'deliver' } };
-    out.push({ code: 'uploader-unset', severity: 'error', stage: 'upload', params: {}, fixes: o.tools.asc || !o.tools.fastlane ? [asc, deliver] : [deliver, asc] });
-  } else if (uploader === 'asc' && !o.tools.asc) {
+  // App Store: always the asc CLI. Google Play: fastlane supply.
+  if (platforms.some((p) => p !== 'android') && !o.tools.asc) {
     out.push({ code: 'uploader-missing', severity: 'error', stage: 'upload', params: { tool: 'asc', install: 'brew install asc' }, fixes: [] });
-  } else if (uploader !== 'asc' && !o.tools.fastlane) {
+  } else if (platforms.includes('android') && !o.tools.fastlane) {
     out.push({ code: 'uploader-missing', severity: 'error', stage: 'upload', params: { tool: 'fastlane', install: 'bundle install' }, fixes: [] });
   }
   if (o.missingKeys.length) out.push({ code: 'keys-missing', severity: 'error', stage: 'upload', params: { keys: o.missingKeys }, fixes: [] });

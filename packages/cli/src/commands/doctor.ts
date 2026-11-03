@@ -4,9 +4,12 @@ import {
   applePlatformsOf,
   ASC_INSTALL_HINT,
   ASC_PLATFORM,
+  ascClientFor,
   ascEnv,
+  ascHasOwnAuth,
   ascValidateInvocation,
   ascVersion,
+  ascVersionsCreateInvocation,
   AscApiError,
   AscClient,
   AscCredentialError,
@@ -18,7 +21,6 @@ import {
   PlayClient,
   platformsFromConfig,
   playKeyFromEnv,
-  runLane,
 } from '@vitrin/upload';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
@@ -52,6 +54,7 @@ export interface DoctorResult {
   exitCode: number;
 }
 
+/** fastlane is only used for Google Play (supply); this is the version the Gemfile template asks for. */
 export const MIN_FASTLANE = '2.241.1';
 
 export function compareVersions(a: string, b: string): number {
@@ -70,9 +73,14 @@ async function versionOf(cmd: string, args: string[], re: RegExp, cwd?: string):
   return re.exec(r.stdout + r.stderr)?.[1] ?? null;
 }
 
-/** What is installed for uploading: the asc CLI and fastlane (from the Gemfile's bundle, else on PATH) with Ruby. */
+/**
+ * What is installed for uploading: the asc CLI (every App Store upload) and, for Google Play only, fastlane (from
+ * the Gemfile's bundle, else on PATH) with Ruby and Bundler.
+ */
 export interface UploaderTools {
   asc: string | null;
+  /** asc has its own stored login (`asc auth login`), used when Vitrin has no ASC key. */
+  ascLogin?: boolean;
   fastlane: string | null;
   ruby: string | null;
   bundler: string | null;
@@ -82,22 +90,27 @@ export interface UploaderTools {
 
 export async function detectUploaderTools(root: string): Promise<UploaderTools> {
   const [asc, ruby, bundler, brew] = await Promise.all([ascVersion(), versionOf('ruby', ['--version'], /ruby (\d+\.\d+\.\d+)/), versionOf('bundle', ['--version'], /(\d+\.\d+\.\d+)/), versionOf('brew', ['--version'], /Homebrew (\d+\.\d+\.\d+)/)]);
+  const ascLogin = asc ? await ascHasOwnAuth() : false;
   let fastlane = bundler && existsSync(join(root, 'Gemfile')) ? await versionOf('bundle', ['exec', 'fastlane', '--version'], /fastlane (\d+\.\d+\.\d+)/, root) : null;
   fastlane ??= await versionOf('fastlane', ['--version'], /fastlane (\d+\.\d+\.\d+)/);
-  return { asc, fastlane, ruby, bundler, brew };
+  return { asc, ascLogin, fastlane, ruby, bundler, brew };
 }
 
 /**
  * Which of the upload-required keys are missing for the platforms the app ships on: the ASC key for any Apple
  * platform, the Google Play service account key for Android. ASC_KEY_PATH / ASC_KEY_CONTENT_BASE64 and
- * GOOGLE_PLAY_JSON_KEY_PATH / GOOGLE_PLAY_JSON_KEY_BASE64 are alternatives.
+ * GOOGLE_PLAY_JSON_KEY_PATH / GOOGLE_PLAY_JSON_KEY_BASE64 are alternatives. With `ascLogin` (asc has its own
+ * stored login) and no ASC_* key variable set at all, the ASC key is not needed: asc authenticates on its own. A
+ * partial key is still reported.
  */
-export function missingUploadKeys(env: NodeJS.ProcessEnv, platforms: Platform[] = ['ios']): Array<Pick<EnvKey, 'name' | 'where'>> {
+export function missingUploadKeys(env: NodeJS.ProcessEnv, platforms: Platform[] = ['ios'], opts: { ascLogin?: boolean } = {}): Array<Pick<EnvKey, 'name' | 'where'>> {
   const missing: Array<Pick<EnvKey, 'name' | 'where'>> = [];
   const apple = platforms.some((p) => p !== 'android');
   const android = platforms.includes('android');
+  const ascByLogin = Boolean(opts.ascLogin) && !['ASC_KEY_ID', 'ASC_ISSUER_ID', 'ASC_KEY_PATH', 'ASC_KEY_CONTENT_BASE64'].some((n) => env[n]?.trim());
   for (const k of ENV_KEYS) {
     if (k.required === 'upload' && apple) {
+      if (ascByLogin && k.name.startsWith('ASC_')) continue;
       if (k.name === 'ASC_KEY_PATH' && env.ASC_KEY_CONTENT_BASE64?.trim()) continue;
       if (!env[k.name]?.trim()) missing.push({ name: k.name, where: k.where });
     } else if (k.required === 'upload-android' && android) {
@@ -177,25 +190,21 @@ export async function runDoctor(ctx: Ctx, opts: { createVersion?: string; offlin
   add({ id: 'node', title: `Node.js ${node}`, status: compareVersions(node, '22.0.0') >= 0 ? 'ok' : 'fail', fix: 'Install Node 22 or later.' });
   const pnpm = await versionOf('pnpm', ['--version'], /(\d+\.\d+\.\d+)/);
   add({ id: 'pnpm', title: 'pnpm', status: pnpm ? 'ok' : 'warn', detail: pnpm ?? 'not found', fix: 'corepack enable && corepack prepare pnpm@latest --activate (only needed to install Vitrin from source).' });
-  // The user chooses the App Store uploader (asc CLI or fastlane). With asc, Apple uploads need no Ruby; fastlane is
-  // then only used for supply (Android) and `vitrin submit`. Before the choice, missing tools are warnings only.
-  const chosen = ctx.config.upload.uploader;
-  const useAsc = chosen === 'asc';
-  const fastlaneRequired = platforms.includes('android') || (apple.length > 0 && chosen !== undefined && chosen !== 'asc');
-  const rubyNeeded = (ok: boolean): CheckStatus => (ok ? 'ok' : fastlaneRequired ? 'fail' : 'warn');
-  const { asc, ruby, bundler, fastlane } = await detectUploaderTools(ctx.root);
-  if (apple.length) {
-    if (!chosen) add({ id: 'uploader', title: 'App Store uploader', status: 'warn', detail: `not chosen yet (asc CLI ${asc ? asc : 'not installed'}, fastlane ${fastlane ?? 'not installed'})`, fix: 'vitrin uploader shows the options; the user picks one: vitrin select --uploader asc|deliver' });
-    add({ id: 'asc', title: 'asc CLI', status: asc ? 'ok' : useAsc ? 'fail' : 'skip', detail: asc ?? (useAsc ? 'not found' : 'not installed (only needed for upload.uploader: asc)'), fix: ASC_INSTALL_HINT });
-  }
-  add({ id: 'ruby', title: 'Ruby', status: rubyNeeded(Boolean(ruby)), detail: ruby ?? 'not found', fix: useAsc ? 'brew install ruby (with the asc uploader only needed for Google Play and `vitrin submit`)' : 'brew install ruby' });
-  add({ id: 'bundler', title: 'Bundler', status: rubyNeeded(Boolean(bundler)), detail: bundler ?? 'not found', fix: 'gem install bundler' });
+  // App Store uploads always use the asc CLI (no Ruby). Ruby, Bundler and fastlane are only needed for Google Play
+  // (fastlane supply). The early `--tools` check only warns about a missing asc: nothing is uploaded yet.
+  const play = platforms.includes('android');
+  const { asc, ascLogin: ascSignedIn, ruby, bundler, fastlane } = await detectUploaderTools(ctx.root);
+  if (apple.length) add({ id: 'asc', title: 'asc CLI', status: asc ? 'ok' : opts.tools ? 'warn' : 'fail', detail: asc ?? 'not found (every App Store upload uses it)', fix: ASC_INSTALL_HINT });
+  const playTool = (ok: boolean): CheckStatus => (ok ? 'ok' : play ? 'fail' : 'skip');
+  const playOnly = play ? undefined : 'only needed for Google Play';
+  add({ id: 'ruby', title: 'Ruby', status: playTool(Boolean(ruby)), detail: ruby ?? playOnly ?? 'not found', fix: 'brew install ruby (Google Play uploads use fastlane supply)' });
+  add({ id: 'bundler', title: 'Bundler', status: playTool(Boolean(bundler)), detail: bundler ?? playOnly ?? 'not found', fix: 'gem install bundler' });
   add({
     id: 'fastlane',
-    title: `fastlane ≥ ${MIN_FASTLANE}`,
-    status: rubyNeeded(Boolean(fastlane && compareVersions(fastlane, MIN_FASTLANE) >= 0)),
-    detail: fastlane ?? 'not found',
-    fix: `Add gem "fastlane", ">= ${MIN_FASTLANE}" to the Gemfile and run \`bundle install\`. Older versions do not know the iPhone Duo sizes and abort the upload.`,
+    title: `fastlane ≥ ${MIN_FASTLANE} (Google Play)`,
+    status: playTool(Boolean(fastlane && compareVersions(fastlane, MIN_FASTLANE) >= 0)),
+    detail: fastlane ?? playOnly ?? 'not found',
+    fix: `Add gem "fastlane", ">= ${MIN_FASTLANE}" to the Gemfile and run \`bundle install\` (fastlane supply uploads the Google Play listing).`,
   });
   const xcode = await versionOf('xcodebuild', ['-version'], /Xcode (\d+(?:\.\d+)*)/);
   // Xcode is needed for Apple capture only; an Android-only app can run without it.
@@ -221,7 +230,10 @@ export async function runDoctor(ctx: Ctx, opts: { createVersion?: string; offlin
   log.step('2/7 .env and keys');
   const hasEnv = existsSync(ctx.paths.env);
   add({ id: 'env', title: '.env file', status: hasEnv ? 'ok' : 'warn', detail: hasEnv ? ctx.paths.env : 'missing', fix: `cp .env.example .env and fill in the values (${ctx.paths.env}).` });
-  const missingKeys = missingUploadKeys(ctx.env, platforms);
+  // No Vitrin ASC key but a stored `asc auth login`: asc (and Vitrin's API calls through `asc api`) use that.
+  const ascLogin = apple.length > 0 && ascEnv(ctx.env, ctx.root).source === 'asc-login' && Boolean(ascSignedIn);
+  if (ascLogin) add({ id: 'asc-login', title: 'ASC credential', status: 'ok', detail: 'no Vitrin key; asc uses its own login (asc auth status)' });
+  const missingKeys = missingUploadKeys(ctx.env, platforms, { ascLogin });
   const missingAsc = missingKeys.filter((k) => k.name.startsWith('ASC_'));
   for (const k of missingKeys) add({ id: `key:${k.name}`, title: k.name, status: 'fail', detail: 'missing', fix: k.where });
   let keyFileOk = Boolean(ctx.env.ASC_KEY_CONTENT_BASE64?.trim());
@@ -243,10 +255,11 @@ export async function runDoctor(ctx: Ctx, opts: { createVersion?: string; offlin
   let appId: string | undefined;
   if (!apple.length) add({ id: 'api', title: 'Live API test', status: 'skip', detail: 'no Apple platform in app.platforms' });
   else if (opts.offline) add({ id: 'api', title: 'Live API test', status: 'skip', detail: '--offline' });
-  else if (missingAsc.length || !keyFileOk) add({ id: 'api', title: 'Live API test', status: 'skip', detail: 'keys missing' });
+  else if (!ascLogin && (missingAsc.length || !keyFileOk)) add({ id: 'api', title: 'Live API test', status: 'skip', detail: 'keys missing' });
   else {
     try {
-      client = new AscClient(credentialsFromEnv(process.env));
+      client = (await ascClientFor(ctx.env, ctx.root, () => new AscClient(credentialsFromEnv(process.env)))).client;
+      if (!client) throw new AscCredentialError('ASC API key is missing (ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_PATH) and asc has no login (asc auth login).');
       const bundleId = bundleIdOf(ctx);
       const app = await client.findApp(bundleId);
       if (!app) {
@@ -273,9 +286,13 @@ export async function runDoctor(ctx: Ctx, opts: { createVersion?: string; offlin
       let versions = await client.appStoreVersions(appId, platform);
       let editable = versions.find(isEditableVersion);
       if (!editable && opts.createVersion && p === apple[0]) {
-        log.info(`  Trying to create version ${opts.createVersion} with deliver…`);
+        log.info(`  Trying to create version ${opts.createVersion} with asc versions create…`);
         try {
-          await runLane(ctx.paths, 'vitrin_create_version', { bundleId: bundleIdOf(ctx), languages: [], appVersion: opts.createVersion, platform: p, skipMetadata: true, skipScreenshots: true });
+          const auth = ascEnv(ctx.env, ctx.root);
+          if (auth.problems.length) throw new Error(`asc credentials: ${auth.problems.join('; ')}`);
+          const inv = ascVersionsCreateInvocation({ appId, version: opts.createVersion, platform: platform as 'IOS' }, auth.env);
+          const res = await exec(inv.command, inv.args, { cwd: ctx.root, env: inv.env, stream: true, timeoutMs: 180_000 });
+          if (res.code !== 0) throw new Error(`asc versions create failed (exit ${res.code}); App Store Connect may require the first version to be created by hand.`);
           versions = await client.appStoreVersions(appId, platform);
           editable = versions.find(isEditableVersion);
         } catch (err) {

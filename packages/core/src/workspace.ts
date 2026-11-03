@@ -91,11 +91,11 @@ export function appPaths(root: string) {
     config: join(root, 'vitrin.config.yaml'),
     env: join(root, '.env'),
     envExample: join(root, '.env.example'),
-    /** Only the Fastfile lives here, and only when fastlane is the chosen uploader (or for Google Play supply). */
+    /** Only the Fastfile lives here, and only for Google Play (fastlane supply). */
     fastlane: join(root, 'fastlane'),
-    /** The generated store set, in the layout deliver and supply read (whatever the uploader): metadata text, screenshots and App Previews. */
+    /** The generated store set: metadata text (also supply's Google Play tree under metadata/android), screenshots and App Previews. */
     store: join(v, 'store'),
-    fastlaneMetadata: join(v, 'store', 'metadata'),
+    storeMetadata: join(v, 'store', 'metadata'),
     screenshots: join(v, 'store', 'screenshots'),
     appPreviews: join(v, 'store', 'app-previews'),
     /** Each Custom Product Page's own screenshot set: cpp/<page id>/<locale>/NN_slug_<target>.png. */

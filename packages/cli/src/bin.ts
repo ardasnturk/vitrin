@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { log, mask, SchemaError, setLogMode, vitrinVersion } from '@vitrin/core';
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import pc from 'picocolors';
 import { approvalStage, approveCommand } from './approval.js';
 import { createContext, EXIT, NeedsInput, studioRunRefusal, type GlobalOptions } from './context.js';
@@ -63,15 +63,15 @@ function action<A extends unknown[]>(fn: (...args: A) => Promise<number>) {
 
 program
   .command('init')
-  .description('creates vitrin.config.yaml, .env.example and the .gitignore block (fastlane files only once fastlane is chosen)')
-  .option('--uploader <name>', 'App Store uploader the user chose: asc | deliver | asset-library')
+  .description('creates vitrin.config.yaml and the .gitignore block')
+  .addOption(new Option('--uploader <name>', 'removed: App Store uploads always use the asc CLI').hideHelp())
   .option('--language <tag>', 'language Vitrin talks to the user in (en, tr, de …)')
   .action(action(async (o: { uploader?: string; language?: string }) => initCommand({ cwd: globals().cwd, force: globals().force, uploader: o.uploader, language: o.language })));
 
 program
   .command('doctor')
   .description('checks tools, keys, ASC access, the app version, URLs and refData')
-  .option('--create-version <version>', 'if there is no editable version, try to create one with deliver')
+  .option('--create-version <version>', 'if there is no editable version, try to create one with asc versions create')
   .option('--offline', 'make no network requests')
   .option('--play-live', 'read-only Google Play API test (opens and deletes an edit)')
   .option('--tools', 'only the local tools (the early check): no keys, no network, writes nothing')
@@ -114,7 +114,7 @@ program
 
 program
   .command('select')
-  .description('stores the user\'s choices in vitrin.config.yaml: platforms, content, formats, store locales, language, uploader')
+  .description('stores the user\'s choices in vitrin.config.yaml: platforms, content, formats, store locales, language, capture mode')
   .option('--platforms <platforms>', 'ios,macos,watchos,tvos,visionos,android or "all"')
   .option('--assets <assets>', 'metadata,screenshots,previews,creatives,events or "all"')
   .option('--targets <formats>', 'formats (target ids: iphone-6.9,ipad-13,…) or "all"; see vitrin platforms')
@@ -124,13 +124,13 @@ program
   .option('--privacy-url <url>', 'privacy policy URL for every locale (urls.privacy)')
   .option('--marketing-url <url>', 'marketing URL for every locale (urls.marketing)')
   .option('--language <tag>', 'language Vitrin talks to the user in (en, tr, de …; "default" = English)')
-  .option('--uploader <name>', 'App Store uploader: asc | deliver | asset-library')
+  .addOption(new Option('--uploader <name>', 'removed: App Store uploads always use the asc CLI').hideHelp())
   .option('--capture <mode>', 'how screens are made: html (from the code, no build) | launch-args (build + simulators) | manual')
   .action(action(async (o: SelectOptions) => selectCommand(await createContext(globals()), o)));
 
 program
   .command('uploader')
-  .description('shows whether the asc CLI and fastlane are installed, for the App Store uploader choice')
+  .description('shows whether the asc CLI (the App Store uploader) is installed and signed in')
   .option('--json', 'machine-readable output')
   .action(action(async (o: { json?: boolean }) => uploaderCommand(await createContext(globals()), { json: o.json || globals().json })));
 
@@ -214,10 +214,10 @@ program
 
 program
   .command('upload')
-  .description('uploads with fastlane + the ASC API (plan first; --dry-run shows the plan only)')
+  .description('uploads with the asc CLI (App Store) and fastlane supply (Google Play); plan first, --dry-run shows the plan only')
   .option('--dry-run', 'show the plan only')
   .option('--yes', 'skip the terminal prompt (only if the user explicitly said yes); never skips the approval gate')
-  .option('--uploader <name>', 'deliver | asset-library | asc')
+  .addOption(new Option('--uploader <name>', 'removed: App Store uploads always use the asc CLI').hideHelp())
   .option('--creatives', 'also upload the product page header and search creatives')
   .option('--cpp', 'create the Custom Product Page suggestions')
   .option('--events', 'create the In-App Event drafts')

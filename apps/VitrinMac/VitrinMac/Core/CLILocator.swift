@@ -33,7 +33,7 @@ enum CLIError: LocalizedError, Sendable {
     }
 }
 
-/// The user's shell environment: a GUI app starts with a bare PATH, so tools like node, asc, fastlane, ffmpeg and
+/// The user's shell environment: a GUI app starts with a bare PATH, so tools like node, asc, ffmpeg and
 /// claude are found through the login shell once, then passed to every process the app starts.
 enum ShellEnvironment {
     nonisolated(unsafe) private static var cached: [String: String]?

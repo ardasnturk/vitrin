@@ -403,7 +403,7 @@ enum Pipeline {
 }
 
 enum ProjectPage: String, CaseIterable, Identifiable, Codable, Sendable {
-    case flow, research, listing, visuals, review, upload
+    case flow, research, listing, visuals, review, upload, asc
     var id: String { rawValue }
     var symbol: String {
         switch self {
@@ -413,6 +413,7 @@ enum ProjectPage: String, CaseIterable, Identifiable, Codable, Sendable {
         case .visuals: return "photo.on.rectangle.angled"
         case .review: return "checklist"
         case .upload: return "arrow.up.circle"
+        case .asc: return "storefront"
         }
     }
     var titleKey: String {
@@ -423,6 +424,7 @@ enum ProjectPage: String, CaseIterable, Identifiable, Codable, Sendable {
         case .visuals: return "page.visuals"
         case .review: return "page.review"
         case .upload: return "page.upload"
+        case .asc: return "page.asc"
         }
     }
 }

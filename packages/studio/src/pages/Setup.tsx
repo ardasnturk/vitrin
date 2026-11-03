@@ -29,7 +29,6 @@ interface Draft {
   locales: string[];
   primaryLocale: string;
   language: string;
-  uploader: string;
   capture: string;
 }
 
@@ -60,7 +59,6 @@ export function Setup() {
       locales: cfg.locales,
       primaryLocale: cfg.primaryLocale,
       language: cfg.language ?? 'en',
-      uploader: cfg.uploader ?? '',
       capture: cfg.capture,
     }),
     [p, cfg],
@@ -90,7 +88,6 @@ export function Setup() {
   if (!same(draft.locales, saved.locales)) args.locales = draft.locales;
   if (draft.primaryLocale !== saved.primaryLocale) args.primaryLocale = draft.primaryLocale;
   if (draft.language !== saved.language) args.language = draft.language === 'en' ? 'default' : draft.language;
-  if (draft.uploader && draft.uploader !== saved.uploader) args.uploader = draft.uploader;
   if (draft.capture !== saved.capture) args.capture = draft.capture;
   const changes = Object.keys(args).length;
 
@@ -195,16 +192,12 @@ export function Setup() {
         </Section>
 
         <Section n={5} title={t('uploader')}>
-          {!draft.uploader && <div className="text-err small">{t('blockerUploaderUnset')}</div>}
           <div className="stack tight">
-            <Radio name="uploader" checked={draft.uploader === 'asc'} onChange={() => set('uploader', 'asc')} hint={t('uploaderAscHint')}>
+            <div>
               asc CLI {o.tools.asc ? <Pill tone="ok">{`${t('installed')} ${o.tools.asc}`}</Pill> : <Pill tone="warn">{t('missing')}</Pill>}
-            </Radio>
-            {draft.uploader === 'asc' && !o.tools.asc && <CopyCode text="brew install asc" />}
-            <Radio name="uploader" checked={draft.uploader === 'deliver'} onChange={() => set('uploader', 'deliver')} hint={t('uploaderDeliverHint')}>
-              fastlane deliver {o.tools.fastlane ? <Pill tone="ok">{`${t('installed')} ${o.tools.fastlane}`}</Pill> : <Pill tone="warn">{t('missing')}</Pill>}
-            </Radio>
-            {draft.uploader === 'deliver' && !o.tools.fastlane && <CopyCode text="bundle install" />}
+              <div className="dim small">{t('uploaderAscHint')}</div>
+            </div>
+            {!o.tools.asc && <CopyCode text="brew install asc" />}
           </div>
         </Section>
 
@@ -299,15 +292,17 @@ function NewLocale({ onAdd }: { onAdd: (locale: string) => void }) {
 /** Each tool, why this run needs it (or not, for this selection) and how to install it. */
 function Tools({ o, draft }: { o: Overview; draft: Draft }) {
   const video = o.flow.find((s) => s.id === 'video')?.status !== 'skipped';
-  const fastlane = draft.uploader === 'deliver' || draft.uploader === 'asset-library' || draft.platforms.includes('android');
-  const rows: Array<{ id: keyof Overview['tools']; why: UiKey; needed: boolean; install: string }> = [
+  // App Store uploads use the asc CLI; fastlane (with Ruby and Bundler) is only for Google Play.
+  const apple = !draft.platforms.length || draft.platforms.some((p) => p !== 'android');
+  const fastlane = draft.platforms.includes('android');
+  const rows: Array<{ id: Exclude<keyof Overview['tools'], 'ascLogin'>; why: UiKey; needed: boolean; install: string }> = [
     { id: 'claude', why: 'toolWhyClaude', needed: true, install: 'npm install -g @anthropic-ai/claude-code' },
     { id: 'ffmpeg', why: 'toolWhyFfmpeg', needed: video, install: 'brew install ffmpeg' },
-    { id: 'asc', why: 'toolWhyAsc', needed: draft.uploader === 'asc', install: 'brew install asc' },
+    { id: 'asc', why: 'toolWhyAsc', needed: apple, install: 'brew install asc' },
     { id: 'fastlane', why: 'toolWhyFastlane', needed: fastlane, install: 'bundle install' },
     { id: 'ruby', why: 'toolWhyRuby', needed: fastlane, install: 'brew install ruby' },
     { id: 'bundler', why: 'toolWhyBundler', needed: fastlane, install: 'gem install bundler' },
-    { id: 'brew', why: 'toolWhyBrew', needed: (video && !o.tools.ffmpeg) || (draft.uploader === 'asc' && !o.tools.asc), install: 'https://brew.sh' },
+    { id: 'brew', why: 'toolWhyBrew', needed: (video && !o.tools.ffmpeg) || (apple && !o.tools.asc), install: 'https://brew.sh' },
   ];
   return (
     <div className="tools">

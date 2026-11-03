@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-/** ASC locale code as used by fastlane deliver (e.g. `tr`, `en-US`, `zh-Hans`). */
+/** App Store Connect locale code (e.g. `tr`, `en-US`, `zh-Hans`). */
 export const AscLocale = z.string().regex(/^[a-z]{2,3}(-[A-Za-z]{2,4})?$/, 'Invalid ASC locale code');
 export type AscLocale = z.infer<typeof AscLocale>;
 

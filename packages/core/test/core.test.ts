@@ -5,15 +5,20 @@ import {
   enabledTargets,
   graphemeLength,
   hashValue,
+  loadConfig,
   loadStorefronts,
   loadTargets,
   mask,
+  onLog,
   renderEnvExample,
   splitKeywords,
   storefrontForLocale,
   xcodeToAsc,
 } from '../src/index.js';
-import { VitrinConfig } from '@vitrin/schemas';
+import { legacyUploaderOf, uploaderOf, VitrinConfig } from '@vitrin/schemas';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 describe('byte and character counting', () => {
   it('counts Turkish letters as two UTF-8 bytes', () => {
@@ -112,5 +117,29 @@ describe('hashing', () => {
   it('is independent of key order', () => {
     expect(hashValue({ a: 1, b: [1, 2] })).toBe(hashValue({ b: [1, 2], a: 1 }));
     expect(hashValue({ a: 1 })).not.toBe(hashValue({ a: 2 }));
+  });
+});
+
+describe('removed uploaders', () => {
+  it('still loads an old `uploader: deliver` config, treats it as asc and warns once', () => {
+    const file = join(mkdtempSync(join(tmpdir(), 'vitrin-legacy-')), 'vitrin.config.yaml');
+    writeFileSync(file, 'app:\n  bundleId: com.a\nurls: {}\nupload:\n  uploader: deliver\n');
+    const warnings: string[] = [];
+    const off = onLog((e) => {
+      if (e.level === 'warn') warnings.push(e.text);
+    });
+    try {
+      const config = loadConfig(file);
+      loadConfig(file);
+      expect(uploaderOf(config)).toBe('asc');
+      expect(legacyUploaderOf(config)).toBe('deliver');
+      expect(warnings).toHaveLength(1);
+      expect(warnings[0]).toMatch(/upload.uploader: deliver was removed; App Store uploads always use the asc CLI/);
+    } finally {
+      off();
+    }
+    expect(legacyUploaderOf(VitrinConfig.parse({ app: {}, urls: {}, upload: { uploader: 'asc' } }))).toBeUndefined();
+    expect(uploaderOf(VitrinConfig.parse({ app: {}, urls: {} }))).toBe('asc');
+    expect(VitrinConfig.safeParse({ app: {}, urls: {}, upload: { uploader: 'fastlane' } }).success).toBe(false);
   });
 });

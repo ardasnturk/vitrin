@@ -24,7 +24,7 @@ struct LogPanel: View {
                         Text(L.job(j)).font(.callout.weight(.medium))
                         Text(L.date(j.startedAt)).font(.caption).foregroundStyle(.secondary)
                     } else if let f = session.finishedJob {
-                        Pill(L.t("job.\(f.status)"), Tone.ofJob(f.status))
+                        Pill(L.t("job.\(f.status)"), Tone.ofJob(f.status)).fixedSize()
                         Text(L.job(f)).font(.callout)
                         if let m = f.message { Text(m).font(.caption).foregroundStyle(.secondary) }
                     } else {

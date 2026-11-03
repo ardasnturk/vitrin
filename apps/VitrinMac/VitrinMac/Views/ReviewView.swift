@@ -23,7 +23,7 @@ struct ReviewView: View {
                     }
                     Spacer()
                     Button(L.stage("validate")) { Task { await session.run("validate") } }.disabled(session.isBusy).cliHelp("vitrin validate")
-                    Button(L.t("review.rebuild")) { Task { await load() } }.disabled(session.isBusy || loading).cliHelp("vitrin review")
+                    Button(L.t("review.rebuild")) { Task { await load(); frameKey += 1 } }.disabled(session.isBusy || loading).cliHelp("vitrin review")
                     Button(L.t("review.reject")) { showReject = true }.disabled(session.isBusy || review == nil).accessibilityIdentifier("review.reject")
                     Button(L.t("review.approveAll")) { confirmApprove = true }.buttonStyle(.borderedProminent).accessibilityIdentifier("review.approveAll")
                         .disabled(session.isBusy || loading || review == nil || review?.approval.ok == true || invalid)
@@ -51,7 +51,9 @@ struct ReviewView: View {
                 EmptyHint(text: L.t("review.noReport"), symbol: "checklist")
             }
         }
-        .task(id: session.changedTick) { if session.job == nil { await load() } }
+        // Reload when files changed or a job finished, but redraw the gallery only when its content (the overall
+        // hash) changed: reading the review regenerates report.html, and redrawing on every read looked like a loop.
+        .task(id: "\(session.changedTick)-\(session.finishedJob?.id ?? "")") { if session.job == nil { await load() } }
         .confirmationDialog(L.t("review.approveAll"), isPresented: $confirmApprove, titleVisibility: .visible) {
             Button(L.t("review.approveConfirm", review?.items.count ?? 0)) { Task { await approve() } }
             Button(L.t("common.cancel"), role: .cancel) {}
@@ -68,8 +70,9 @@ struct ReviewView: View {
         loading = true
         defer { loading = false }
         do {
-            review = try await c.review()
-            frameKey += 1
+            let r = try await c.review()
+            if r.overallHash != review?.overallHash || r.approval.ok != review?.approval.ok { frameKey += 1 }
+            review = r
         } catch {
             session.report(error)
         }

@@ -1,18 +1,27 @@
-import { VitrinConfig } from '@vitrin/schemas';
+import { legacyUploaderOf, VitrinConfig } from '@vitrin/schemas';
 import { parse as parseDotenv } from 'dotenv';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, isAbsolute, resolve } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import { parseWith } from './fsx.js';
-import { registerEnvSecrets } from './logger.js';
+import { log, registerEnvSecrets } from './logger.js';
 
 export function loadConfig(file: string): VitrinConfig {
   if (!existsSync(file)) {
     throw new Error(`vitrin.config.yaml not found (${file}). Run \`vitrin init\` first.`);
   }
   const data = parseYaml(readFileSync(file, 'utf8')) ?? {};
-  return parseWith(file, data, VitrinConfig);
+  const config = parseWith(file, data, VitrinConfig);
+  const legacy = legacyUploaderOf(config);
+  if (legacy && !warnedLegacyUploader.has(file)) {
+    // Once per config file and process: the Studio re-reads the config on every request.
+    warnedLegacyUploader.add(file);
+    log.warn(`upload.uploader: ${legacy} was removed; App Store uploads always use the asc CLI now (brew install asc). Delete the line from vitrin.config.yaml.`);
+  }
+  return config;
 }
+
+const warnedLegacyUploader = new Set<string>();
 
 /**
  * Loads `.env` without overriding variables already set in the process environment,

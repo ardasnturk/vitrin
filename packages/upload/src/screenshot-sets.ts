@@ -11,10 +11,11 @@ import { defaultSleep, md5, performUploadOperations, type PollOptions, type Uplo
  * checked against the App Store Connect API 4.5.1 OpenAPI spec (AppScreenshotSetCreateRequest,
  * AppScreenshotCreateRequest, AppScreenshotUpdateRequest, AppScreenshotSetAppScreenshotsLinkagesRequest and the
  * AppPreview* equivalents). The 4.5.1 release notes deprecate these resources in favour of the App Asset Library,
- * but the 4.5.1 spec still publishes every operation used here without a `deprecated` flag, and fastlane deliver and
- * the asc CLI use them.
+ * but the 4.5.1 spec still publishes every operation used here without a `deprecated` flag, and the asc CLI uses
+ * them.
  *
- * Unlike deliver's overwrite (which deletes every set of a locale), this touches exactly one set: it finds (or
+ * The App Store upload goes through the asc CLI; this client is kept for `uploadPerDisplayType({ classic: 'api' })`.
+ * It touches exactly one set: it finds (or
  * creates) the set of one localization and one display type, deletes only that set's items, uploads the new files
  * (reserve → upload operations → commit with the MD5 `sourceFileChecksum` → poll the delivery state) and sets the
  * order. The flow follows the one in rorkai/App-Store-Connect-CLI (MIT; internal/cli/assets).

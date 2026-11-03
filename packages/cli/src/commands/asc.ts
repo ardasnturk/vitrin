@@ -3,6 +3,7 @@ import { AscClient, AscCredentialError, credentialsFromEnv, type JsonApiDocument
 import { join } from 'node:path';
 import pc from 'picocolors';
 import { EXIT, NeedsInput } from '../context.js';
+import { compareVersions } from './doctor.js';
 
 /**
  * `vitrin asc …`: App Store Connect read-only, with the key from the environment or a project's `.env` and no
@@ -16,7 +17,6 @@ export interface AscAppVersion {
   version: string;
   /** `appVersionState` (or the older `appStoreState`): READY_FOR_SALE, PREPARE_FOR_SUBMISSION, IN_REVIEW … */
   state: string;
-  createdAt?: string;
 }
 
 export interface AscAppSummary {
@@ -37,20 +37,20 @@ export interface AscAppsResult {
 }
 
 type AppAttributes = { name?: string; bundleId?: string; sku?: string; primaryLocale?: string };
-type VersionAttributes = { platform?: string; versionString?: string; appVersionState?: string; appStoreState?: string; createdAt?: string };
+type VersionAttributes = { platform?: string; versionString?: string; appVersionState?: string; appStoreState?: string };
 
 const PLATFORM_ORDER = ['IOS', 'MAC_OS', 'TV_OS', 'VISION_OS'];
 /** `include=appStoreVersions` carries at most this many versions per app; ASC lists the newest first. */
 const VERSIONS_PER_APP = 50;
 
-export const ASC_APPS_PATH = `/v1/apps?include=appStoreVersions&fields[apps]=name,bundleId,sku,primaryLocale&fields[appStoreVersions]=platform,versionString,appVersionState,appStoreState,createdAt&limit=200&limit[appStoreVersions]=${VERSIONS_PER_APP}`;
+export const ASC_APPS_PATH = `/v1/apps?include=appStoreVersions&fields[apps]=name,bundleId,sku,primaryLocale,appStoreVersions&fields[appStoreVersions]=platform,versionString,appVersionState,appStoreState&limit=200&limit[appStoreVersions]=${VERSIONS_PER_APP}`;
 
 const stateOf = (a: VersionAttributes) => a.appVersionState ?? a.appStoreState ?? '';
 
 /**
  * The team's apps with the newest App Store version per platform, in one listing: `GET /v1/apps` with the versions
- * included, every page followed. The newest version is the one created last (ASC's `createdAt`), so a 2.0 in
- * preparation shows next to a 1.9 on sale as the current one.
+ * included, every page followed. The newest version is the highest version number (`createdAt` is not a field
+ * `fields[appStoreVersions]` accepts: ASC answers 400), so a 2.0 in preparation wins over a 1.9 on sale.
  */
 export async function listAscApps(client: AscClient): Promise<AscAppSummary[]> {
   const apps: Array<JsonApiResource<AppAttributes>> = [];
@@ -91,17 +91,17 @@ const rank = (platform: string) => {
   return i < 0 ? PLATFORM_ORDER.length : i;
 };
 
-/** One version per platform: the one created last, by `createdAt`; without it, the first ASC listed. */
+/** One version per platform: the highest version number; on a tie, the first ASC listed. */
 export function latestPerPlatform(versions: Array<JsonApiResource<VersionAttributes>>): AscAppVersion[] {
   const byPlatform = new Map<string, JsonApiResource<VersionAttributes>>();
   for (const v of versions) {
     const platform = v.attributes.platform ?? '';
     if (!platform) continue;
     const cur = byPlatform.get(platform);
-    if (!cur || (v.attributes.createdAt ?? '') > (cur.attributes.createdAt ?? '')) byPlatform.set(platform, v);
+    if (!cur || compareVersions(v.attributes.versionString ?? '', cur.attributes.versionString ?? '') > 0) byPlatform.set(platform, v);
   }
   return [...byPlatform.values()]
-    .map((v) => ({ id: v.id, platform: v.attributes.platform ?? '', version: v.attributes.versionString ?? '', state: stateOf(v.attributes), ...(v.attributes.createdAt ? { createdAt: v.attributes.createdAt } : {}) }))
+    .map((v) => ({ id: v.id, platform: v.attributes.platform ?? '', version: v.attributes.versionString ?? '', state: stateOf(v.attributes) }))
     .sort((a, b) => rank(a.platform) - rank(b.platform) || a.platform.localeCompare(b.platform));
 }
 
