@@ -548,23 +548,23 @@ private struct AppInfoEditor: View {
 
 private struct AscBuildsTab: View {
     var app: ASCApp
+    @State private var tick = 0
     var body: some View {
         TabPage {
+            BuildCounters(appID: app.id, version: app.current?.version, platform: app.current?.platform)
             AscLoad(args: ["builds", "list", "--app", app.id, "--limit", "50", "--sort", "-uploadedDate"]) { doc, reload in
                 let builds = AscActions.options(doc) { b in "\(JSONAPI.text(b, "version")) · \(ASCWords.state(JSONAPI.text(b, "processingState"))) · \(JSONAPI.date(JSONAPI.text(b, "uploadedDate")))" }
                 AscLoad(args: ["testflight", "groups", "list", "--app", app.id]) { gdoc, _ in
                     let groups = AscActions.options(gdoc) { JSONAPI.text($0, "name") }
                     ActionBar(title: L.t("act.section.builds")) {
-                        AscActionButton(action: AscActions.addBuildToGroups(builds: builds, groups: groups), done: reload)
+                        AscActionButton(action: AscActions.addBuildToGroups(builds: builds, groups: groups), done: { reload(); tick += 1 })
                         AscActionButton(action: AscActions.testNotes(builds: builds), done: reload)
-                        AscActionButton(action: AscActions.expireBuild(builds: builds), done: reload)
+                        AscActionButton(action: AscActions.expireBuild(builds: builds), done: { reload(); tick += 1 })
                     }
                 }
-                ResourceTable(items: JSONAPI.items(doc), columns: [
-                    (L.t("asc.field.build"), "version", .mono), (L.t("asc.field.processingState"), "processingState", .state),
-                    (L.t("asc.field.uploadedDate"), "uploadedDate", .date), (L.t("asc.field.minOsVersion"), "minOsVersion", .mono), (L.t("asc.field.expired"), "expired", .bool),
-                ], empty: L.t("asc.empty"))
             }
+            BuildList(appID: app.id).id(tick)
+            AscSection(title: L.t("asc.builds.uploads"), args: ["builds", "uploads", "list", "--app", app.id, "--limit", "20"])
         }
     }
 }
