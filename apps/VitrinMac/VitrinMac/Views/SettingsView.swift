@@ -86,6 +86,7 @@ struct GeneralSettings: View {
             Toggle(L.t("settings.menuBar"), isOn: $settings.showMenuBarExtra)
             Toggle(L.t("settings.keepInMenuBar"), isOn: $settings.keepInMenuBar).disabled(!settings.showMenuBarExtra)
             Toggle(L.t("settings.notifications"), isOn: $settings.notifications)
+            Toggle(L.t("settings.notifyAppReview"), isOn: $settings.notifyAppReview).disabled(!settings.notifications)
             Toggle(L.t("settings.developerMode"), isOn: $settings.developerMode)
             Text(L.t("settings.developerModeHint")).font(.caption).foregroundStyle(.secondary)
         }

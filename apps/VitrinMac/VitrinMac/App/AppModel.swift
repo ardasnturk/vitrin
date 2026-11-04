@@ -22,6 +22,7 @@ import Observation
     private(set) var cli: CLILocation?
     private(set) var cliError: String?
     private(set) var locating = false
+    private var watchingAppReview = false
     var selectedProjectID: String? { didSet { settings.lastProjectID = selectedProjectID; applyLanguage() } }
     var selectedPage: ProjectPage = .flow
     /// An App Store Connect app without a linked project folder, shown read-only; nil while a project page is open.
@@ -78,6 +79,34 @@ import Observation
         if let id = selectedAppID, ascApps.app(id) == nil, ascApps.error == nil { selectedAppID = nil }
     }
 
+    /// Runs for as long as the app does, also in the menu bar. The window's task calls `bootstrap` each time it opens.
+    private func watchAppReview() async {
+        while !Task.isCancelled {
+            try? await Task.sleep(for: AscWatcher.interval)
+            await checkAppReview()
+        }
+    }
+
+    /// One look at the team's apps: a change of review stage notifies, and what was read about the apps is old.
+    func checkAppReview() async {
+        guard settings.notifications, settings.notifyAppReview, connection.isConnected else { return }
+        let file = AscWatcher.defaultFile
+        let previous = AscWatcher.read(file)
+        guard !AscWatcher.remoteCodeIsWatching(previous) else { return }
+        await ascApps.refresh(cli: cli, connection: connection, force: true)
+        guard ascApps.error == nil, !ascApps.apps.isEmpty else { return }
+        let states = AscWatcher.snapshot(ascApps.apps)
+        AscWatcher.write(states, to: file)
+        // The first look only records where everything stands.
+        guard let previous else { return }
+        let changes = AscWatcher.changes(from: previous.states, to: states)
+        if !changes.isEmpty { AscCache.shared.markStale() }
+        for v in changes {
+            Notifier.shared.post(id: "review-\(v.appId)-\(v.platform)-\(v.version)-\(v.state)", title: v.name,
+                                 body: "\(ASCWords.platform(v.platform)) \(v.version) · \(ASCWords.state(v.state))")
+        }
+    }
+
     func session(for project: Project) -> ProjectSession {
         if let s = sessions[project.id] { return s }
         let s = ProjectSession(project: project)
@@ -101,6 +130,10 @@ import Observation
         // The team's apps load beside the project, not after it.
         Task { await refreshApps(force: false) }
         Task { await updates.checkPeriodically() }
+        if !watchingAppReview {
+            watchingAppReview = true
+            Task { await watchAppReview() }
+        }
         Task { await updateCLIIfBehind() }
         if let p = selectedProject { await open(p) }
     }

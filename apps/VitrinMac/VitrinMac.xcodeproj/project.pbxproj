@@ -59,6 +59,7 @@
 		97A67230093A24847BEE711E /* CLILocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC082A50AEAD3C99A7E712AF /* CLILocator.swift */; };
 		995AB2D8F86A69A8DF460F75 /* UploadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 412D65A67CF2009541AEFC8E /* UploadView.swift */; };
 		9DEBF170D8890B5F3401ABFC /* AscInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18E48C89E6C1131FF957CC8E /* AscInfo.swift */; };
+		A1BCC86ADF84C8E5E6CC01C2 /* AscWatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52819F3765FB60BD0271AA8E /* AscWatcherTests.swift */; };
 		A63A2F8A3F229E7565B4175B /* AppOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05330799116EDBE82AD2E147 /* AppOverviewView.swift */; };
 		A74572103D06B2B4AA1C0018 /* ToolInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9575609DEC6358FE7AF6E2 /* ToolInstaller.swift */; };
 		B6C12D075547C0AA2391A411 /* NewAppSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A5FE2C9F194704127BD745E /* NewAppSheet.swift */; };
@@ -88,6 +89,7 @@
 		F8807D81811939B7F66851F9 /* Credentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBE13B7B4C070E9A2003F7A0 /* Credentials.swift */; };
 		F9D9D34D2E981B414D2A1E6E /* Limits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40D651EA0B55D06E8A246136 /* Limits.swift */; };
 		FDDCB6D38FA3EF81F65B3C99 /* AppleAdsConnect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39EB0D12A69C6786A8A6857E /* AppleAdsConnect.swift */; };
+		FFA1A8E52B5B31499FBCD2EE /* AscWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB5A333B9C11EF4A20D36E5 /* AscWatcher.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -131,6 +133,7 @@
 		39EB0D12A69C6786A8A6857E /* AppleAdsConnect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleAdsConnect.swift; sourceTree = "<group>"; };
 		3A0337E82A1E296689C01C0D /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		3BB53321E2AC6996F8DDAFA1 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
+		3BB5A333B9C11EF4A20D36E5 /* AscWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscWatcher.swift; sourceTree = "<group>"; };
 		3F072DDADE9FDE8E22ED817A /* AppIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIcons.swift; sourceTree = "<group>"; };
 		3F67ECA6B8CDF368EF22E230 /* ProjectStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectStoreTests.swift; sourceTree = "<group>"; };
 		40D651EA0B55D06E8A246136 /* Limits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Limits.swift; sourceTree = "<group>"; };
@@ -143,6 +146,7 @@
 		4ED1D2139A67069C8A5DB50F /* Notifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifier.swift; sourceTree = "<group>"; };
 		518FE52041E70E85A2D8DE46 /* AppleAdsKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleAdsKey.swift; sourceTree = "<group>"; };
 		5250AB42A9090599A20A1D2B /* AscStatusSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscStatusSections.swift; sourceTree = "<group>"; };
+		52819F3765FB60BD0271AA8E /* AscWatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscWatcherTests.swift; sourceTree = "<group>"; };
 		5771A06F1E0224BED99FA710 /* UpdateInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateInstaller.swift; sourceTree = "<group>"; };
 		5BB048CF9E3B96B7FFB1A78B /* OverviewDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverviewDecodingTests.swift; sourceTree = "<group>"; };
 		5E276ADD36183CB2534CD55D /* MainWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindow.swift; sourceTree = "<group>"; };
@@ -224,6 +228,7 @@
 				6C5B27F54EB1DD541DA0E5E4 /* ASCAppsTests.swift */,
 				C3CA2D93E3EA234007CA5797 /* AscCacheTests.swift */,
 				4499DB8A461594587411B912 /* AscPanelTests.swift */,
+				52819F3765FB60BD0271AA8E /* AscWatcherTests.swift */,
 				6E1B5EF1079BAFCD67698F97 /* CredentialsTests.swift */,
 				B74D68F1B0BD20A23DC2231D /* JSONValueTests.swift */,
 				5BB048CF9E3B96B7FFB1A78B /* OverviewDecodingTests.swift */,
@@ -365,6 +370,7 @@
 				907F24C99792DD5A89398989 /* AscCLI.swift */,
 				C6A3F41FBC6CAE0D466C60EF /* AscListingImport.swift */,
 				A21382BCADC80507FD9AA6C0 /* AscText.swift */,
+				3BB5A333B9C11EF4A20D36E5 /* AscWatcher.swift */,
 				CC082A50AEAD3C99A7E712AF /* CLILocator.swift */,
 				881DDD917D5CD5A33E79CB97 /* CLIRunner.swift */,
 				DBE13B7B4C070E9A2003F7A0 /* Credentials.swift */,
@@ -523,6 +529,7 @@
 				E631D20DFDDD445A46F77B67 /* ASCAppsTests.swift in Sources */,
 				3DA3AF8300DDEFAD4CE2407B /* AscCacheTests.swift in Sources */,
 				57BA7539C3C139FE16F2EF1F /* AscPanelTests.swift in Sources */,
+				A1BCC86ADF84C8E5E6CC01C2 /* AscWatcherTests.swift in Sources */,
 				E0163925EE209BE04BF6E4C5 /* CredentialsTests.swift in Sources */,
 				EE7F39DE57B3D619CC9D499A /* JSONValueTests.swift in Sources */,
 				5A47CC0DEB0E271DE00C1852 /* OverviewDecodingTests.swift in Sources */,
@@ -564,6 +571,7 @@
 				504ECF03793F97F8D155EAAE /* AscStatusSections.swift in Sources */,
 				C0F5581D6D5A6C0671711C0B /* AscTestFlightSections.swift in Sources */,
 				7B4D5DAED8DCB105269EB7ED /* AscText.swift in Sources */,
+				FFA1A8E52B5B31499FBCD2EE /* AscWatcher.swift in Sources */,
 				97A67230093A24847BEE711E /* CLILocator.swift in Sources */,
 				90CD6BA696AC79413B12B512 /* CLIRunner.swift in Sources */,
 				C61AE32ABCE80180B0097811 /* ClaudePanel.swift in Sources */,
@@ -662,7 +670,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -682,7 +690,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 2.2.1;
+				MARKETING_VERSION = 2.3.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -761,7 +769,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -775,7 +783,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 2.2.1;
+				MARKETING_VERSION = 2.3.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

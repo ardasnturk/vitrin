@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 2.3.0 — 2026-11-04
+
+Vitrin for Mac tells you when an app moves through App Review.
+
+### Added
+- **Vitrin for Mac, App Review notifications:** it looks at your apps every five minutes while it runs, also in the menu bar, and tells you when one is waiting for review, in review, approved, on the App Store or rejected. Settings → General → App Review status turns it off. With Remote Code 1.7 on the Mac, Remote Code does this instead and reaches your phone too, so a change is told once.
+
 ## 2.2.1 — 2026-11-04
 
 Vitrin for Mac leaves the Dock when its window closes.
