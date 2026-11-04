@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 2.2.1 — 2026-11-04
+
+Vitrin for Mac leaves the Dock when its window closes.
+
+### Changed
+- **Vitrin for Mac lives in the menu bar when no window is open:** closing the window now removes the Dock icon too, as in Remote Code, and the window, the Dock icon and the menus come back when you open it from the menu bar or from Finder. The Dock icon stays while a window is open or minimized, and always when Settings turns off the menu bar item or "keep in menu bar".
+
 ## 2.2.0 — 2026-11-04
 
 Vitrin for Mac stops waiting for App Store Connect, and finds things.
