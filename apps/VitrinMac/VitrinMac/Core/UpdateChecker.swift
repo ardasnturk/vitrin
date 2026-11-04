@@ -21,6 +21,9 @@ import Observation
         var version: String { tag_name.hasPrefix("v") ? String(tag_name.dropFirst()) : tag_name }
         var dmg: Asset? { assets.first { $0.name == "Vitrin-\(version).dmg" } }
         var checksum: Asset? { dmg.flatMap { dmg in assets.first { $0.name == dmg.name + ".sha256" } } }
+        /// The Release workflow publishes a release first and the DMG is attached to it after that, so for a moment a
+        /// new release has nothing to install.
+        var isInstallable: Bool { dmg != nil && checksum != nil }
     }
 
     enum State: Equatable { case idle, checking, upToDate, available(String), downloading(Double), installing, failed(String) }
@@ -63,10 +66,12 @@ import Observation
             let (data, response) = try await URLSession.shared.data(for: req)
             guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw URLError(.badServerResponse) }
             let r = try JSONDecoder().decode(Release.self, from: data)
+            let newer = Self.compare(r.version, appVersion) > 0
             latest = r
             checkedAt = .now
-            AppSettings.shared.lastUpdateCheck = .now
-            if Self.compare(r.version, appVersion) > 0 {
+            // A release still waiting for its DMG doesn't count as checked: the hourly look finds it again.
+            if !newer || r.isInstallable { AppSettings.shared.lastUpdateCheck = .now }
+            if newer, r.isInstallable {
                 state = .available(r.version)
                 if notify { Notifier.shared.post(id: "update-\(r.version)", title: L.t("updates.availableTitle"), body: L.t("updates.availableBody").replacingOccurrences(of: "{version}", with: r.version).replacingOccurrences(of: "{current}", with: appVersion)) }
             } else {
@@ -93,13 +98,12 @@ import Observation
 
     /// Downloads, verifies and installs the latest release, then quits so the swap script can relaunch the new version.
     func install() async {
+        // What was read at the last check may be hours old: install what GitHub has now.
+        await check(notify: false)
         guard let release = latest, available != nil else { return }
         let page = URL(string: release.html_url)
         guard let dmg = release.dmg, let dmgURL = URL(string: dmg.browser_download_url),
-              let checksum = release.checksum.flatMap({ URL(string: $0.browser_download_url) }) else {
-            if let page { NSWorkspace.shared.open(page) }
-            return
-        }
+              let checksum = release.checksum.flatMap({ URL(string: $0.browser_download_url) }) else { return }
         let bundle = Bundle.main.bundleURL
         let fm = FileManager.default
         let staging = fm.temporaryDirectory.appendingPathComponent("VitrinUpdate-\(UUID().uuidString)", isDirectory: true)

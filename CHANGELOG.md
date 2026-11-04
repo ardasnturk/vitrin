@@ -12,6 +12,9 @@ Vitrin for Mac stops waiting for App Store Connect, and finds things.
 ### Changed
 - **Vitrin for Mac opens from a cache:** what the app reads from App Store Connect is kept on disk per account, in `~/Library/Caches/Vitrin/asc` (readable only by you, at most 100 MB). Pages open at once and most need no request: states, builds and TestFlight stay good for 15 minutes, store text and reviews for an hour, people, signing and analytics for 6 hours. An older result shows right away and updates behind the page, and a read that fails leaves it in place. Each page says how old it is, with a button that reads it again. A change made through the app or an upload marks everything old; changes made elsewhere show up when those times run out. Removing the key deletes the cache.
 
+### Fixed
+- **Vitrin for Mac, updating:** a check in the moment a release was published, before its DMG was attached, offered the update and then sent you to the GitHub page, and went on doing so until the next daily check. A release now counts once its DMG is there, and installing always reads the release again first.
+
 ## 2.1.0 — 2026-11-04
 
 Vitrin on your phone, and a Mac app that updates itself.

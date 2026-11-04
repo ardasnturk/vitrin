@@ -2,6 +2,17 @@ import XCTest
 @testable import Vitrin
 
 final class UpdateCheckerTests: XCTestCase {
+    private func release(assets: [String]) -> UpdateChecker.Release {
+        UpdateChecker.Release(tag_name: "v2.2.0", name: nil, html_url: "https://github.com/ardasnturk/vitrin/releases/tag/v2.2.0", published_at: nil, body: nil,
+                              assets: assets.map { UpdateChecker.Release.Asset(name: $0, browser_download_url: "https://github.com/\($0)", size: 1) })
+    }
+
+    func testAReleaseWaitingForItsDMGIsNotInstallable() {
+        XCTAssertFalse(release(assets: ["ardasnturk-vitrin-2.2.0.tgz", "SHA256SUMS"]).isInstallable)
+        XCTAssertFalse(release(assets: ["Vitrin-2.2.0.dmg"]).isInstallable, "the checksum is attached a moment after the DMG")
+        XCTAssertTrue(release(assets: ["Vitrin-2.2.0.dmg", "Vitrin-2.2.0.dmg.sha256"]).isInstallable)
+    }
+
     func testEqualVersions() {
         XCTAssertEqual(UpdateChecker.compare("1.2.0", "1.2.0"), 0)
         XCTAssertEqual(UpdateChecker.compare("1.2", "1.2.0"), 0, "a missing component counts as 0")
