@@ -72,14 +72,39 @@ export const KeywordCandidate = z.object({
   }),
   popularity: z.object({ score: z.number().min(0).max(1), source: PopularitySource }),
   /**
-   * relevance × (0.35 + 0.65 × popularity) × (1 − 0.7 × competition); null while relevance is missing.
-   * `vitrin write` recomputes it after Claude scored relevance.
+   * relevance × demand × (1 − 0.7 × competition), where demand = 0.35 + 0.65 × popularity and fades to 0 below
+   * NO_DEMAND_SCORE; null while relevance is missing. `vitrin write` recomputes it after Claude scored relevance.
    */
   total: z.number().nullable().default(null),
   /** 1-based rank of the app itself for this term on research day; null when it is not live or not in the results. */
   ownRank: z.number().int().positive().nullable().default(null),
 });
 export type KeywordCandidate = z.infer<typeof KeywordCandidate>;
+
+/** Below this popularity a term has no measurable demand: ranking #1 for it brings nobody. */
+export const NO_DEMAND_SCORE = 0.1;
+/** Vitrin's heuristics, not Apple numbers: the top 10 of a stretch term hold this many times the app's ratings. */
+export const STRETCH_RATINGS_RATIO = 100;
+/** A smaller app is compared as if it had this many ratings, so a new app is not told everything is out of reach. */
+export const STRETCH_RATINGS_FLOOR = 100;
+/** From this many ratings on, people can be expected to search for the brand itself. */
+export const KNOWN_BRAND_RATINGS = 10_000;
+
+export type KeywordReach = 'ranked' | 'reachable' | 'stretch';
+
+/**
+ * How realistic a term is for this app today (Apple: popular terms are "highly competitive – especially if you are a
+ * newer or smaller app"): already ranked, within reach, or a stretch to grow into.
+ */
+export function keywordReach(c: Pick<KeywordCandidate, 'competition' | 'ownRank'>, ownRatings: number): KeywordReach {
+  if (c.ownRank !== null) return 'ranked';
+  return c.competition.top10MedianRatings > Math.max(ownRatings, STRETCH_RATINGS_FLOOR) * STRETCH_RATINGS_RATIO ? 'stretch' : 'reachable';
+}
+
+/** The brand can lead the name only when people already know it; a new or small app leads with what it does. */
+export function isKnownBrand(self?: Pick<CompetitorApp, 'userRatingCount'>): boolean {
+  return (self?.userRatingCount ?? 0) >= KNOWN_BRAND_RATINGS;
+}
 
 export const KeywordPlan = z.object({
   locale: AscLocale,

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-26",
+  "updatedAt": "2026-11-04",
   "notes": "Price terms and unproven superlatives are errors in metadata and warnings in the description. Competitor brand names are added at runtime from competitors.json. cta: calls to action are forbidden in screenshot captions; otherPlatforms: names of other platforms are forbidden. appleAwards: Apple-designated recognitions may not appear in metadata or assets (App Store asset best practices). kidsReserved: “For Kids”/“For Children” are reserved for the Kids Category (App Review 2.3.8, 5.1.4). genericWhatsNew: generic release notes are only acceptable for bug-fix releases (2.3.12).",
   "price": {
     "*": [
@@ -164,6 +164,9 @@
   "keywordNoise": [
     "app",
     "apps",
+    "game",
+    "games",
+    "oyun",
     "iphone",
     "ipad",
     "ios",

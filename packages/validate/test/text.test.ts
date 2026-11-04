@@ -1,6 +1,6 @@
 import { VitrinConfig, type AppMetadata, type AppProfile, type Competitors, type KeywordPlan, type LiveListing, type LocaleMetadata } from '@vitrin/schemas';
 import { describe, expect, it } from 'vitest';
-import { containsTerm, pluralForms, termCovered, validateText } from '../src/index.js';
+import { containsTerm, looksLikeKeywordList, pluralForms, termCovered, validateText } from '../src/index.js';
 
 const config = VitrinConfig.parse({
   app: { locales: ['tr', 'en-US'], primaryLocale: 'tr' },
@@ -206,5 +206,100 @@ describe('competitor brands', () => {
     expect(brands).toContain('Productive');
     expect(brands).toContain('Strides');
     expect(brands).not.toContain('Goals');
+  });
+});
+
+describe('ASO rules: fields, keyword field, research', () => {
+  const candidate = (term: string, over: Partial<KeywordPlan['candidates'][number]> & { median?: number; popularity?: number } = {}) => ({
+    term,
+    relevance: 1,
+    total: 0.5,
+    ownRank: null,
+    popularity: { score: over.popularity ?? 0.5, source: 'estimate' as const },
+    competition: { resultCount: 50, top10MedianRatings: over.median ?? 50, score: 0.3 },
+  });
+  const planFor = (candidates: KeywordPlan['candidates'], selected: NonNullable<KeywordPlan['selected']>): KeywordPlan => ({ locale: 'en-US', storefront: 'us', generatedAt: '', candidates, selected });
+  const check = (m: LocaleMetadata, extra: { plan?: KeywordPlan; competitors?: Competitors; app?: AppMetadata; plans?: Map<string, KeywordPlan> } = {}) =>
+    validateText({ config, profile, competitors: extra.competitors, appMetadata: extra.app ?? appMeta, locales: new Map([[m.locale, m]]), keywordPlans: extra.plans ?? (extra.plan ? new Map([[m.locale, extra.plan]]) : undefined) });
+  const en = (over: Partial<LocaleMetadata> = {}) => meta({ locale: 'en-US', name: 'Habit Tracker: Ritim', subtitle: 'Daily routine and streaks', keywords: 'goal,planner,motivation,calendar,reminder', ...over });
+  const selfWith = (userRatingCount: number) => ({ generatedAt: '2026-11-04T00:00:00Z', storefronts: ['us'], seeds: [], self: { trackId: 1, name: 'Ritim', storefront: 'us', userRatingCount }, apps: [], topCharts: [], analysis: { nameTerms: [] } }) as unknown as Competitors;
+
+  it('suggests the keyword first while nobody searches for the brand', () => {
+    expect(codes(check(en({ name: 'Ritim: Habit Tracker' })))).toContain('aso.name-keyword-first');
+    expect(codes(check(en()))).not.toContain('aso.name-keyword-first');
+    expect(codes(check(en({ name: 'Ritim: Habit Tracker' }), { competitors: selfWith(50_000) }))).not.toContain('aso.name-keyword-first');
+  });
+
+  it('flags words repeated across keyword terms, and phrases only as a hint', () => {
+    const r = check(en({ keywords: 'habit goals,habit routine,planner' }));
+    expect(r.issues.items.find((i) => i.code === 'keywords.word-repeat')?.message).toContain('“habit”');
+    expect(r.issues.items.find((i) => i.code === 'keywords.phrase')?.severity).toBe('info');
+    const clean = codes(check(en()));
+    expect(clean).not.toContain('keywords.word-repeat');
+    expect(clean).not.toContain('keywords.phrase');
+  });
+
+  it('keeps a word written twice as a duplicate, not a word repeat', () => {
+    const c = codes(check(en({ keywords: 'goal,goal,planner' })));
+    expect(c).toContain('keywords.duplicate');
+    expect(c).not.toContain('keywords.word-repeat');
+  });
+
+  it('flags category words, filler and special characters in the keyword field', () => {
+    const app = { ...appMeta, primaryCategory: 'HEALTH_AND_FITNESS', secondaryCategory: 'GAMES' };
+    const r = check(en({ keywords: 'health,game,the,#goal,planner' }), { app });
+    expect(r.issues.items.find((i) => i.code === 'keywords.repeats-category')?.message).toContain('“health”');
+    expect(r.issues.items.find((i) => i.code === 'keywords.repeats-category')?.message).toContain('“game”');
+    expect(r.issues.items.filter((i) => i.code === 'keywords.noise').map((i) => i.message).join()).toContain('“the”');
+    expect(codes(check(en({ keywords: 'goal,planner' }), { app }))).not.toContain('keywords.repeats-category');
+    expect(codes(check(en({ keywords: 'goal,planner' }), { app }))).not.toContain('keywords.special-char');
+    expect(codes(check(en({ keywords: '#goal,planner' }), { app }))).toContain('keywords.special-char');
+  });
+
+  it('judges filler per language, so a real word in another language passes', () => {
+    const tr = (keywords: string) => check(meta({ locale: 'tr', keywords })).issues.items.filter((i) => i.code === 'keywords.noise').map((i) => i.message);
+    expect(tr('para,bütçe,hesap')).toEqual([]); // "para" is money in Turkish, "for" in Spanish
+    expect(tr('ve,bütçe,hesap').join()).toContain('“ve”');
+  });
+
+  it('detects keyword lists in text that does not rank', () => {
+    expect(looksLikeKeywordList('habit, tracker, goals, routine, streak', 'en-US', 5)).toBe(true);
+    expect(looksLikeKeywordList('Keywords: habit tracker', 'en-US', 5)).toBe(true);
+    expect(looksLikeKeywordList('Track habits, keep your daily streaks alive, and see the charts.', 'en-US', 3)).toBe(false);
+    expect(codes(check(en({ promotionalText: 'habit, tracker, goals, routine, streak' })))).toContain('text.keyword-list');
+    expect(codes(check(en({ promotionalText: 'New in 1.2: a statistics tab with weekly charts.' })))).not.toContain('text.keyword-list');
+    expect(codes(check(en({ name: 'Habits, Goals, Routine Planner' })))).toContain('text.keyword-list');
+    expect(codes(check(en({ description: 'A calm way to build habits every day.\nhabit, tracker, goals, routine, streak, daily\nSee your progress in charts.' })))).toContain('text.keyword-list');
+    expect(codes(check(en()))).not.toContain('text.keyword-list');
+  });
+
+  it('warns when a selected term shows no search demand', () => {
+    const selected = { name: ['habit tracker'], subtitle: [], keywords: ['zebra'] };
+    const dead = planFor([candidate('habit tracker'), candidate('zebra', { popularity: 0.02 })], selected);
+    expect(check(en({ keywords: 'zebra,planner' }), { plan: dead }).issues.items.find((i) => i.code === 'keywords.no-demand')?.message).toContain('“zebra”');
+    const alive = planFor([candidate('habit tracker'), candidate('zebra', { popularity: 0.3 })], selected);
+    expect(codes(check(en({ keywords: 'zebra,planner' }), { plan: alive }))).not.toContain('keywords.no-demand');
+  });
+
+  it('warns when a small app only targets terms it cannot win yet', () => {
+    const candidates = [candidate('habit tracker', { median: 500_000 }), candidate('daily routine', { median: 300_000 }), candidate('mood journal', { median: 200 })];
+    const selected = { name: ['habit tracker'], subtitle: ['daily routine'], keywords: [] };
+    const r = check(en(), { plan: planFor(candidates, selected) });
+    expect(r.issues.items.find((i) => i.code === 'keywords.out-of-reach')?.message).toContain('mood journal');
+    // A stronger app can hold these terms; one reachable term in the head or any other field is enough; a term it ranks for counts.
+    expect(codes(check(en(), { plan: planFor(candidates, selected), competitors: selfWith(20_000) }))).not.toContain('keywords.out-of-reach');
+    expect(codes(check(en(), { plan: planFor(candidates, { ...selected, subtitle: ['mood journal'] }) }))).not.toContain('keywords.out-of-reach');
+    expect(codes(check(en({ keywords: 'mood,journal,planner' }), { plan: planFor(candidates, selected) }))).not.toContain('keywords.out-of-reach');
+    expect(codes(check(en(), { plan: planFor([{ ...candidates[0]!, ownRank: 40 }, candidates[1]!, candidates[2]!], selected) }))).not.toContain('keywords.out-of-reach');
+  });
+
+  it('warns about a locale without research, and one seed list for two languages', () => {
+    expect(codes(check(en(), { plans: new Map() }))).toContain('keywords.no-research');
+    expect(codes(check(en(), { plan: planFor([], { name: [], subtitle: [], keywords: [] }) }))).not.toContain('keywords.no-research');
+    const withSeeds = (seeds: unknown) => VitrinConfig.parse({ app: { locales: ['tr', 'en-US'], primaryLocale: 'tr' }, urls: config.urls, research: { seeds } });
+    const both = (cfg: VitrinConfig) => validateText({ config: cfg, profile, appMetadata: appMeta, locales: new Map([en(), meta({ locale: 'tr' })].map((m) => [m.locale, m])) });
+    expect(codes(both(withSeeds(['habit tracker', 'streak'])))).toContain('research.shared-seeds');
+    expect(codes(both(withSeeds({ 'en-US': ['habit tracker'], tr: ['alışkanlık takibi'] })))).not.toContain('research.shared-seeds');
+    expect(codes(both(withSeeds([])))).not.toContain('research.shared-seeds');
   });
 });

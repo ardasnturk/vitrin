@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { componentTo255, expandSetting, parseOpenStepPlist, readPbxproj, scanSource, settingsOf, toHex } from '../src/index.js';
+import { componentTo255, CROSS_PLATFORM_RULES, expandSetting, parseOpenStepPlist, readPbxproj, scanSource, settingsOf, SIGNAL_RULES, toHex } from '../src/index.js';
 
 const PBX = `// !$*UTF8*$!
 {
@@ -69,6 +69,15 @@ describe('asset colors', () => {
 });
 
 describe('source signals', () => {
+  it('finds a native review prompt in Swift, Flutter and JavaScript sources, and none where there is no prompt', () => {
+    const prompt = (file: string, code: string) => [...SIGNAL_RULES, ...CROSS_PLATFORM_RULES].some((rule) => rule.signal === 'ratings.prompt' && scanSource(file, code, [rule]).length > 0);
+    expect(prompt('App/Done.swift', '@Environment(\\.requestReview) private var requestReview')).toBe(true);
+    expect(prompt('App/Done.swift', 'SKStoreReviewController.requestReview(in: scene)')).toBe(true);
+    expect(prompt('lib/done.dart', "import 'package:in_app_review/in_app_review.dart';")).toBe(true);
+    expect(prompt('src/done.ts', "import * as StoreReview from 'expo-store-review';")).toBe(true);
+    expect(prompt('App/Reviews.swift', 'struct ReviewList: View {}')).toBe(false);
+  });
+
   it('detects frameworks with file:line evidence', () => {
     const hits = scanSource('App/Health.swift', 'import SwiftUI\nimport HealthKit\nlet x = 1\n.accessibilityLabel("a")');
     const health = hits.find((h) => h.rule.id === 'healthkit');

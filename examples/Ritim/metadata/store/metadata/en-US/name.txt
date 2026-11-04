@@ -1,1 +1,1 @@
-Ritim: Habit Tracker
+Habit Tracker: Ritim

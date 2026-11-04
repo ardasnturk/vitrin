@@ -1,6 +1,6 @@
 {
   "generator": "vitrin",
-  "updatedAt": "2026-10-27T09:08:09.299Z",
+  "updatedAt": "2026-11-04T17:00:46.624Z",
   "files": [
     {
       "path": "metadata/app-store/ios/all/copyright.txt",
@@ -47,7 +47,7 @@
     {
       "path": "metadata/app-store/ios/en-US/name.txt",
       "source": "metadata/store/metadata/en-US/name.txt",
-      "sha256": "6d043e2723dd1d48ea0e327ed726f4e25157bb4cc84d5ba2d529e5460b7d6479",
+      "sha256": "f4ab0b3c9a5109ad85418be85c6adc69b556b19558c8fb8425e9d2f143e2f382",
       "bytes": 21
     },
     {
@@ -101,7 +101,7 @@
     {
       "path": "metadata/app-store/ios/tr/name.txt",
       "source": "metadata/store/metadata/tr/name.txt",
-      "sha256": "80ec1660e9aff352ec5cfa25cfd2949aa485d319b1c4c28429525b24f639ebcc",
+      "sha256": "0418586ffba66332775b61621c3ed16b3b3574f391cd30c9907daa55b84e2e4c",
       "bytes": 28
     },
     {

@@ -22,6 +22,13 @@ describe('keyword scoring', () => {
     expect(totalScore({ ...c, relevance: 1 })).toBeGreaterThan(0.6);
   });
 
+  it('gives no score to a term without demand, and lets a smaller term beat a crowded popular one', () => {
+    const c = (popularity: number, competition: number) => ({ relevance: 1, popularity: { score: popularity, source: 'estimate' as const }, competition: { resultCount: 10, top10MedianRatings: 10, score: competition } });
+    expect(totalScore(c(0, 0))).toBe(0); // a seed with no results
+    expect(totalScore(c(0.05, 0))).toBeLessThan(totalScore(c(0.5, 0.8))!); // barely any demand loses to a real term
+    expect(totalScore(c(0.3, 0.1))).toBeGreaterThan(totalScore(c(0.9, 0.9))!); // the smaller, open term wins
+  });
+
   it('estimates popularity from result names and volume', () => {
     const results = [{ trackId: 1, trackName: 'Habit Tracker', userRatingCount: 200_000 }, { trackId: 2, trackName: 'Streaks', userRatingCount: 50_000 }];
     expect(estimatePopularity('habit', results, 'en-US')).toBeGreaterThan(estimatePopularity('zebra', results, 'en-US'));

@@ -1,5 +1,5 @@
 import { enabledTargets, existsSync, localeInfo, readJsonIfExists, storefrontForLocale, storefrontInfo, writeText } from '@vitrin/core';
-import { Competitors, KeywordPlan, LiveListing, StylePreset, type AppProfile, type KeywordCandidate } from '@vitrin/schemas';
+import { Competitors, isKnownBrand, KeywordPlan, keywordReach, LiveListing, StylePreset, type AppProfile, type KeywordCandidate } from '@vitrin/schemas';
 import { PRESETS, suggestStyles } from '@vitrin/render';
 import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -41,7 +41,7 @@ File: \`metadata/app_profile.json\` (schema: AppProfile). The analyzer filled in
    Evidence must be a real file; never add a feature the app does not have (App Review 2.3). Marketing copy (paywall bullets etc.) is not evidence; working code is.
 2. Fill in \`positioning\`: \`{ "audience": "…", "jobToBeDone": "…", "tone": "…" }\`.
 3. Correct \`categorySuggestion\` if needed (an ASC category constant, e.g. HEALTH_AND_FITNESS) and write down the reasoning.
-4. In \`vitrin.config.yaml\`, write 4–8 seed search terms per locale under \`research.seeds\` (phrases users would actually type in the App Store; not competitor brands).
+4. In \`vitrin.config.yaml\`, write 4–8 seed search terms **per locale** under \`research.seeds\` (\`{ "en-US": […], "tr": […] }\`): phrases people in that market would actually type in the App Store, not competitor brands and not a translation of another locale's list. Add the English term where that market searches in English too. Seeds are ideas until \`vitrin research\` measures them; the terms that show no demand are dropped there.
 ${
       ctx.config.capture.mode === 'html'
         ? `5. Fill \`capture.screens\` with the app's 5–8 screens worth showing: \`{ "id": "home", "source": ["App/Views/HomeView.swift", …] }\` — \`source\` lists the view files each screen is built from. capture.mode is \`html\`: no build and no demo mode; you recreate these screens in HTML in the next step (brief: screens.md).`
@@ -114,6 +114,8 @@ Run \`vitrin capture --locale ${sampleLocale(ctx.config)}\` and open the PNGs wi
 export async function metadataBrief(ctx: Ctx, profile: AppProfile): Promise<string> {
   const competitors = await readJsonIfExists(ctx.paths.competitors, Competitors).catch(() => undefined);
   const live = await readJsonIfExists(ctx.paths.liveListing, LiveListing).catch(() => undefined);
+  const ownRatings = competitors?.self?.userRatingCount ?? 0;
+  const brand = profile.app.displayName;
   const sections: string[] = [];
   for (const locale of ctx.config.app.locales) {
     const kw = await readJsonIfExists(ctx.paths.keywordFile(locale), KeywordPlan).catch(() => undefined);
@@ -124,13 +126,13 @@ export async function metadataBrief(ctx: Ctx, profile: AppProfile): Promise<stri
       .slice()
       .sort((a, b) => key(b) - key(a))
       .slice(0, 30)
-      .map((c) => `${c.term} (pop ${c.popularity.score}${c.popularity.source === 'estimate' ? '~' : ''}, comp ${c.competition.score}${c.relevance !== null ? `, rel ${c.relevance}` : ''}${c.total !== null ? `, total ${c.total}` : ''}${c.ownRank !== null ? `, **you #${c.ownRank}**` : ''})`)
+      .map((c) => `${c.term} (pop ${c.popularity.score}${c.popularity.source === 'estimate' ? '~' : ''}, comp ${c.competition.score}${c.relevance !== null ? `, rel ${c.relevance}` : ''}${c.total !== null ? `, total ${c.total}` : ''}${c.ownRank !== null ? `, **you #${c.ownRank}**` : ''}${keywordReach(c, ownRatings) === 'stretch' ? ', stretch' : ''})`)
       .join('; ');
     const ranked = (kw?.candidates ?? []).filter((c) => c.ownRank !== null).sort((a, b) => a.ownRank! - b.ownRank!);
     const now = live?.locales[locale];
     sections.push(`### ${locale} — ${localeInfo(locale)?.name ?? locale}
 - Storefront: ${sf ? `${sf.country} (default ${sf.default}; additional: ${sf.additional.join(', ') || 'none'})` : '?'}
-- Candidate keywords (~ = estimated popularity): ${top || '(research has not run)'}${ranked.length ? `
+- Candidate keywords (~ = estimated popularity; stretch = held by apps far stronger than this one today): ${top || '(research has not run)'}${ranked.length ? `
 - The app already ranks for: ${ranked.slice(0, 12).map((c) => `${c.term} #${c.ownRank}`).join(', ')} — keep these terms unless something clearly better replaces them (validate warns when a top-10 term is dropped).` : ''}${now ? `
 - Live today (${live!.source === 'asc' ? 'App Store Connect' : 'App Store lookup'}): name “${now.name ?? '?'}”${now.subtitle !== undefined ? `, subtitle “${now.subtitle}”` : ''}${now.keywords !== undefined ? `, keywords \`${now.keywords}\`` : ''}. Change it deliberately: a new listing starts collecting rank again.` : ''}
 - Files: \`metadata/listing/${locale}.json\`; also fill in each candidate's \`relevance\` (0–1) in \`metadata/research/keywords/${locale}.json\` and write \`selected\` (validate checks that the selected terms really are in the fields).`);
@@ -155,14 +157,21 @@ App: **${profile.app.displayName}** (${profile.app.bundleId}). Audience: ${profi
 Developer: ${ctx.config.copyrightHolder ?? '?'} — this name does not go in the keyword field.
 
 ## Rules (validate checks these)
-- Name 2–30 characters = brand + primary keyword. Subtitle ≤ 30 = benefit + secondary keyword; do not repeat words from the name.
-- Keywords ≤ **100 bytes** (UTF-8; accented Latin letters such as ç ş ğ ö ü are 2 bytes, CJK 3 bytes), comma-separated with no spaces, singular, each term > 2 characters, no words repeated from the name/subtitle, no competitor/company names, Apple trademarks or prices.
-- Description ≤ 4000, plain text; the first 3 lines are the hook. No keyword stuffing. No unproven or price claims such as “#1 / best / free”.
-- Promotional text ≤ 170 (changes without review). What’s New ≤ 4000, written from git log in **each store locale's own language** (not the chat language; leave empty on the first release).
+- Name 2–30 characters, natural, the primary keyword plus the brand. ${
+      isKnownBrand(competitors?.self)
+        ? `This brand is known (${ownRatings} ratings), so it can lead: \`${brand}: keyword\`.`
+        : `Nobody searches for this brand yet (${ownRatings} ratings), so lead with what the app does: \`Keyword: ${brand}\`. That is for clarity in search results, not a proven ranking gain: if the app is live and already ranks, reorder only when the name changes anyway.`
+    } Keep the brand in the name in either case.
+- Subtitle ≤ 30 = benefit + secondary keyword; do not repeat words from the name.
+- Pick terms the app can win today: relevant first, then real demand, then competition it can handle. Never rank a term by volume alone, and do not fill the name and subtitle with \`stretch\` terms only (validate warns).
+- Keywords ≤ **100 bytes** (UTF-8; accented Latin letters such as ç ş ğ ö ü are 2 bytes, CJK 3 bytes), comma-separated with no spaces, singular, each term > 2 characters, no words repeated from the name/subtitle/category, no competitor/company names, Apple trademarks or prices. Write **single words** (\`routine,goal,streak\`, not \`habit routine,habit goal\`): each word is needed once, because the App Store combines the words of the keyword field with the name and subtitle. Keep a phrase only when the exact wording matters.
+- Only the name, subtitle, keywords and category affect ranking. The description and promotional text do not: write them for the person reading, never as keyword lists.
+- Description ≤ 4000, plain text; the first 3 lines are the hook: why download this. No unproven or price claims such as “#1 / best / free”.
+- Promotional text ≤ 170 (changes without review): a new feature or something timely. What’s New ≤ 4000, written from git log in **each store locale's own language** (not the chat language; leave empty on the first release).
 - What’s New lists significant changes specifically (App Review 2.3.12); a generic “bug fixes and improvements” is only for bug-fix releases.
 - Review notes (app.json) describe every new feature specifically and where to find it, non-obvious features and in-app purchases, and the demo account or demo mode (2.1, 2.3.1). No placeholder text (Lorem ipsum, TODO, TBD).
 - Never use Apple recognitions (Editor’s Choice, App of the Day, Apple Design Award), other platforms or marketplaces, or “for kids / for children” wording unless the app is in the Kids Category.
-- Every locale is a **local rewrite**, not a translation. Locales indexed in the same storefront (e.g. en-US and es-MX in the US) form one index: give them different keywords and do not repeat the other locale's name/subtitle words.
+- Every locale is a **local rewrite** from that locale's own research, not a translation: use the terms that market searches for (sometimes the English one), and adapt the name, subtitle and keywords to them. Locales indexed in the same storefront (e.g. en-US and es-MX in the US) form one index: give them different keywords and do not repeat the other locale's name/subtitle words.
 - Use the space: the subtitle close to 30 characters, the keyword field at 90–100 bytes. Set a secondary category as well.
 - Every claim is linked in \`claims\` to a feature in app_profile.
 - en-US copy should use the target concepts clearly for App Store tags (tags are assigned only in the US, from en-US).
@@ -181,7 +190,10 @@ Developer: ${ctx.config.copyrightHolder ?? '?'} — this name does not go in the
 \`\`\`
 Optional \`metadata/cpp-suggestions.json\`: 2–5 Custom Product Page suggestions (segment, rationale, non-overlapping keyword set). Give each page its own screenshots — \`shots\` (ids from shots.json, the segment's hero first) and \`copy\` overrides per shot and locale (\`{ "03": { "en-US": { "headline": "Drink *more* water" } } }\`); \`vitrin design\` renders them to metadata/store/cpp/<page id>/ and \`--cpp\` places them on the page. A page that only changes the promotional text barely moves conversion.
 For the age rating questionnaire and accessibility, see app_profile.signals (age.*, accessibility.*); these are drafts, the user gives final approval.
-
+${profile.signals['ratings.prompt'] ? '' : `
+## Ratings
+No native review prompt was found in the code. Ratings count in search and in the choice between two apps, so tell the user once: ask with Apple's native prompt after a moment of success (a finished task, a milestone), never on first launch, and never reward or pressure people for a rating. Do not change the app's code for this unless they ask.
+`}
 ## Locales
 ${sections.join('\n\n')}
 ${slots.length ? `
@@ -254,7 +266,7 @@ ${presetRows}
 
 ## Step 3 — the full shot list
 Copy for every chosen language (\`app.locales\`: ${ctx.config.app.locales.join(', ')}); each locale is a local rewrite, not a word-for-word translation. 8–10 shots for iPhone when the features carry them (the first 3 sell in search; the rest convert people who open the page and scroll), at least 5; 3–5 are enough for iPad. Follow the narrative arc: 1 hero (main benefit; proof only here) → 2 differentiator → 3 ecosystem/core → features, one per shot → trust → closer (\`feature-wall\` or \`mosaic\`).
-- **Headlines:** one idea, ≤ 5 words recommended (7 max), 3–5 words per line, ≤ 2 lines, \`\\n\` for an intentional break, exactly one \`*emphasis*\`. Write them in the preset's copy tone (styles/<preset>.md). Reinforce the main keyword from the name/subtitle. \`kicker\` ≤ 3 words.
+- **Headlines:** what the user gets, not what the feature is called (“See how much you saved”, not “Advanced analytics dashboard”). One idea; the first shot only has to make people look at the next. ≤ 5 words recommended (7 max), 3–5 words per line, ≤ 2 lines, \`\\n\` for an intentional break, exactly one \`*emphasis*\`. Write them in the preset's copy tone (styles/<preset>.md). Reinforce the main keyword from the name/subtitle. \`kicker\` ≤ 3 words.
 - **Panoramic pair:** \`"archetype": "panoramic", "bridge": true\` puts a large tilted phone on the right edge that continues into the next screenshot, which shows its other half next to its own device (the two read as one image in the store). Use it once, e.g. shots 2→3, and give the next shot a real screen of its own.
 - **Framing varies:** leave \`"framing": "auto"\` (never repeats the previous shot) or set bleed-bottom / bleed-top / offset / tilted / two-devices / no-device yourself; mix at least two framings. 1–2 shots \`"inverted": true\` for rhythm (cycling presets change surface on their own). For 5+ shots set \`"bridge": true\` on one shot to carry a decorative element into the next (never text).
 - **Archetypes:** hero, feature, callout, fullbleed, tilted, split, collage, before-after, stat, social-proof, panoramic, statement, testimonial, feature-wall, mosaic. At least 60 % real UI, one UI shot in the first 3.

@@ -2,6 +2,24 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased
+
+Metadata follows how App Store search works, checked against Apple's [App Store search](https://developer.apple.com/app-store/search/) page and an ASO guide.
+
+### Changed
+- **The name leads with what the app does until people know the brand:** the write brief asks for `Keyword: Brand` below 10,000 ratings and `Brand: keyword` above, and the brand always stays in the name. Below that, a brand-first name gets the info `aso.name-keyword-first`. It is about clarity in search results, not a proven ranking gain, so a live app that ranks is not reordered for its own sake.
+- **The keyword score no longer rewards a term nobody searches for:** a seed with no results scored 0.35 and could beat a real, crowded term. Demand now fades to 0 below popularity 0.1, and a selected term there gets `keywords.no-demand`.
+- **The keyword field is written as single words, each once.** The write brief says so, a word used in two terms gets `keywords.word-repeat`, and a phrase gets the info `keywords.phrase`. Apple allows phrases, so they stay an option.
+- `game`, `games` and `oyun` count as low-value keywords, as Apple advises, and filler words are now caught per language (`the`, `ve`). Research no longer suggests competitor name terms with these words either.
+
+### Added
+- **Terms the app can win today:** the write brief marks `stretch` terms, whose top 10 hold over 100 times the app's ratings, and `keywords.out-of-reach` warns when the name and subtitle hold only those and no field carries a closer term.
+- **More keyword field checks from Apple's page:** `keywords.repeats-category` for words of the app's category (English locales), `keywords.special-char` for `#` and `@`.
+- **`text.keyword-list`:** a name, subtitle, promotional text or description line that reads like a list of keywords. Promotional text and the description do not rank, so a list gains nothing.
+- **Localization is checked as research:** `keywords.no-research` for a locale without keyword research, `research.shared-seeds` when two languages use the same seeds, and the briefs ask for each market's own terms, English ones included where people search in English there.
+- **Ratings:** the analyzer detects a native review prompt (`ratings.prompt`: StoreKit, `in_app_review`, `expo-store-review`, `react-native-in-app-review`, `react-native-store-review`). Without one, the write brief tells Claude to mention it to the user once; Vitrin does not change the app.
+- Screenshot headlines are briefed as what the user gets, not what the feature is called, and `aso-rules.md` says to judge a metadata change by App Analytics, not by rank alone.
+
 ## 2.3.0 — 2026-11-04
 
 Vitrin for Mac tells you when an app moves through App Review.

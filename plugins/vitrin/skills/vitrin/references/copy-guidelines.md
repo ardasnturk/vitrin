@@ -9,6 +9,7 @@
 
 ## Description (≤ 4000, plain text)
 
+- It does not rank in App Store search, so it only has to convince the reader why to download the app. Never add a keyword list (`text.keyword-list`).
 - **The first 3 lines** are visible before "more": 1) main benefit + primary keyword, 2) second benefit, 3) trust/differentiation.
 - Then short sections: feature bullets (•), who it is for, privacy/data approach (only if backed by evidence), subscription information (if any: duration, auto-renewal, cancel in Settings; never state the price).
 - Do not use the same word more than 6 times.
@@ -16,6 +17,7 @@
 ## Promotional text (≤ 170)
 
 - Can change without review: current campaign, season, new feature. Never mention prices or discounts.
+- It does not affect search ranking (Apple), so it must not be used for keywords (`text.keyword-list`).
 
 ## What's New (≤ 4000)
 
@@ -37,6 +39,8 @@
 ## Screenshot headlines
 
 - 2–7 words, start with a verb or a benefit: "Keep your streak", "See your progress in charts".
+- Say what the user gets, not what the feature is called: "See how much you saved", not "Advanced analytics dashboard". The outcome must still be backed by a real feature.
+- One idea per shot. The first one does not have to explain everything, only make people look at the next.
 - The first 3 screenshots carry the 3 strongest messages; reinforce the primary keyword.
 - The subheadline is optional, one line.
 

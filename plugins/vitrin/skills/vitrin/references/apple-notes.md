@@ -65,6 +65,19 @@ Every iPhone app runs on iPhone Duo, but Duo screenshots are only asked for (and
 | Privacy URL | — | required for iOS and macOS |
 | Subcategory | — | 1–2 for Games/Stickers |
 
+### App Store search page (read November 4, 2026)
+
+[App Store search](https://developer.apple.com/app-store/search/) adds these to the limits above:
+
+- Search results rest on text relevance ("matches for your app's title, subtitle, keywords, and primary category") and user behavior ("downloads, ratings and reviews, and more"). The primary and the optional secondary category are indexed.
+- "Promotional text doesn't affect your app's search ranking so it should not be used to display keywords."
+- Keywords: terms separated by commas without spaces; spaces inside a phrase are fine ("Property,House,Real Estate"). Do not repeat words from the app name, subtitle or category. Avoid plurals of words already there, generic terms ("app", "game"), filler ("the", "to") and special characters such as # or @ unless they belong to the brand.
+- That page says keywords are limited to "100 characters"; this table says 100 bytes. Vitrin keeps bytes: it is the stricter of the two, and for ASCII they are the same.
+- Popular terms are "highly competitive – especially if you are a newer or smaller app"; less common terms bring less traffic and less competition.
+- "Your app's rating and up to three screenshots or app previews may display in search results."
+- Measure with App Analytics: impressions, conversion rate, downloads, filtered by source type.
+- **Not documented by Apple:** whether words in the keyword field combine with the name and subtitle, and whether the position of a word in the name matters. Both come from the ASO community, so the references call them observations.
+
 ## Locales — App Store localizations
 
 - 50 locales. The page gives language names; the codes were taken from the fastlane deliver language list (`ar-SA, bn-BD, ca, … zh-Hans, zh-Hant`).

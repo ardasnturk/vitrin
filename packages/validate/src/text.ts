@@ -1,5 +1,8 @@
-import { baseLanguage, byteLength, DATA_DIR, graphemeLength, loadForbiddenTerms, splitKeywords, storefrontForLocale, storefrontInfo, tokenize } from '@vitrin/core';
+import { baseLanguage, byteLength, DATA_DIR, graphemeLength, loadForbiddenTerms, splitKeywords, storefrontForLocale, storefrontInfo, tokenize, wordCount } from '@vitrin/core';
 import {
+  isKnownBrand,
+  keywordReach,
+  NO_DEMAND_SCORE,
   TEXT_LIMITS,
   type AppMetadata,
   type AppProfile,
@@ -32,6 +35,14 @@ type Measurements = ValidationReport['measurements'];
 
 const HTML_RE = /<\/?[a-z][a-z0-9]*(\s[^>]*)?>/i;
 const STOP_FOR_DUPES = new Set(['and', 'the', 'for', 'with', 've', 'ile', 'için', 'de', 'da', 'und', 'et', 'y', 'e', '&', 'a', 'an', 'of', 'to', 'your', 'you', 'this', 'that', 'from', 'are', 'bir', 'bu', 'olarak', 'veya', 'daha', 'für', 'mit', 'pour', 'avec', 'para', 'con']);
+/** Filler per language; a shared list would flag real words (Turkish "para" is money, Spanish "para" is "for"). */
+const KEYWORD_FILLER: Record<string, string[]> = {
+  en: ['the', 'and', 'for', 'with', 'of', 'to', 'your', 'you', 'this', 'that', 'from', 'are'],
+  tr: ['ve', 'ile', 'için', 'bir', 'bu', 'olarak', 'veya', 'daha'],
+  de: ['und', 'der', 'die', 'das', 'für', 'mit'],
+  fr: ['et', 'le', 'la', 'les', 'pour', 'avec'],
+  es: ['el', 'la', 'los', 'las', 'para', 'con'],
+};
 
 /** Terms from the forbidden list that apply to a locale (the base language plus the `*` and `en` lists). */
 function termsFor(map: Record<string, string[]>, locale: string): string[] {
@@ -70,6 +81,28 @@ export function competitorBrands(competitors?: Competitors, ownNames: string[] =
     if (seller && seller.length >= 3 && !own.has(seller.toLowerCase()) && !generic(seller)) names.add(seller);
   }
   return [...names];
+}
+
+/**
+ * Keywords written out as text: comma-separated items of a word or two, or a labelled "Keywords: …" line. Apple:
+ * promotional text "should not be used to display keywords", and the description does not rank either.
+ */
+export function looksLikeKeywordList(line: string, locale: string, minItems: number): boolean {
+  if (/^\s*(keywords?|tags?|anahtar kelimeler|schlüsselwörter|mots[- ]clés|palabras clave)\s*:/iu.test(line)) return true;
+  const items = line.split(/[,;|،、，]/).map((s) => s.trim()).filter(Boolean);
+  return items.length >= minItems && items.every((item) => wordCount(item, locale) <= 2);
+}
+
+/** Words of the ASC category constants (HEALTH_AND_FITNESS → health, fitness). The constants are English, so this only fits English locales. */
+export function categoryWords(app?: Pick<AppMetadata, 'primaryCategory' | 'secondaryCategory'>): Set<string> {
+  const words = [app?.primaryCategory, app?.secondaryCategory].flatMap((c) => (c ?? '').toLowerCase().split('_')).filter((w) => w && w !== 'and');
+  return new Set(words.flatMap((w) => (w.endsWith('s') && w !== 'news' ? [w, w.slice(0, -1)] : [w])));
+}
+
+/** Seeds a locale is researched with; the same fallback as `seedsFor` in @vitrin/research, which validate does not depend on. */
+function seedList(config: VitrinConfig, locale: string): string[] {
+  const s = config.research.seeds;
+  return Array.isArray(s) ? s : (s[locale] ?? s[baseLanguage(locale)] ?? []);
 }
 
 /** Every word of `term` appears among the words of the name, subtitle and keyword field (the App Store combines them). */
@@ -145,8 +178,12 @@ export function validateText(input: TextValidationInput): { issues: IssueList; m
     const plan = keywordPlans?.get(locale);
     const brandWords = new Set(tokenize(profile?.app.displayName ?? '', locale));
     if (nameWords.length && nameWords.every((w) => brandWords.has(w)) && !(plan?.candidates ?? []).some((c) => termCovered(c.term, { name: m.name, subtitle: '', keywords: '' }, locale))) {
-      issues.warn('aso.name-brand-only', `The name is only the brand (“${m.name}”); the name is the most weighted field — add the primary keyword (brand: keyword).`, at('name'));
+      issues.warn('aso.name-brand-only', `The name is only the brand (“${m.name}”); the name is the most weighted field — add the primary keyword (“keyword: brand”; “brand: keyword” once people search for the brand).`, at('name'));
+    } else if (!isKnownBrand(competitors?.self) && brandWords.has(nameWords[0] ?? '') && nameWords.some((w) => !brandWords.has(w))) {
+      issues.info('aso.name-keyword-first', `“${m.name}” leads with a brand people do not search for yet; “keyword: brand” says at once what the app does in search results.`, { ...at('name'), fix: 'This is about clarity, not a proven ranking gain: for a live app that ranks, reorder only when the name changes anyway.' });
     }
+    if (looksLikeKeywordList(m.name, locale, 3)) issues.warn('text.keyword-list', `The name reads like a list of keywords (“${m.name}”); keep it natural (App Review 2.3.7).`, at('name'));
+    if (looksLikeKeywordList(m.subtitle, locale, 4)) issues.warn('text.keyword-list', `The subtitle reads like a list of keywords (“${m.subtitle}”); say what the app does for the user.`, at('subtitle'));
 
     // ---- keywords ----
     const kwField = m.keywords;
@@ -182,14 +219,33 @@ export function validateText(input: TextValidationInput): { issues: IssueList; m
         if (seen.has(p)) issues.warn('keywords.plural', `Both “${t}” and “${p}” are present; the App Store matches singular/plural forms, so remove one.`, at('keywords'));
       }
     }
-    for (const noise of forbidden.keywordNoise) {
+    for (const noise of [...forbidden.keywordNoise, ...(KEYWORD_FILLER[baseLanguage(locale)] ?? [])]) {
       if (seen.has(noise.toLowerCase())) issues.warn('keywords.noise', `“${noise}” is low-value; spend these bytes on another keyword.`, at('keywords'));
+    }
+    if (/[#@]/.test(kwField)) issues.warn('keywords.special-char', 'Special characters such as # or @ add nothing unless they are part of the brand; Apple advises against them.', at('keywords'));
+    // A word needs to be there only once: the App Store combines the words of the keyword field, name and subtitle.
+    // (`seen` holds each term once, so a term written twice stays `keywords.duplicate`.)
+    if (!isCjk) {
+      const uses = new Map<string, number>();
+      for (const term of seen) for (const w of new Set(tokenize(term, locale))) uses.set(w, (uses.get(w) ?? 0) + 1);
+      const again = [...uses].filter(([, n]) => n > 1).map(([w]) => w);
+      if (again.length) issues.warn('keywords.word-repeat', `${again.map((w) => `“${w}”`).join(', ')} appears in more than one keyword term; a word only has to be there once.`, { ...at('keywords'), fix: 'Keep each word once and spend the bytes on new words.' });
+      const phrases = [...seen].filter((t) => tokenize(t, locale).length > 1);
+      if (phrases.length) issues.info('keywords.phrase', `${phrases.map((t) => `“${t}”`).join(', ')} is written as a phrase; a comma costs the same byte as the space and lets each word combine with the other fields. Keep a phrase only when the exact wording matters.`, at('keywords'));
+    }
+    if (baseLanguage(locale) === 'en') {
+      const category = categoryWords(appMetadata);
+      const inCategory = [...new Set([...seen].flatMap((t) => tokenize(t, locale)).filter((w) => category.has(w)))];
+      if (inCategory.length) issues.warn('keywords.repeats-category', `${inCategory.map((w) => `“${w}”`).join(', ')} is in the app's category, which the App Store already indexes; Apple advises against repeating it.`, { ...at('keywords'), fix: 'Spend these bytes on another keyword.' });
     }
     if (kwField.trim() && byteLength(kwField) < 90) {
       issues.warn('keywords.underused', `Keyword field is ${byteLength(kwField)}/100 bytes; use the remaining bytes for another term.`, at('keywords'));
     }
 
     // ---- keyword plan: the research has to reach the fields ----
+    if (keywordPlans && !plan) {
+      issues.warn('keywords.no-research', `${locale} has no keyword research; its fields may be a translation instead of what people search for there.`, { ...at('keywords'), fix: 'Add seeds for this locale to research.seeds and run `vitrin research`.' });
+    }
     if (plan) {
       const file = `metadata/research/keywords/${locale}.json`;
       const unscored = plan.candidates.filter((c) => c.relevance === null).length;
@@ -203,6 +259,22 @@ export function validateText(input: TextValidationInput): { issues: IssueList; m
         }
         for (const term of plan.selected.keywords) {
           if (!termCovered(term, m, locale)) issues.warn('keywords.plan-mismatch', `“${term}” is selected for the keyword field, but no field carries it.`, at('keywords'));
+        }
+        const candidate = (term: string) => plan.candidates.find((c) => c.term === term.toLocaleLowerCase(locale));
+        const { name, subtitle, keywords: fieldTerms } = plan.selected;
+        for (const term of [...name, ...subtitle, ...fieldTerms]) {
+          const c = candidate(term);
+          if (c && c.popularity.score < NO_DEMAND_SCORE) issues.warn('keywords.no-demand', `“${term}” shows no search demand (popularity ${c.popularity.score}); ranking #1 for it brings nobody.`, { ...at('keywords'), file });
+        }
+        // A new or small app needs at least one term it can win; the App Store combines the fields, so any field can carry it.
+        const ownRatings = competitors?.self?.userRatingCount ?? 0;
+        const reach = (c: (typeof plan.candidates)[number]) => keywordReach(c, ownRatings);
+        const head = [...name, ...subtitle].map(candidate).filter((c) => c !== undefined);
+        if (head.length && head.every((c) => reach(c) === 'stretch')) {
+          const winnable = plan.candidates.filter((c) => reach(c) !== 'stretch' && c.total !== null && (c.relevance ?? 0) >= 0.6 && c.popularity.score >= NO_DEMAND_SCORE).sort((a, b) => b.total! - a.total!);
+          if (winnable.length && !winnable.some((c) => termCovered(c.term, m, locale))) {
+            issues.warn('keywords.out-of-reach', `Every researched term in the name and subtitle is held by apps far stronger than this one, and no field carries a closer term: ${winnable.slice(0, 3).map((c) => c.term).join(', ')}.`, { ...at('subtitle'), fix: 'Give the subtitle or the keyword field one of these, and grow into the bigger terms.' });
+          }
         }
       }
       // Dropping a term the app already ranks for gives away traffic it has today.
@@ -270,6 +342,10 @@ export function validateText(input: TextValidationInput): { issues: IssueList; m
       issues.warn('whatsnew.generic', `What's New is generic, but this release adds features (${featureCommits.slice(0, 3).map((c) => `“${c}”`).join(', ')}); App Review 2.3.12 requires significant changes to be listed.`, at('whatsNew'));
     }
 
+    // ---- only the name, subtitle, keywords and category rank; the rest is written for people ----
+    if (looksLikeKeywordList(m.promotionalText, locale, 5)) issues.warn('text.keyword-list', 'The promotional text reads like a list of keywords; it does not affect search ranking, so use it to say what is new.', at('promotionalText'));
+    if (m.description.split('\n').some((line) => looksLikeKeywordList(line, locale, 6))) issues.warn('text.keyword-list', 'A line of the description reads like a list of keywords; the description does not rank in App Store search, so write it for the person reading.', at('description'));
+
     // ---- description quality ----
     const firstLines = m.description.split('\n').filter((l) => l.trim()).slice(0, 3).join(' ');
     if (graphemeLength(firstLines) < 40) issues.warn('description.hook', 'The first 3 lines of the description are visible before “more”; write a strong hook.', at('description'));
@@ -308,6 +384,13 @@ export function validateText(input: TextValidationInput): { issues: IssueList; m
       }
     }
     if (!m.claims.length) issues.warn('claim.none', 'The claims list is empty; link the feature claims in the description to app_profile features.', at('claims'));
+  }
+
+  // ---- each market searches in its own words: one seed list for two languages is a translation, not research ----
+  const researched = [...locales.keys()].map((locale) => ({ locale, seeds: [...seedList(config, locale)].map((s) => s.toLocaleLowerCase(locale)).sort().join('\n') }));
+  const sameSeeds = researched.filter((a, i) => a.seeds && researched.some((b, j) => i !== j && a.seeds === b.seeds && baseLanguage(a.locale) !== baseLanguage(b.locale)));
+  if (sameSeeds.length) {
+    issues.warn('research.shared-seeds', `${sameSeeds.map((s) => s.locale).join(', ')} are researched with the same seed terms; people in different markets search in their own words.`, { file: 'vitrin.config.yaml', field: 'research.seeds', fix: 'Write seeds per locale: `research.seeds: { "en-US": […], "tr": […] }`.' });
   }
 
   // ---- cross-locale: languages indexed in the same storefront share one search index ----

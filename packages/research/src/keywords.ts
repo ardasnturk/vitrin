@@ -1,5 +1,5 @@
 import { loadForbiddenTerms, tokenize } from '@vitrin/core';
-import type { CompetitorApp, KeywordCandidate } from '@vitrin/schemas';
+import { NO_DEMAND_SCORE, type CompetitorApp, type KeywordCandidate } from '@vitrin/schemas';
 import type { ItunesSoftware } from './itunes.js';
 
 const STOPWORDS: Record<string, string[]> = {
@@ -73,9 +73,16 @@ export function estimatePopularity(term: string, results: ItunesSoftware[], loca
   return round(0.6 * volume + 0.4 * nameShare);
 }
 
+/**
+ * relevance × demand × (1 − 0.7 × competition). Competition lowers a term but does not rule it out, so a smaller term
+ * with little competition can beat a popular crowded one. Demand has a floor for that same reason, but the floor must
+ * not reward a term nobody searches for: below NO_DEMAND_SCORE it fades to 0, or an empty result would score best.
+ */
 export function totalScore(c: Pick<KeywordCandidate, 'relevance' | 'popularity' | 'competition'>): number | null {
   if (c.relevance === null || c.relevance === undefined) return null;
-  return round(c.relevance * (0.35 + 0.65 * c.popularity.score) * (1 - 0.7 * c.competition.score));
+  const popularity = c.popularity.score;
+  const demand = (0.35 + 0.65 * popularity) * Math.min(popularity / NO_DEMAND_SCORE, 1);
+  return round(c.relevance * demand * (1 - 0.7 * c.competition.score));
 }
 
 function round(n: number): number {

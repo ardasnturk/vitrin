@@ -1,21 +1,26 @@
 # ASO rules
 
-Text that earns ranking in App Store search comes from three fields: **name**, **subtitle**, **keyword field**. The description does not count toward in-store ranking (it is used by web search).
+Text that earns ranking in App Store search comes from the **name**, the **subtitle**, the **keyword field** and the **category** (Apple: "matches for your app's title, subtitle, keywords, and primary category"); user behavior (downloads, ratings and reviews) counts too. The description does not count toward in-store ranking (it is used by web search), and Apple says promotional text does not affect it either. Write both for people: a keyword list there gains nothing (`text.keyword-list`).
 
 ## Keyword selection
 
 1. Set `relevance` (0–1) for the candidates in `metadata/research/keywords/<locale>.json`: does the app really do the job of the person searching for this term? If not, 0.
-2. `total = relevance × (0.35 + 0.65 × popularity) × (1 − 0.7 × competition)` — computed by the CLI (`vitrin write` recomputes it after you set relevance). `popularity.source: "estimate"` is an estimate from the rating volume of the apps that rank for the term; do not present it as an exact number. `competition` = how many of the top 10 carry the term in their name, plus how entrenched they are (median ratings).
-3. Distribution: the strongest 1–2 terms go into the **name**, the next 1–2 into the **subtitle**, the rest into the **keyword field**. Write them to the `selected` field — validate checks that each selected term really is in its field (`keywords.plan-mismatch`).
-4. `ownRank` is where the app ranks for the term today (live apps). Keep the terms it ranks top 10 for (`keywords.drops-ranked-term`), and see `metadata/research/live-listing.json` for what the listing says now.
+2. `total = relevance × demand × (1 − 0.7 × competition)`, with `demand = 0.35 + 0.65 × popularity` fading to 0 below popularity 0.1: ranking #1 for a term nobody searches for brings nobody (`keywords.no-demand`). Computed by the CLI (`vitrin write` recomputes it after you set relevance). `popularity.source: "estimate"` is an estimate from the rating volume of the apps that rank for the term; do not present it as an exact number. `competition` = how many of the top 10 carry the term in their name, plus how entrenched they are (median ratings).
+3. **Do not chase volume.** A popular term held by apps with far more ratings may be out of reach for a new or small app (Apple names this trade-off itself). `stretch` in the write brief marks such a term: the top 10's median rating count is over 100 times the app's own (a new app counts as 100 ratings; this is Vitrin's heuristic, not an Apple number). Prefer a smaller term the app can win and grow into the big ones later; when the name and subtitle hold only stretch terms and no field carries a closer one, validate warns (`keywords.out-of-reach`).
+4. Distribution: the strongest 1–2 terms go into the **name**, the next 1–2 into the **subtitle**, the rest into the **keyword field**. Write them to the `selected` field — validate checks that each selected term really is in its field (`keywords.plan-mismatch`).
+5. `ownRank` is where the app ranks for the term today (live apps). Keep the terms it ranks top 10 for (`keywords.drops-ranked-term`), and see `metadata/research/live-listing.json` for what the listing says now.
 
 ## Measure
 
 Run `vitrin rank` before a metadata change and again one to two weeks after it: it records the app's own rank for the selected and best-scored terms in `metadata/rankings/<date>.json` (kept in git, outside `research/`, so it survives the research clean-up) and prints the change since the previous snapshot. Use the result for the next iteration: keep what moved up, replace what did not.
 
+Rank is not the goal, and a move does not prove the metadata caused it. Ask the user to compare impressions, conversion rate and downloads in App Analytics, with the source type set to App Store Search. A term that does not move may be too competitive or have the wrong intent. `vitrin rank` reads the iTunes Search API, which approximates the store's order; give it a week or two, not a day.
+
 ## Name (2–30)
 
-- Brand + primary keyword: `Ritim: Alışkanlık Takibi` (Turkish for "Ritim: Habit Tracker"). The brand alone is not enough (`aso.name-brand-only`); keyword stuffing is also forbidden.
+- Primary keyword + brand, in natural wording, with the brand always in the name. The brand alone is not enough (`aso.name-brand-only`); a list of keywords is forbidden (`text.keyword-list`, App Review 2.3.7).
+- **Order follows how known the brand is.** Nobody searches for a new app's name, so lead with what it does: `Alışkanlık Takibi: Ritim` (Turkish for "Habit Tracker: Ritim"). A brand people search for can lead: `Ritim: Alışkanlık Takibi`. Vitrin treats 10,000 ratings as known (`aso.name-keyword-first` is an info below that).
+- This is for clarity in search results. Apple documents no position effect, so never promise a ranking gain from it, and do not reorder the name of a live app that already ranks for its own sake.
 
 ## Subtitle (≤ 30)
 
@@ -24,10 +29,18 @@ Run `vitrin rank` before a metadata change and again one to two weeks after it: 
 ## Keyword field (≤ 100 bytes)
 
 - Comma-separated, **no spaces**: `goal,routine,streak`. Every space costs a byte.
+- **Single words, each once.** The App Store combines words across the keyword field, name and subtitle, so `routine,goal,streak` next to the name "Habit Tracker" reaches "habit routine" and "habit goal" as well, while `habit routine,habit goal` spends bytes twice (`keywords.word-repeat`). That is the ASO community's observation; Apple only says phrases are allowed and that words should not be repeated. Not every combination will rank, so a phrase is fine when the exact wording matters (`keywords.phrase` is an info).
 - **The byte trap:** Turkish ç ş ğ ı ö ü are 2 bytes each in UTF-8; Japanese/Chinese/Korean characters are 3 bytes. `alışkanlık` ("habit") = 13 bytes for 10 characters.
-- Use the singular; plurals still match. Do not include words from the name/subtitle, the developer name, competitor/brand names, Apple marks (iPhone, iPad, Apple Watch…), prices, or "free".
-- Every term longer than 2 characters (except CJK). Low-value words such as `app`, `iphone` or `uygulama` ("app") waste bytes.
+- Use the singular; plurals still match. Do not include words from the name/subtitle, the category (Apple: already indexed; `keywords.repeats-category` for English locales, check other languages yourself against the store's localized category name), the developer name, competitor/brand names, Apple marks (iPhone, iPad, Apple Watch…), prices, or "free".
+- Every term longer than 2 characters (except CJK). Low-value words such as `app`, `game`, `iphone` or `uygulama` ("app"), filler such as `the` or `to`, and special characters such as `#` or `@` waste bytes (`keywords.noise`, `keywords.special-char`).
 - Do not leave bytes unused (< 90 bytes triggers a warning).
+
+## Localization is research, not translation
+
+- People in different countries search differently, even for the same kind of app; the literal translation of "budget tracker" may not be what Germans type. Every locale gets its own `research.seeds`, its own scored candidates and its own name, subtitle and keywords (`research.shared-seeds`, `keywords.no-research`).
+- Some markets also search in English. Try the English term as a seed there; with an English localization indexed in that storefront (Italy indexes en-GB alongside it-IT, see `data/storefront-languages.json`), it goes in that locale's fields, otherwise in the local keyword field.
+- Seeds you write are ideas, not data: only `vitrin research` shows demand and competition.
+- A keyword field belongs to a language, not a country. Check which languages a storefront indexes before planning for it (next section). Screenshots are localized too (`shots.json` copy, demo data in `strings/<locale>.json`).
 
 ## Storefront additional languages
 
