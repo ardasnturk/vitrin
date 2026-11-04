@@ -86,7 +86,7 @@ struct AppOverviewView: View {
         }
         .task(id: app.id) {
             let editable: Set<String> = ["PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED", "METADATA_REJECTED", "INVALID_BINARY"]
-            if let doc = try? await AscCLI.json(["versions", "list", "--app", app.id, "--limit", "10"]) {
+            if let doc = try? await AscCLI.cached(["versions", "list", "--app", app.id, "--limit", "10"]) {
                 let vs = JSONAPI.items(doc)
                 versionID = (vs.first { editable.contains(JSONAPI.text($0, "appVersionState")) } ?? vs.first)?["id"]?.stringValue
             }
@@ -173,7 +173,8 @@ struct ConnectHint: View {
 
 // MARK: shared loading
 
-/// Loads one asc JSON result for a tab and shows a spinner, the error, or the content.
+/// Loads one asc JSON result for a tab, cache first, and shows the content, or a spinner or the error while there is
+/// nothing to show. Reloading (the content's `reload`, `refresh`, the page's refresh) always asks App Store Connect.
 struct AscLoad<Content: View>: View {
     var args: [String]
     /// Bump to read again from outside (another list on the page changed).
@@ -185,13 +186,14 @@ struct AscLoad<Content: View>: View {
     @ViewBuilder var content: (JSONValue, @escaping () -> Void) -> Content
     @State private var value: JSONValue?
     @State private var error: String?
-    @State private var loading = false
+    @State private var updated: Date?
+    @State private var seen: String?
     @State private var tick = 0
 
     var body: some View {
         Group {
-            if let value {
-                content(value) { tick += 1 }
+            if let shown = value ?? AscCache.shared.peek(args)?.doc {
+                content(shown) { tick += 1 }
             } else if let error {
                 AscErrorCard(message: error, quiet: errorText) { self.error = nil; tick += 1 }
             } else {
@@ -199,11 +201,53 @@ struct AscLoad<Content: View>: View {
                     .padding(.vertical, 20)
             }
         }
-        .task(id: "\(args.joined(separator: " "))#\(tick)#\(refresh)") {
-            loading = true
-            defer { loading = false }
-            do { value = try await AscCLI.json(args, readOnly: readOnly); error = nil } catch { self.error = error.localizedDescription }
+        .transformPreference(AscUpdatedKey.self) { oldest in
+            if let updated { oldest = min(oldest ?? updated, updated) }
         }
+        .task(id: "\(args.joined(separator: " "))#\(reloads)") {
+            // Coming back to a page runs this again too; only a changed count asks for a new read.
+            let force = seen != nil && seen != reloads
+            seen = reloads
+            do {
+                try await AscCLI.read(args, readOnly: readOnly, force: force) { entry in
+                    value = entry.doc
+                    updated = entry.fetchedAt
+                    error = nil
+                }
+            } catch {
+                if !Task.isCancelled { self.error = error.localizedDescription }
+            }
+        }
+    }
+
+    private var reloads: String { "\(tick)#\(refresh)#\(AscCache.shared.revision)" }
+}
+
+/// The oldest result a page shows, for its "Updated …" line.
+struct AscUpdatedKey: PreferenceKey {
+    static let defaultValue: Date? = nil
+    static func reduce(value: inout Date?, nextValue: () -> Date?) {
+        if let next = nextValue() { value = min(value ?? next, next) }
+    }
+}
+
+/// How old a page is, and the button that reads all of it again.
+struct AscFreshness: View {
+    var date: Date
+
+    var body: some View {
+        HStack(spacing: 6) {
+            TimelineView(.periodic(from: .now, by: 30)) { _ in
+                Text(L.t("asc.updated").replacingOccurrences(of: "{time}", with: date.formatted(.relative(presentation: .named).locale(LanguageState.shared.locale))))
+            }
+            if AscCache.shared.isFetching {
+                ProgressView().controlSize(.mini)
+            } else {
+                Button { AscCache.shared.reloadVisible() } label: { Image(systemName: "arrow.clockwise") }
+                    .buttonStyle(.borderless).help(L.t("common.refresh")).accessibilityIdentifier("asc.reload")
+            }
+        }
+        .font(.caption).foregroundStyle(.secondary).lineLimit(1)
     }
 }
 
@@ -234,16 +278,26 @@ struct ResourceTable: View {
     var columns: [(title: String, key: String, kind: Kind)]
     enum Kind { case text, mono, date, state, bool }
     var empty: String
+    @State private var query = ""
+
+    private var found: [[String: JSONValue]] {
+        items.filter { item in
+            columns.contains { c in (c.key == "id" ? item["id"] : JSONAPI.attr(item, c.key)).map { AscText.plain(c.key, $0).matches(search: query) } ?? query.isEmpty }
+        }
+    }
 
     var body: some View {
         if items.isEmpty {
             Text(empty).foregroundStyle(.secondary).font(.callout).glassCard(padding: 14)
         } else {
+            let items = found
             VStack(spacing: 0) {
+                if self.items.count > AscListSearch.threshold { AscListSearch(text: $query).padding(8) }
                 HStack(spacing: 12) { ForEach(columns.indices, id: \.self) { i in Text(columns[i].title).frame(maxWidth: .infinity, alignment: .leading) } }
                     .font(.caption.weight(.semibold)).foregroundStyle(.secondary).textCase(.uppercase)
                     .padding(.horizontal, 12).padding(.vertical, 8)
                 Divider()
+                if items.isEmpty { Text(L.t("search.noResults")).font(.callout).foregroundStyle(.secondary).padding(12) }
                 ForEach(items.indices, id: \.self) { r in
                     HStack(spacing: 12) {
                         ForEach(columns.indices, id: \.self) { i in cell(items[r], columns[i]).frame(maxWidth: .infinity, alignment: .leading) }
@@ -287,10 +341,17 @@ extension EnvironmentValues {
 struct TabPage<Content: View>: View {
     @Environment(\.ascShelf) private var shelf
     @ViewBuilder var content: Content
+    @State private var updated: Date?
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                if !shelf.intro.isEmpty { Text(shelf.intro).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true) }
+                if !shelf.intro.isEmpty || updated != nil {
+                    HStack(alignment: .firstTextBaseline, spacing: 12) {
+                        Text(shelf.intro).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 0)
+                        if let updated { AscFreshness(date: updated).fixedSize() }
+                    }
+                }
                 content
                 // The rest of asc for this place: every command of the tab's groups, as forms.
                 if !shelf.groups.isEmpty { AscCommandShelf(title: shelf.title, groups: shelf.groups, prefill: shelf.prefill).padding(.top, 8) }
@@ -298,6 +359,7 @@ struct TabPage<Content: View>: View {
                 .padding(24)
                 .frame(maxWidth: 1000, alignment: .leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .onPreferenceChange(AscUpdatedKey.self) { date in Task { @MainActor in updated = date } }
         }
     }
 }
@@ -608,6 +670,7 @@ private struct AscReviewsTab: View {
     @State private var replyTo: [String: JSONValue]?
     @State private var onlyUnanswered = false
     @State private var stars = ""
+    @State private var query = ""
     var body: some View {
         TabPage {
             AscLoad(args: ["reviews", "ratings", "--app", app.id, "--all"], errorText: L.t("act.ratingsNone")) { doc, _ in
@@ -626,8 +689,11 @@ private struct AscReviewsTab: View {
                 Spacer()
             }
             AscLoad(args: ["reviews", "list", "--app", app.id, "--limit", "100", "--sort", "-createdDate"] + (onlyUnanswered ? ["--only-unresponded"] : []) + (stars.isEmpty ? [] : ["--stars", stars])) { doc, reload in
-                let items = JSONAPI.items(doc)
-                if items.isEmpty { Text(L.t("asc.reviews.none")).foregroundStyle(.secondary).glassCard(padding: 14) }
+                let all = JSONAPI.items(doc)
+                let items = all.filter { r in ["title", "body", "reviewerNickname"].contains { JSONAPI.text(r, $0).matches(search: query) } || AscText.territory(JSONAPI.text(r, "territory")).matches(search: query) }
+                if all.count > AscListSearch.threshold { AscListSearch(text: $query) }
+                if all.isEmpty { Text(L.t("asc.reviews.none")).foregroundStyle(.secondary).glassCard(padding: 14) }
+                else if items.isEmpty { Text(L.t("search.noResults")).foregroundStyle(.secondary).glassCard(padding: 14) }
                 ForEach(items.indices, id: \.self) { i in
                     let r = items[i]
                     VStack(alignment: .leading, spacing: 6) {

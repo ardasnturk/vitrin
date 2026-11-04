@@ -130,6 +130,9 @@ import Observation
         }
     }
 
+    /// Jobs that write to App Store Connect: what the app has read from it is old once they end.
+    private static let changesAppStoreConnect: Set<String> = ["upload", "finalize", "submit", "doctor"]
+
     private func handle(_ e: StudioEvent) {
         switch e.name {
         case "hello":
@@ -154,6 +157,7 @@ import Observation
                 } else {
                     if job?.id == j.id || job == nil { job = nil }
                     finishedJob = j
+                    if Self.changesAppStoreConnect.contains(j.command) { AscCache.shared.markStale() }
                     announce(j)
                     scheduleRefresh()
                 }

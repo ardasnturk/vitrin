@@ -82,7 +82,7 @@ struct MainWindow: View {
         ToolbarItemGroup(placement: .primaryAction) {
             if model.selectedApp != nil {
                 if model.ascApps.loading { ProgressView().controlSize(.small) }
-                Button { Task { await model.refreshApps() } } label: { Image(systemName: "arrow.clockwise") }.help(L.t("apps.refresh")).disabled(model.ascApps.loading).accessibilityIdentifier("toolbar.refreshApps")
+                Button { AscCache.shared.reloadVisible(); Task { await model.refreshApps() } } label: { Image(systemName: "arrow.clockwise") }.help(L.t("apps.refresh")).disabled(model.ascApps.loading).accessibilityIdentifier("toolbar.refreshApps")
             } else if let s = model.selectedSession {
                 // What runs is said where it runs: the job in the log bar, Claude in its column; the toolbar only hints.
                 if s.job != nil || s.claudeRunning { ProgressView().controlSize(.small).help(s.job.map { L.job($0) } ?? L.t("claude.busy")) }

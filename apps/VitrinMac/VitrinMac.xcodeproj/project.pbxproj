@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		002E76A5498A3C3D3C8AA23B /* ReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB53321E2AC6996F8DDAFA1 /* ReviewView.swift */; };
 		01657CC38DEB346F5292810E /* AppIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F072DDADE9FDE8E22ED817A /* AppIcons.swift */; };
-		01E7BB02FF7ED4C5D0622DD1 /* vitrin in Resources */ = {isa = PBXBuildFile; fileRef = BBF0D34C8EB12E25E1CDC0FA /* vitrin */; };
 		04162DCD728995EFF844F68F /* ASCApps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C0B0D88CC3702B332EFCCF /* ASCApps.swift */; };
 		0BFAE15C9FE9A77391F032FD /* AscListingImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A3F41FBC6CAE0D466C60EF /* AscListingImport.swift */; };
 		0C2E33D731366A027E9821E1 /* AppleWebSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3EFB80A6FA75C3A967494C /* AppleWebSession.swift */; };
@@ -18,6 +17,7 @@
 		1CBF3F8E4F8D7EB4B649859C /* UpdateCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2617D41381B1B43B12D982ED /* UpdateCheckerTests.swift */; };
 		215164E370A42C91EB3C4972 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6D51CAE05B7F00B658B2BA0 /* AppSettings.swift */; };
 		22E3B1F24BEEED5D3023698E /* VitrinMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252E7B6410A6AA6524E12122 /* VitrinMacApp.swift */; };
+		24C3700E716076F1471CFDAC /* AscCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C025FB9FCCFC8CA8B6EFC5E /* AscCache.swift */; };
 		25FF69CDCC4ECEBC89AFEA7A /* Notifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ED1D2139A67069C8A5DB50F /* Notifier.swift */; };
 		276706DADE79A5253D081B55 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82A0DAF979334D56AA86F2E6 /* Localization.swift */; };
 		27EAF5A890A43F354B838033 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 3A0337E82A1E296689C01C0D /* Localizable.xcstrings */; };
@@ -30,6 +30,7 @@
 		3BABDFA9389D5246FE3DC9C8 /* overview-ritim.json in Resources */ = {isa = PBXBuildFile; fileRef = 2A98C23CC09E90604C2ADA8F /* overview-ritim.json */; };
 		3BB3D48D682277F6EA6010D9 /* ToolInstallButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26B543FF356622151F5B1B20 /* ToolInstallButton.swift */; };
 		3D1855476A9C6BCD42997C45 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51F56DBCAA368ACDF451597 /* Models.swift */; };
+		3DA3AF8300DDEFAD4CE2407B /* AscCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3CA2D93E3EA234007CA5797 /* AscCacheTests.swift */; };
 		4A592BF0BA965DEAB1CBBC0F /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0821F25BF977420819CA929 /* WelcomeView.swift */; };
 		4DB13C31678BAFDC2B7F8986 /* Sidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76F172094DDF61E930A998AA /* Sidebar.swift */; };
 		4EFA8FF24070391AD8E2A08B /* AscBuildSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BEFCA587B5461CA45985E16 /* AscBuildSections.swift */; };
@@ -38,6 +39,7 @@
 		56CABFF4FEC52F0C2DCEF426 /* MainWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E276ADD36183CB2534CD55D /* MainWindow.swift */; };
 		57BA7539C3C139FE16F2EF1F /* AscPanelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4499DB8A461594587411B912 /* AscPanelTests.swift */; };
 		5A47CC0DEB0E271DE00C1852 /* OverviewDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB048CF9E3B96B7FFB1A78B /* OverviewDecodingTests.swift */; };
+		5BE80297C1C52E2F0AA89693 /* vitrin in Resources */ = {isa = PBXBuildFile; fileRef = 783EF8CBA29B5EE231F68014 /* vitrin */; };
 		5F90AB4B1153ED5592C566E6 /* VisualsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01E20EED87A8F2960D1D0B50 /* VisualsView.swift */; };
 		66098835DA01703BD923ACA6 /* TestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178E50E1F076BEF93183110C /* TestSupport.swift */; };
 		69C506659A1FFDA0CFC008B5 /* asc-commands.json in Resources */ = {isa = PBXBuildFile; fileRef = D5609E8300E5225278AE77B4 /* asc-commands.json */; };
@@ -153,8 +155,10 @@
 		753C7DBD65CAA94F7E2F4BD3 /* AscDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscDataView.swift; sourceTree = "<group>"; };
 		76F172094DDF61E930A998AA /* Sidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sidebar.swift; sourceTree = "<group>"; };
 		78237FAFA376D7A69B870240 /* Design.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Design.swift; sourceTree = "<group>"; };
+		783EF8CBA29B5EE231F68014 /* vitrin */ = {isa = PBXFileReference; lastKnownFileType = folder; name = vitrin; path = ../../plugins/vitrin; sourceTree = SOURCE_ROOT; };
 		82A0DAF979334D56AA86F2E6 /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 		881DDD917D5CD5A33E79CB97 /* CLIRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIRunner.swift; sourceTree = "<group>"; };
+		8C025FB9FCCFC8CA8B6EFC5E /* AscCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscCache.swift; sourceTree = "<group>"; };
 		8C3EFB80A6FA75C3A967494C /* AppleWebSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleWebSession.swift; sourceTree = "<group>"; };
 		907F24C99792DD5A89398989 /* AscCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscCLI.swift; sourceTree = "<group>"; };
 		92699CD2D9DA59BE49F354BE /* VitrinMacUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VitrinMacUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -169,7 +173,7 @@
 		B0E08221597DCFE63E90E24A /* ClaudePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudePanel.swift; sourceTree = "<group>"; };
 		B74D68F1B0BD20A23DC2231D /* JSONValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONValueTests.swift; sourceTree = "<group>"; };
 		B8608CABDFF5103947E4E614 /* AscCommandShelf.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscCommandShelf.swift; sourceTree = "<group>"; };
-		BBF0D34C8EB12E25E1CDC0FA /* vitrin */ = {isa = PBXFileReference; lastKnownFileType = folder; name = vitrin; path = ../../plugins/vitrin; sourceTree = SOURCE_ROOT; };
+		C3CA2D93E3EA234007CA5797 /* AscCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscCacheTests.swift; sourceTree = "<group>"; };
 		C6A3F41FBC6CAE0D466C60EF /* AscListingImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscListingImport.swift; sourceTree = "<group>"; };
 		C6D51CAE05B7F00B658B2BA0 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		CBE4D6DF03D2F9BD630E46C3 /* AscCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscCatalog.swift; sourceTree = "<group>"; };
@@ -218,6 +222,7 @@
 			children = (
 				243B1910F2E467A1998BAAAD /* Fixtures */,
 				6C5B27F54EB1DD541DA0E5E4 /* ASCAppsTests.swift */,
+				C3CA2D93E3EA234007CA5797 /* AscCacheTests.swift */,
 				4499DB8A461594587411B912 /* AscPanelTests.swift */,
 				6E1B5EF1079BAFCD67698F97 /* CredentialsTests.swift */,
 				B74D68F1B0BD20A23DC2231D /* JSONValueTests.swift */,
@@ -256,7 +261,7 @@
 		65A0D08315901B988056FDBD = {
 			isa = PBXGroup;
 			children = (
-				9CF77EE7D96830F9EF036027 /* auto-asc-metadata */,
+				E4E6145C2E143E73D591E500 /* vitrin */,
 				EE75C35F198473E986D4D324 /* VitrinMac */,
 				18E35CD5E863016BF2567810 /* VitrinMacTests */,
 				FC643964C13DD9B9ABA15D0A /* VitrinMacUITests */,
@@ -264,13 +269,12 @@
 			);
 			sourceTree = "<group>";
 		};
-		9CF77EE7D96830F9EF036027 /* auto-asc-metadata */ = {
+		724B0F370793A047557B7C2D /* plugins */ = {
 			isa = PBXGroup;
 			children = (
-				CC92065EE7A1914FFFE9E6CB /* plugins */,
+				783EF8CBA29B5EE231F68014 /* vitrin */,
 			);
-			name = "auto-asc-metadata";
-			path = ../..;
+			path = plugins;
 			sourceTree = "<group>";
 		};
 		9E23F5E2418630F9D34AF6CB /* Views */ = {
@@ -320,12 +324,13 @@
 			path = Design;
 			sourceTree = "<group>";
 		};
-		CC92065EE7A1914FFFE9E6CB /* plugins */ = {
+		E4E6145C2E143E73D591E500 /* vitrin */ = {
 			isa = PBXGroup;
 			children = (
-				BBF0D34C8EB12E25E1CDC0FA /* vitrin */,
+				724B0F370793A047557B7C2D /* plugins */,
 			);
-			path = plugins;
+			name = vitrin;
+			path = ../..;
 			sourceTree = "<group>";
 		};
 		EE75C35F198473E986D4D324 /* VitrinMac */ = {
@@ -355,6 +360,7 @@
 				8C3EFB80A6FA75C3A967494C /* AppleWebSession.swift */,
 				C6D51CAE05B7F00B658B2BA0 /* AppSettings.swift */,
 				09C0B0D88CC3702B332EFCCF /* ASCApps.swift */,
+				8C025FB9FCCFC8CA8B6EFC5E /* AscCache.swift */,
 				CBE4D6DF03D2F9BD630E46C3 /* AscCatalog.swift */,
 				907F24C99792DD5A89398989 /* AscCLI.swift */,
 				C6A3F41FBC6CAE0D466C60EF /* AscListingImport.swift */,
@@ -503,7 +509,7 @@
 				E33A0D024F9E3BB8F6E78B2C /* Assets.xcassets in Resources */,
 				27EAF5A890A43F354B838033 /* Localizable.xcstrings in Resources */,
 				69C506659A1FFDA0CFC008B5 /* asc-commands.json in Resources */,
-				01E7BB02FF7ED4C5D0622DD1 /* vitrin in Resources */,
+				5BE80297C1C52E2F0AA89693 /* vitrin in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -515,6 +521,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E631D20DFDDD445A46F77B67 /* ASCAppsTests.swift in Sources */,
+				3DA3AF8300DDEFAD4CE2407B /* AscCacheTests.swift in Sources */,
 				57BA7539C3C139FE16F2EF1F /* AscPanelTests.swift in Sources */,
 				E0163925EE209BE04BF6E4C5 /* CredentialsTests.swift in Sources */,
 				EE7F39DE57B3D619CC9D499A /* JSONValueTests.swift in Sources */,
@@ -546,6 +553,7 @@
 				E1BE507CA43D0BC7745A13C7 /* AscAnalyticsSections.swift in Sources */,
 				4EFA8FF24070391AD8E2A08B /* AscBuildSections.swift in Sources */,
 				55A46D05A4F7FF6FDE0B43D8 /* AscCLI.swift in Sources */,
+				24C3700E716076F1471CFDAC /* AscCache.swift in Sources */,
 				E9CD866A865396F7839E90DF /* AscCatalog.swift in Sources */,
 				C7F374DBC0A61E024A6B1007 /* AscCommandShelf.swift in Sources */,
 				C9F755B827A362D1986767E5 /* AscDataView.swift in Sources */,

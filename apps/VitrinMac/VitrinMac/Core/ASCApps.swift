@@ -25,6 +25,17 @@ struct ASCApp: Codable, Hashable, Identifiable, Sendable {
     /// The version the sidebar shows: iOS first, else the first platform ASC listed.
     var current: ASCAppVersion? { versions.first { $0.platform == "IOS" } ?? versions.first }
     var ascURL: URL { URL(string: "https://appstoreconnect.apple.com/apps/\(id)/distribution")! }
+
+    /// The name, the bundle id or the SKU has `query` in it.
+    func matches(_ query: String) -> Bool { [name, bundleId, sku].contains { $0.matches(search: query) } }
+}
+
+extension String {
+    /// What a search field means: ignoring case and accents, so "ritim" finds "RİTİM", an empty search finds everything.
+    func matches(search query: String) -> Bool {
+        let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        return q.isEmpty || localizedStandardContains(q)
+    }
 }
 
 struct ASCAppsResult: Codable, Sendable {
@@ -69,8 +80,9 @@ enum ASCWords {
     func app(_ id: String?) -> ASCApp? { id.flatMap { id in apps.first { $0.id == id } } }
 
     /// Reads the team's apps through `asc` with whichever credential asc resolves (Vitrin's key, else asc's own
-    /// login); a refresh while one runs joins it. Not connected: the list empties without an error.
-    func refresh(cli: CLILocation?, connection: AscConnection) async {
+    /// login), cache first unless `force`; a refresh while one runs joins it. Not connected: the list empties without
+    /// an error.
+    func refresh(cli: CLILocation?, connection: AscConnection, force: Bool = false) async {
         if let running = task { return await running.value }
         let t = Task { [self] in
             loading = true
@@ -83,10 +95,11 @@ enum ASCWords {
                 return
             }
             do {
-                let doc = try await AscCLI.json(Self.listArgs, timeout: 180)
-                apps = Self.apps(from: doc)
-                error = nil
-                loadedAt = .now
+                try await AscCLI.read(Self.listArgs, force: force) { entry in
+                    apps = Self.apps(from: entry.doc)
+                    error = nil
+                    loadedAt = entry.fetchedAt
+                }
             } catch {
                 self.error = (error as? AscCLI.Failure)?.message ?? error.localizedDescription
             }
@@ -143,6 +156,7 @@ enum ASCWords {
     }
 
     func clear() {
+        AscCache.shared.removeAll()
         task?.cancel()
         task = nil
         apps = []

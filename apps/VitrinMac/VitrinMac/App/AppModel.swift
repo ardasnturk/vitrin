@@ -71,9 +71,9 @@ import Observation
         selectedAppID = app.id
     }
 
-    /// Reads the team's apps again (launch, key change, the refresh button).
-    func refreshApps() async {
-        await ascApps.refresh(cli: cli, connection: connection)
+    /// Reads the team's apps (key change, the refresh button); at launch the cache may answer (`force: false`).
+    func refreshApps(force: Bool = true) async {
+        await ascApps.refresh(cli: cli, connection: connection, force: force)
         Task { await icons.load(apps: ascApps.apps) }
         if let id = selectedAppID, ascApps.app(id) == nil, ascApps.error == nil { selectedAppID = nil }
     }
@@ -99,7 +99,7 @@ import Observation
         if let path = Self.launchProject { selectedProjectID = store.add(path: path).id }
         await locateCLI()
         // The team's apps load beside the project, not after it.
-        Task { await refreshApps() }
+        Task { await refreshApps(force: false) }
         Task { await updates.checkPeriodically() }
         Task { await updateCLIIfBehind() }
         if let p = selectedProject { await open(p) }

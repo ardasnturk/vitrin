@@ -7,16 +7,30 @@ struct Sidebar: View {
     @State private var credentials = ASCCredentials.shared
     /// Projects whose pages the user folded away; the selected project is open otherwise.
     @State private var folded: Set<String> = []
+    @State private var query = ""
+
+    private var searching: Bool { !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    private var projects: [Project] {
+        model.store.projects.filter { [model.displayName(for: $0), $0.name, $0.path].contains { $0.matches(search: query) } }
+    }
+    private var teamPages: [TeamPage] { TeamPage.allCases.filter { L.t($0.titleKey).matches(search: query) } }
+    private var apps: [ASCApp] { model.ascApps.apps.filter { $0.matches(query) } }
 
     var body: some View {
         List(selection: Binding(get: { current }, set: { sel in select(sel) })) {
-            Label { Text(L.t("home.title")) } icon: { IconBadge(symbol: "square.grid.2x2.fill", colors: BadgeColors.brand) }
-                .padding(.vertical, 2)
-                .tag(Selection(home: true))
-                .accessibilityIdentifier("sidebar.home")
+            if searching {
+                if projects.isEmpty, teamPages.isEmpty, apps.isEmpty {
+                    Text(L.t("search.noResults")).font(.callout).foregroundStyle(.secondary).accessibilityIdentifier("sidebar.noResults")
+                }
+            } else {
+                Label { Text(L.t("home.title")) } icon: { IconBadge(symbol: "square.grid.2x2.fill", colors: BadgeColors.brand) }
+                    .padding(.vertical, 2)
+                    .tag(Selection(home: true))
+                    .accessibilityIdentifier("sidebar.home")
+            }
 
-            Section {
-                ForEach(model.store.projects) { project in
+            if !searching || !projects.isEmpty { Section {
+                ForEach(projects) { project in
                     let open = isOpen(project)
                     ProjectRow(project: project, session: model.sessions[project.id], open: open) { toggle(project) }
                         .tag(Selection(project: project.id, page: .flow))
@@ -27,7 +41,7 @@ struct Sidebar: View {
                             Divider()
                             Button(L.t("projects.remove"), role: .destructive) { model.removeProject(project.id) }
                         }
-                    if open {
+                    if open && !searching {
                         // The App Store Connect page only for a project linked to an app of the team.
                         ForEach(ProjectPage.allCases.filter { $0 != .asc || model.ascApp(for: project) != nil }) { page in
                             Label {
@@ -43,23 +57,25 @@ struct Sidebar: View {
                         }
                     }
                 }
-                Button { model.pickProjectFolder() } label: {
-                    Label { Text(L.t("projects.add")).foregroundStyle(.secondary) } icon: { Image(systemName: "plus").foregroundStyle(.secondary) }
+                if !searching {
+                    Button { model.pickProjectFolder() } label: {
+                        Label { Text(L.t("projects.add")).foregroundStyle(.secondary) } icon: { Image(systemName: "plus").foregroundStyle(.secondary) }
+                    }
+                    .buttonStyle(.borderless)
+                    .accessibilityIdentifier("sidebar.addProject")
                 }
-                .buttonStyle(.borderless)
-                .accessibilityIdentifier("sidebar.addProject")
             } header: {
                 Text(L.t("projects.title"))
-            }
-            Section(L.t("team.title")) {
-                ForEach(TeamPage.allCases) { p in
+            } }
+            if !teamPages.isEmpty { Section(L.t("team.title")) {
+                ForEach(teamPages) { p in
                     Label { Text(L.t(p.titleKey)) } icon: { IconBadge(symbol: p.symbol, colors: p.colors) }
                         .padding(.vertical, 1)
                         .tag(Selection(team: p.rawValue))
                         .accessibilityIdentifier("sidebar.team.\(p.rawValue)")
                 }
-            }
-            Section {
+            } }
+            if !searching || !apps.isEmpty { Section {
                 appsRows
             } header: {
                 // In line with the title and with the rows' status dots, a fixed square so the header never shifts.
@@ -87,10 +103,11 @@ struct Sidebar: View {
                     .frame(width: 16, height: 16)
                     .padding(.trailing, 6)
                 }
-            }
+            } }
 
         }
         .listStyle(.sidebar)
+        .searchable(text: $query, placement: .sidebar, prompt: Text(L.t("search.apps")))
         .safeAreaInset(edge: .bottom) { footer }
     }
 
@@ -218,7 +235,7 @@ struct Sidebar: View {
         } else if model.ascApps.apps.isEmpty {
             Text(L.t("apps.loading")).font(.callout).foregroundStyle(.secondary)
         } else {
-            ForEach(model.ascApps.apps) { app in
+            ForEach(apps) { app in
                 AppRow(app: app, linked: model.linkedProject(for: app))
                     .tag(Selection(app: app.id))
                     .contextMenu {

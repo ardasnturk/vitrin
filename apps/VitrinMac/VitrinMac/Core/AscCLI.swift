@@ -43,7 +43,8 @@ enum AscCLI {
     }
 
     /// Runs `asc <args>`. `readOnly` adds `--read-only`, which makes asc refuse any POST, PATCH, PUT or DELETE.
-    @MainActor static func run(_ args: [String], readOnly: Bool = true, timeout: TimeInterval = 180, extraEnv: [String: String] = [:]) async throws -> Result {
+    /// A write that went through marks the cache old, unless it was a read that needs write access (`changes: false`).
+    @MainActor static func run(_ args: [String], readOnly: Bool = true, timeout: TimeInterval = 180, extraEnv: [String: String] = [:], changes: Bool? = nil) async throws -> Result {
         guard let bin = await path() else { throw Failure(message: L.t("asc.missing")) }
         var env = await ShellEnvironment.environment()
         for (k, v) in authEnvironment() { env[k] = v }
@@ -52,15 +53,26 @@ enum AscCLI {
         env["ASC_READ_ONLY"] = readOnly ? "1" : "0"
         for (k, v) in extraEnv { env[k] = v }
         let r = try await ProcessRunner.run(bin, args, environment: env, cwd: NSTemporaryDirectory(), timeout: timeout)
+        if r.code == 0, changes ?? !readOnly { AscCache.shared.markStale() }
         return Result(code: r.code, stdout: r.stdout, stderr: r.stderr)
     }
 
     /// `asc <args> --output json`, decoded; throws with asc's own message when it fails.
     @MainActor static func json(_ args: [String], readOnly: Bool = true, timeout: TimeInterval = 180) async throws -> JSONValue {
-        let r = try await run(args + ["--output", "json"], readOnly: readOnly, timeout: timeout)
+        let r = try await run(args + ["--output", "json"], readOnly: readOnly, timeout: timeout, changes: false)
         guard r.ok else { throw Failure(message: r.errorLine) }
         guard let j = r.json else { throw Failure(message: r.stdout.isEmpty ? r.errorLine : String(r.stdout.prefix(300))) }
         return j
+    }
+
+    /// `json`, cache first: `deliver` gets what is stored at once, and the new result when it had to be read.
+    @MainActor static func read(_ args: [String], readOnly: Bool = true, timeout: TimeInterval = 180, force: Bool = false, deliver: (AscCache.Entry) -> Void) async throws {
+        try await AscCache.shared.read(args, force: force, fetch: { try await json(args, readOnly: readOnly, timeout: timeout) }, deliver: deliver)
+    }
+
+    /// `json`, cache first, for code that needs one answer.
+    @MainActor static func cached(_ args: [String]) async throws -> JSONValue {
+        try await AscCache.shared.value(args) { try await json(args) }
     }
 }
 
@@ -75,13 +87,24 @@ enum AscCLI {
         case ascLogin(name: String, keyId: String)
         case none
     }
-    private(set) var state: State = .unknown
+    private(set) var state: State = .unknown {
+        didSet { AscCache.shared.account = account }
+    }
     private(set) var checking = false
 
     var isConnected: Bool {
         switch state {
         case .vitrinKey, .ascLogin: return true
         default: return false
+        }
+    }
+
+    /// The key whose results the cache keeps.
+    var account: String? {
+        switch state {
+        case .vitrinKey(let id): return id
+        case .ascLogin(let name, let id): return "\(name)/\(id)"
+        default: return nil
         }
     }
 
