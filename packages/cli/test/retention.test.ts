@@ -17,9 +17,9 @@ describe('managed .gitignore block', () => {
     const once = applyGitignoreBlock('node_modules/\n', lines);
     expect(once.startsWith('node_modules/\n\n# >>> vitrin')).toBe(true);
     expect(applyGitignoreBlock(once, lines)).toBe(once);
-    const edited = once.replace('/fastlane/report.xml', '/fastlane/old.xml') + 'dist/\n';
+    const edited = once.replace('/.vitrin/', '/old.xml') + 'dist/\n';
     const fixed = applyGitignoreBlock(edited, lines);
-    expect(fixed).toContain('/fastlane/report.xml');
+    expect(fixed).toContain('/.vitrin/');
     expect(fixed).not.toContain('old.xml');
     expect(fixed.endsWith('dist/\n')).toBe(true);
     expect(fixed.split(GITIGNORE_BEGIN).length).toBe(2);
@@ -34,8 +34,8 @@ describe('managed .gitignore block', () => {
       '.env', 'secrets/AuthKey.p8', 'AuthKey_X.p8',
       'metadata/state.json', 'metadata/.cache/http/a', 'metadata/raw/tr/iphone/home.png', 'metadata/creative/tr/header_header.png', 'metadata/video-styles/tr/01_classic.mp4', 'metadata/report.html', 'metadata/approval.json',
       'metadata/app_profile.json', 'metadata/listing/tr.json', 'metadata/research/keywords/tr.json', 'metadata/art-direction.json', 'metadata/shots.json', 'metadata/video-plan.json', 'metadata/cpp-suggestions.json',
-      'metadata/store/screenshots/tr/01_a_iphone-6.3.png', 'metadata/store/app-previews/tr/01_IPHONE_67.mp4', 'metadata/store/metadata/android/en-US/images/phoneScreenshots/1.png', 'metadata/store/metadata/android/en-US/title.txt',
-      'metadata/store/metadata/tr/name.txt', 'metadata/screens/home.html', 'fastlane/Fastfile', 'fastlane/report.xml', 'fastlane/README.md', 'metadata/app-store/ios/tr/name.txt', 'Sources/App.swift',
+      'metadata/store/screenshots/tr/01_a_iphone-6.3.png', 'metadata/store/app-previews/tr/01_IPHONE_67.mp4',
+      'metadata/store/metadata/tr/name.txt', 'metadata/screens/home.html', 'metadata/app-store/ios/tr/name.txt', 'Sources/App.swift',
     ];
     for (const f of files) {
       mkdirSync(join(root, f, '..'), { recursive: true });
@@ -56,8 +56,8 @@ describe('managed .gitignore block', () => {
         return false;
       }
     };
-    const shouldIgnore = files.slice(0, 10).concat(['metadata/store/screenshots/tr/01_a_iphone-6.3.png', 'metadata/store/app-previews/tr/01_IPHONE_67.mp4', 'metadata/store/metadata/android/en-US/images/phoneScreenshots/1.png', 'metadata/store/metadata/android/en-US/title.txt', 'metadata/store/metadata/tr/name.txt', 'fastlane/report.xml', 'fastlane/README.md', 'metadata/app-store/ios/tr/name.txt']);
-    const shouldKeep = ['metadata/app_profile.json', 'metadata/listing/tr.json', 'metadata/research/keywords/tr.json', 'metadata/art-direction.json', 'metadata/shots.json', 'metadata/video-plan.json', 'metadata/cpp-suggestions.json', 'metadata/screens/home.html', 'fastlane/Fastfile', 'Sources/App.swift'];
+    const shouldIgnore = files.slice(0, 10).concat(['metadata/store/screenshots/tr/01_a_iphone-6.3.png', 'metadata/store/app-previews/tr/01_IPHONE_67.mp4', 'metadata/store/metadata/tr/name.txt', 'metadata/app-store/ios/tr/name.txt']);
+    const shouldKeep = ['metadata/app_profile.json', 'metadata/listing/tr.json', 'metadata/research/keywords/tr.json', 'metadata/art-direction.json', 'metadata/shots.json', 'metadata/video-plan.json', 'metadata/cpp-suggestions.json', 'metadata/screens/home.html', 'Sources/App.swift'];
     for (const f of shouldIgnore) expect(ignored(f), f).toBe(true);
     for (const f of shouldKeep) expect(ignored(f), f).toBe(false);
     // retention.commit: true makes metadata/ committable
@@ -68,7 +68,7 @@ describe('managed .gitignore block', () => {
   });
 
   it('is maintained by every command through the CLI context', async () => {
-    const fx = await makeFixture({ android: false });
+    const fx = await makeFixture();
     await createContext({ cwd: fx.root });
     expect(readFileSync(join(fx.root, '.gitignore'), 'utf8')).toContain('!/metadata/shots.json');
   });
@@ -78,13 +78,13 @@ describe('selection', () => {
   it('limits the gallery and approval to the selected platforms and asset kinds', async () => {
     const fx = await makeFixture();
     const ctx = await createContext({ cwd: fx.root });
+    const { syncStoreMetadata } = await import('../src/approval.js');
+    await syncStoreMetadata(ctx);
     const all = await buildInventory(ctx);
-    ctx.config.selection = { platforms: ['android'] };
-    const play = await buildInventory(ctx);
-    expect(play.items.length).toBeGreaterThan(0);
-    expect(play.items.every((i) => i.store === 'google-play')).toBe(true);
-    expect(play.files.every((f) => f.path.startsWith('metadata/store/metadata/android/'))).toBe(true);
-    expect(play.overallHash).not.toBe(all.overallHash);
+    ctx.config.selection = { platforms: ['tvos'] };
+    const tv = await buildInventory(ctx);
+    expect(tv.items.length).toBe(0);
+    expect(tv.overallHash).not.toBe(all.overallHash);
     ctx.config.selection = { assets: ['metadata'] };
     const text = await buildInventory(ctx);
     expect(new Set(text.items.map((i) => i.kind))).toEqual(new Set(['metadata', 'cpp']));
@@ -115,12 +115,11 @@ async function uploaded(opts: { readBack?: string[] } = {}) {
 
 describe('metadata in the project', () => {
   it('copies the written store text into readable files under metadata/', async () => {
-    const fx = await makeFixture({ android: true });
+    const fx = await makeFixture();
     const ctx = await createContext({ cwd: fx.root });
     const res = await exportProjectMetadata(ctx);
     expect(res.skipped).toBeUndefined();
     expect(readFileSync(join(fx.root, 'metadata/app-store/ios/en-US/name.txt'), 'utf8')).toBe(readFileSync(join(fx.root, 'metadata/store/metadata/en-US/name.txt'), 'utf8'));
-    expect(res.files).toContain('metadata/google-play/android/en-US/title.txt');
     const manifest = JSON.parse(readFileSync(join(fx.root, 'metadata/manifest.json'), 'utf8'));
     expect(manifest.generator).toBe('vitrin');
     // Running again replaces its own files.
@@ -131,7 +130,7 @@ describe('metadata in the project', () => {
 
 describe('vitrin finalize', () => {
   it('refuses without a recorded, clean upload', async () => {
-    const fx = await makeFixture({ android: false });
+    const fx = await makeFixture();
     const ctx = await createContext({ cwd: fx.root });
     await expect(finalizeCommand(ctx, { deleteResearch: true, checked: true })).rejects.toThrow(/No successful upload/);
     const bad = await uploaded({ readBack: ['tr name differs'] });

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { api, type Overview } from '../api';
 import { t } from '../i18n';
 import { IssueList } from '../status';
-import { useBusy, useCli, useDev, useFile, useStudio } from '../store';
+import { useBusy, useCli, useFile, useStudio } from '../store';
 import { Button, Card, CodeEditor, Empty, ListInput, Pill, SaveBar, Tabs, TextField, useMode, utf8Bytes } from '../ui';
 
 /** The store text per language with App Store Connect counters, app-level fields and the validation issues inline. */
@@ -58,7 +58,7 @@ export function Metadata({ openClaude }: { openClaude: () => void }) {
   const cli = useCli();
   const o = state.overview!;
   const cfg = o.config!;
-  const tabs = [...cfg.locales.map((l) => ({ id: l, label: l })), { id: '__app', label: t('appLevel') }, ...(o.playListing.length || o.app?.platforms.includes('android') ? [{ id: '__play', label: t('playListing') }] : [])];
+  const tabs = [...cfg.locales.map((l) => ({ id: l, label: l })), { id: '__app', label: t('appLevel') }];
   const [tab, setTab] = useState(tabs[0]!.id);
   const validation = useFile<{ issues: Issue[] }>(o.files.validation ? 'metadata/validation.json' : undefined);
   // Only the text: image, screenshot, badge and video issues belong to Tasarım and Video.
@@ -80,15 +80,13 @@ export function Metadata({ openClaude }: { openClaude: () => void }) {
         </Button>
         {hasBrief && (
           <Button kind="primary" disabled={busy || !o.claude.available} onClick={() => api.askClaude({ stage: 'write' }).then(openClaude).catch((err) => toast((err as Error).message, 'err'))}>
-            ✳ {t('askClaude')}
+            ✳︎ {t('askClaude')}
           </Button>
         )}
       </div>
       <Tabs tabs={tabs} value={tab} onChange={setTab} />
       {tab === '__app' ? (
         <AppForm issues={issues.filter((i) => !i.locale)} o={o} />
-      ) : tab === '__play' ? (
-        <PlayEditor locales={cfg.locales} />
       ) : (
         <LocaleForm key={tab} locale={tab} issues={issues.filter((i) => i.locale === tab || i.file === `metadata/listing/${tab}.json`)} urls={cfg.urls} onEditUrls={() => setTab('__app')} />
       )}
@@ -125,7 +123,7 @@ function LocaleForm({ locale, issues, urls, onEditUrls }: { locale: string; issu
     );
   };
   return (
-    <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 1fr) 300px' }}>
+    <div className="grid two-side" style={{ gridTemplateColumns: 'minmax(0, 1fr) 300px' }}>
       <Card title={locale} actions={toggle}>
         {mode === 'json' || !d ? (
           <CodeEditor file={file} />
@@ -306,39 +304,5 @@ function AppForm({ issues, o }: { issues: Issue[]; o: Overview }) {
         )}
       </Card>
     </div>
-  );
-}
-
-function PlayEditor({ locales }: { locales: string[] }) {
-  const [tab, setTab] = useState(locales[0] ?? 'app');
-  return (
-    <div className="stack">
-      <Tabs tabs={[...locales.map((l) => ({ id: l, label: l })), { id: 'app', label: 'app.json' }]} value={tab} onChange={setTab} />
-      <PlayFile key={tab} path={tab === 'app' ? 'metadata/listing/play/app.json' : `metadata/listing/play/${tab}.json`} />
-    </div>
-  );
-}
-
-function PlayFile({ path }: { path: string }) {
-  const file = useFile<Record<string, unknown>>(path);
-  const dev = useDev();
-  if (file.loading) return <span className="dim">{t('loading')}</span>;
-  const d = file.data;
-  const str = (k: string) => (typeof d?.[k] === 'string' ? (d[k] as string) : '');
-  const set = (k: string, v: string) => d && file.setData({ ...d, [k]: v });
-  return (
-    <Card title={dev ? <code>{path}</code> : t('playListing')}>
-      <div className="stack">
-        {d && 'title' in d && (
-          <>
-            <TextField label={t('playTitle')} value={str('title')} max={30} onChange={(v) => set('title', v)} />
-            <TextField label={t('playShort')} value={str('shortDescription')} max={80} multiline rows={2} onChange={(v) => set('shortDescription', v)} />
-            <TextField label={t('playFull')} value={str('fullDescription')} max={4000} multiline rows={10} onChange={(v) => set('fullDescription', v)} />
-          </>
-        )}
-        {(dev || !(d && 'title' in d)) && <CodeEditor file={file} rows={d && 'title' in d ? 10 : 20} />}
-        {!dev && d && 'title' in d && <SaveBar file={file} />}
-      </div>
-    </Card>
   );
 }

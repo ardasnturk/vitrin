@@ -217,7 +217,7 @@ import Observation
 
     func report(_ error: Error) {
         if Self.isCancellation(error) { return }
-        report(error)
+        toast(error.localizedDescription, .error)
     }
 
     func clearLogs() { logs.removeAll() }

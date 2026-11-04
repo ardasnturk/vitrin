@@ -199,7 +199,6 @@ describe('locale consistency', () => {
     file('metadata/store/metadata/de-DE/name.txt');
     file('metadata/store/metadata/de-DE/.DS_Store');
     file('metadata/store/metadata/fr-FR/notes-from-the-user.txt');
-    file('metadata/store/metadata/android/en-US/title.txt');
     const removed = await pruneStrayLocales(appPaths(dir), configWith({ app: { locales: ['tr'] } }));
     expect(removed).toEqual(['de-DE']);
   });

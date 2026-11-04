@@ -8,7 +8,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { launchChromium, renderDesignSamples } from '../src/index.js';
 
 // A small iPhone-shaped target keeps the browser test fast; the renderer only cares about family and size.
-const target: RenderTarget = { id: 'iphone-test', kind: 'screenshot', label: 'iPhone (test)', family: 'iphone', store: 'app-store', platform: 'ios', width: 440, height: 956, logical: { width: 220, height: 478, scale: 2 }, acceptedSizes: [], requirement: 'optional', defaultEnabled: true, formats: ['png'] };
+const target: RenderTarget = { id: 'iphone-test', kind: 'screenshot', label: 'iPhone (test)', family: 'iphone', platform: 'ios', width: 440, height: 956, logical: { width: 220, height: 478, scale: 2 }, acceptedSizes: [], requirement: 'optional', defaultEnabled: true, formats: ['png'] };
 
 let browserOk = false;
 beforeAll(async () => {
@@ -83,17 +83,17 @@ describe('design samples', () => {
 <vitrin-device screen="home" x="14" y="150" width="120" tilt="-6"></vitrin-device><vitrin-device screen="1" x="96" y="190" width="120" tilt="5"></vitrin-device>`);
     const custom = ShotList.parse({ shots: [{ ...shots.shots[0], screens: ['home', 'stats'], template: 'hero.html' }, shots.shots[1]] });
     const ad = ArtDirection.parse({ options: [{ id: 'ritim-sunrise', name: 'Ritim Sunrise', rationale: 'x', differentiation: 'y', palette: { background: ['#FFE7D1', '#FFC9A8'], surface: '#FFFFFF', primary: '#E8613C', accent: '#E8613C', text: '#2A1406', textMuted: '#5C3A28', badgeBackground: '#2A1406', badgeText: '#FFFFFF' } }], selected: 'ritim-sunrise', selectionReason: 'x' });
-    const play: RenderTarget = { ...target, id: 'play-test', family: 'android-phone', store: 'google-play', platform: 'android', width: 360, height: 640, logical: { width: 180, height: 320, scale: 2 } };
-    const res = await renderDesignSamples({ paths, primaryLocale: 'en-US', target, extraTargets: [play], shots: custom, artDirection: ad, styles: ['ritim-sunrise', 'swiss-grid-bold'], appName: 'Ritim', subtitle: 'Habit tracker' });
+    const ipad: RenderTarget = { ...target, id: 'ipad-test', family: 'ipad', width: 360, height: 640, logical: { width: 180, height: 320, scale: 2 } };
+    const res = await renderDesignSamples({ paths, primaryLocale: 'en-US', target, extraTargets: [ipad], shots: custom, artDirection: ad, styles: ['ritim-sunrise', 'swiss-grid-bold'], appName: 'Ritim', subtitle: 'Habit tracker' });
     expect(res.samples.map((s) => [s.letter, s.style, s.bespoke])).toEqual([
       ['A', 'ritim-sunrise', true],
       ['B', 'swiss-grid-bold', false],
     ]);
-    expect(Object.keys(res.samples[0]!.byTarget)).toEqual(['iphone-test', 'play-test']);
-    expect((await sharp(res.samples[0]!.byTarget['play-test']![0]!).metadata()).width).toBe(360);
+    expect(Object.keys(res.samples[0]!.byTarget)).toEqual(['iphone-test', 'ipad-test']);
+    expect((await sharp(res.samples[0]!.byTarget['ipad-test']![0]!).metadata()).width).toBe(360);
     expect(readFileSync(join(root, 'metadata', 'design-samples', 'ritim-sunrise', '01.html'), 'utf8')).toContain('data-layout="custom"');
     const preview = readFileSync(res.storePreview.html, 'utf8');
-    for (const id of ['id="store"', 'id="theme"', 'id="appearance"', 'Google Play — Phone', 'App Store — iPhone', 'A — Ritim Sunrise']) expect(preview, id).toContain(id);
+    for (const id of ['id="store"', 'id="theme"', 'id="appearance"', 'App Store — iPad', 'App Store — iPhone', 'A — Ritim Sunrise']) expect(preview, id).toContain(id);
     expect(existsSync(res.storePreview.png)).toBe(true);
     await expect(renderDesignSamples({ paths, primaryLocale: 'en-US', target, shots, styles: ['nope'] })).rejects.toThrow(/Unknown design/);
   }, 180_000);

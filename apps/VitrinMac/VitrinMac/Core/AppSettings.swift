@@ -13,8 +13,6 @@ import Observation
     var showMenuBarExtra: Bool { didSet { d.set(showMenuBarExtra, forKey: "showMenuBarExtra") } }
     var checkForUpdates: Bool { didSet { d.set(checkForUpdates, forKey: "checkForUpdates") } }
     var notifications: Bool { didSet { d.set(notifications, forKey: "notifications") } }
-    /// Sparkle appcast (skeleton: read by SparkleUpdater once the framework is bundled).
-    var appcastURL: String { didSet { d.set(appcastURL, forKey: "appcastURL") } }
     /// Explicit path to the Vitrin CLI entry (`bin.js` or a `vitrin` executable); empty = search.
     var cliPath: String { didSet { d.set(cliPath, forKey: "cliPath") } }
     /// A Vitrin checkout to run from (`packages/cli/dist/bin.js`); empty = none.
@@ -38,7 +36,6 @@ import Observation
         // A test run never calls GitHub.
         checkForUpdates = d.object(forKey: "checkForUpdates") as? Bool ?? !testing
         notifications = d.object(forKey: "notifications") as? Bool ?? true
-        appcastURL = d.string(forKey: "appcastURL") ?? "https://github.com/ardasnturk/vitrin/releases.atom"
         cliPath = d.string(forKey: "cliPath") ?? ""
         vitrinCheckout = d.string(forKey: "vitrinCheckout") ?? ProcessInfo.processInfo.environment["VITRIN_DEV"] ?? ""
         developerMode = d.bool(forKey: "developerMode")

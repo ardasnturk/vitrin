@@ -50,7 +50,7 @@ const list = (v: unknown): string[] | undefined => {
 /** The commands the Studio can start; the arguments mirror the CLI flags. */
 export const RUNNERS: Record<string, Runner> = {
   doctor: async (ctx, a, job) => {
-    const res = await runDoctor(ctx, { tools: bool(a.tools), offline: bool(a.offline), playLive: bool(a.playLive) });
+    const res = await runDoctor(ctx, { tools: bool(a.tools), offline: bool(a.offline) });
     job.result = { checks: res.checks, missingKeys: res.missingKeys };
     return res.exitCode;
   },

@@ -3,14 +3,21 @@ import { copyFile, readdir, readFile, rm } from 'node:fs/promises';
 import { basename, extname, isAbsolute, join, resolve } from 'node:path';
 import { AscApiError, AscClient } from './asc-client.js';
 import { classicTypeFor } from './display-types.js';
-import type { CommandRunner, LaneInvocation } from './supply.js';
 import { isActive, type UploadPlan } from './plan.js';
 import { ASC_PLATFORM, type AppStorePlatform, type RenderedAsset } from './platforms.js';
 import { perDisplayTypeAssetsFor } from './scope.js';
 
+export type CommandRunner = typeof exec;
+
+export interface AscInvocation {
+  command: string;
+  args: string[];
+  env: Record<string, string>;
+}
+
 /**
  * Vitrin's App Store uploader: drives the `asc` CLI (https://github.com/rorkai/App-Store-Connect-CLI, MIT,
- * `brew install asc`), so Apple uploads need no Ruby. Every command is built by a pure function below; the runner
+ * `brew install asc`). Every command is built by a pure function below; the runner
  * is injected (tests never run the binary).
  *
  * - Text: `asc metadata push --app <id> --version <v> --platform <IOS|MAC_OS|TV_OS|VISION_OS> --dir <dir>` with
@@ -79,7 +86,7 @@ export function ascEnv(env: NodeJS.ProcessEnv, root: string): { env: Record<stri
   return { env: out, problems, source: 'vitrin-key' };
 }
 
-export function ascAuthStatusInvocation(): LaneInvocation {
+export function ascAuthStatusInvocation(): AscInvocation {
   return { command: ASC_BIN, args: ['auth', 'status', '--output', 'json'], env: {} };
 }
 
@@ -109,7 +116,7 @@ export async function ascHasOwnAuth(runner: CommandRunner = exec): Promise<boole
 }
 
 /** `asc api <METHOD> <path> --allow-unknown-path [--confirm --body-file -]`: one raw ASC API call through asc. */
-export function ascApiInvocation(method: string, path: string, hasBody: boolean, env: Record<string, string>): LaneInvocation {
+export function ascApiInvocation(method: string, path: string, hasBody: boolean, env: Record<string, string>): AscInvocation {
   // Vitrin's paths come from the ASC API 4.5.1 spec; asc's embedded index can lag behind it (App Asset Library).
   const args = ['api', method, path, '--allow-unknown-path'];
   if (method !== 'GET') args.push('--confirm');
@@ -161,11 +168,11 @@ export async function ascClientFor(env: NodeJS.ProcessEnv, root: string, keyed: 
   return {};
 }
 
-export function ascVersionInvocation(): LaneInvocation {
+export function ascVersionInvocation(): AscInvocation {
   return { command: ASC_BIN, args: ['version'], env: {} };
 }
 
-export function ascMetadataPushInvocation(o: { appId: string; version: string; platform: AscPlatform; dir: string; dryRun: boolean; confirm?: boolean }, env: Record<string, string>): LaneInvocation {
+export function ascMetadataPushInvocation(o: { appId: string; version: string; platform: AscPlatform; dir: string; dryRun: boolean; confirm?: boolean }, env: Record<string, string>): AscInvocation {
   const args = ['metadata', 'push', '--app', o.appId, '--version', o.version, '--platform', o.platform, '--dir', o.dir];
   if (o.dryRun) args.push('--dry-run');
   // --confirm is required only for field clears (explicit null); it never enables deletes (that is --allow-deletes).
@@ -173,20 +180,20 @@ export function ascMetadataPushInvocation(o: { appId: string; version: string; p
   return { command: ASC_BIN, args, env };
 }
 
-export function ascScreenshotsUploadInvocation(o: { localizationId: string; path: string; deviceType: string; dryRun?: boolean }, env: Record<string, string>): LaneInvocation {
+export function ascScreenshotsUploadInvocation(o: { localizationId: string; path: string; deviceType: string; dryRun?: boolean }, env: Record<string, string>): AscInvocation {
   const args = ['screenshots', 'upload', '--version-localization', o.localizationId, '--path', o.path, '--device-type', o.deviceType, '--replace'];
   args.push(o.dryRun ? '--dry-run' : '--confirm');
   return { command: ASC_BIN, args, env };
 }
 
-export function ascVideoPreviewsUploadInvocation(o: { localizationId: string; path: string; deviceType: string; dryRun?: boolean }, env: Record<string, string>): LaneInvocation {
+export function ascVideoPreviewsUploadInvocation(o: { localizationId: string; path: string; deviceType: string; dryRun?: boolean }, env: Record<string, string>): AscInvocation {
   const args = ['video-previews', 'upload', '--version-localization', o.localizationId, '--path', o.path, '--device-type', o.deviceType, '--replace'];
   args.push(o.dryRun ? '--dry-run' : '--confirm');
   return { command: ASC_BIN, args, env };
 }
 
 /** `asc versions create --app <id> --version <v> --platform <p> --if-exists skip` (`vitrin doctor --create-version`). */
-export function ascVersionsCreateInvocation(o: { appId: string; version: string; platform: AscPlatform }, env: Record<string, string>): LaneInvocation {
+export function ascVersionsCreateInvocation(o: { appId: string; version: string; platform: AscPlatform }, env: Record<string, string>): AscInvocation {
   return { command: ASC_BIN, args: ['versions', 'create', '--app', o.appId, '--version', o.version, '--platform', o.platform, '--if-exists', 'skip'], env };
 }
 
@@ -194,11 +201,11 @@ export function ascVersionsCreateInvocation(o: { appId: string; version: string;
  * `asc review submit --app <id> --version-id <id> --platform <p> --latest --confirm`: attaches the newest App Store
  * eligible build of that version and submits it for review (`vitrin submit`, after the user's explicit yes).
  */
-export function ascSubmitInvocation(o: { appId: string; versionId: string; platform: AscPlatform }, env: Record<string, string>): LaneInvocation {
+export function ascSubmitInvocation(o: { appId: string; versionId: string; platform: AscPlatform }, env: Record<string, string>): AscInvocation {
   return { command: ASC_BIN, args: ['review', 'submit', '--app', o.appId, '--version-id', o.versionId, '--platform', o.platform, '--latest', '--confirm'], env };
 }
 
-export function ascValidateInvocation(o: { appId: string; platform?: AscPlatform; version?: string }, env: Record<string, string>): LaneInvocation {
+export function ascValidateInvocation(o: { appId: string; platform?: AscPlatform; version?: string }, env: Record<string, string>): AscInvocation {
   const args = ['validate', '--app', o.appId];
   if (o.version) args.push('--version', o.version);
   if (o.platform) args.push('--platform', o.platform);
@@ -323,7 +330,7 @@ export async function stageAscJob(paths: AppPaths, job: AscMediaJob): Promise<st
   return dir;
 }
 
-async function runAsc(inv: LaneInvocation, root: string, runner: CommandRunner, what: string): Promise<void> {
+async function runAsc(inv: AscInvocation, root: string, runner: CommandRunner, what: string): Promise<void> {
   const res = await runner(inv.command, inv.args, { cwd: root, stream: true, env: inv.env });
   if (res.code === 0) return;
   if (res.code === 127 || /ENOENT|command not found/i.test(res.stderr)) throw new Error(`asc is not installed: ${ASC_INSTALL_HINT}`);

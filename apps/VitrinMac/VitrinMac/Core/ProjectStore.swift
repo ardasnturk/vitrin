@@ -16,14 +16,35 @@ struct Project: Codable, Hashable, Identifiable, Sendable {
 @MainActor @Observable final class ProjectStore {
     private(set) var projects: [Project] = []
     private let file: URL
+    @ObservationIgnored private var watcher: DispatchSourceFileSystemObject?
 
-    init() {
-        file = AppSupport.base.appendingPathComponent("projects.json")
-        if let data = try? Data(contentsOf: file), let list = try? JSONDecoder().decode([Project].self, from: data) { projects = list }
+    init(base: URL = AppSupport.base) {
+        file = base.appendingPathComponent("projects.json")
+        reload()
+        watch()
+    }
+
+    /// `vitrin hub` shares this file, and adds and removes projects from the phone.
+    func reload() {
+        if let data = try? Data(contentsOf: file), let list = try? JSONDecoder().decode([Project].self, from: data), list != projects { projects = list }
+    }
+
+    /// Every writer replaces the file with a rename, which only the folder sees.
+    private func watch() {
+        let folder = file.deletingLastPathComponent()
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let descriptor = open(folder.path, O_EVTONLY)
+        guard descriptor >= 0 else { return }
+        let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: descriptor, eventMask: .write, queue: .main)
+        source.setEventHandler { [weak self] in MainActor.assumeIsolated { self?.reload() } }
+        source.setCancelHandler { close(descriptor) }
+        source.resume()
+        watcher = source
     }
 
     @discardableResult
     func add(path: String) -> Project {
+        reload()
         let standardized = URL(fileURLWithPath: path).standardizedFileURL.path
         if let existing = projects.first(where: { $0.path == standardized }) { return existing }
         let p = Project(id: UUID().uuidString, path: standardized, addedAt: .now)
@@ -33,6 +54,7 @@ struct Project: Codable, Hashable, Identifiable, Sendable {
     }
 
     func remove(_ id: String) {
+        reload()
         projects.removeAll { $0.id == id }
         save()
     }

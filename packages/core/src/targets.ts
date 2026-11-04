@@ -38,8 +38,7 @@ const warned = new Set<string>();
  * 3. `targets.enable` forces a target on (even on a platform the analyzer missed);
  * 4. otherwise the target must be `defaultEnabled` (or be a preview/event the user explicitly selected) and its
  *    platform must be selected or detected;
- * 5. device flags: iPhone targets need `supportsIPhone`, iPad `supportsIPad`, iPhone Duo `supportsDuo`,
- *    Google Play tablets `supportsAndroidTablet`;
+ * 5. device flags: iPhone targets need `supportsIPhone`, iPad `supportsIPad`, iPhone Duo `supportsDuo`;
  * 6. without `selection.assets`, App Previews follow `video.enabled`.
  */
 export function enabledTargets(config: VitrinConfig, profile?: Pick<AppProfile, 'app'>, opts: { quiet?: boolean; allFormats?: boolean } = {}): RenderTarget[] {
@@ -63,11 +62,10 @@ export function enabledTargets(config: VitrinConfig, profile?: Pick<AppProfile, 
     const chosen = Boolean(assets && (t.kind === 'preview' || t.kind === 'event'));
     if (!t.defaultEnabled && !chosen) return false;
     if (app) {
-      // A selected-but-undetected iOS still gets its required iPhone set; iPad, Duo and tablets need their flags.
+      // A selected-but-undetected iOS still gets its required iPhone set; iPad and Duo need their flags.
       if (t.family === 'iphone' && app.supportsIPhone === false && !undetected.includes(t.platform)) return false;
       if (t.family === 'ipad' && !app.supportsIPad) return false;
       if (t.family === 'duo' && !app.supportsDuo) return false;
-      if (t.family === 'android-tablet' && !app.supportsAndroidTablet) return false;
     }
     if (t.kind === 'preview' && !assets) return config.video.enabled;
     return true;

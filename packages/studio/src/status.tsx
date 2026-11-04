@@ -256,7 +256,7 @@ export function QuestionCard({ question, openClaude }: { question: StudioQuestio
   const disabled = busy || !o.claude.available;
   return (
     <div className="blocker decision">
-      <div className="dim small">✳ {t('claudeAsks')}</div>
+      <div className="dim small">✳︎ {t('claudeAsks')}</div>
       <div className="question">{question.question}</div>
       {question.options.length > 0 && (
         <div className="row wrap">

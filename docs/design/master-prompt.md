@@ -1,4 +1,4 @@
-> Original design specification the project was built from (translated from Turkish). Some values may since have been superseded — see docs/apple-notes.md.
+> Original design specification the project was built from (translated from Turkish), kept as history. Some values have since been superseded: uploads moved from fastlane to the asc CLI in 2.0, and Vitrin is for Apple platforms only. See `plugins/vitrin/skills/vitrin/references/apple-notes.md`.
 
 # Vitrin — ASC Metadata & Asset Automation
 

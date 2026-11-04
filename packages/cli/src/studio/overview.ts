@@ -91,7 +91,6 @@ export interface Overview {
   stages: Record<string, { completedAt: string; status: string; note?: string } | undefined>;
   files: Record<string, boolean>;
   listing: string[];
-  playListing: string[];
   /** Open briefs only: one is closed once the stage it feeds completed after it was written. */
   briefs: Array<{ name: string; path: string; modifiedAt: string; stage?: PipelineStage }>;
   validation?: { ok: boolean; counts: ValidationReport['counts']; generatedAt?: string; issues: Array<Pick<ValidationReport['issues'][number], 'severity' | 'code' | 'message' | 'file' | 'locale' | 'field'>> };
@@ -174,7 +173,6 @@ export async function buildOverview(root: string): Promise<Overview> {
     stages: {},
     files: {},
     listing: [],
-    playListing: [],
     briefs: [],
     flow: [],
     blockers: [],
@@ -185,7 +183,7 @@ export async function buildOverview(root: string): Promise<Overview> {
     creatives: {},
     videoStyles: {},
     cpp: {},
-    tools: { ...(await detectUploaderTools(root)), claude: await which('claude'), ffmpeg: await which('ffmpeg') },
+    tools: { ...(await detectUploaderTools()), claude: await which('claude'), ffmpeg: await which('ffmpeg') },
     missingKeys: [],
     enums: ENUMS,
   };
@@ -217,7 +215,7 @@ export async function buildOverview(root: string): Promise<Overview> {
     };
     if (profile) base.platforms = platformsReport(config, profile);
     const env = loadEnv(paths.env);
-    base.missingKeys = missingUploadKeys(env, profile ? profile.app.platforms : ['ios'], { ascLogin: base.tools.ascLogin }).map((k) => k.name);
+    base.missingKeys = missingUploadKeys(env, { ascLogin: base.tools.ascLogin }).map((k) => k.name);
     if (!base.app && config.app.bundleId) base.app = { name: config.app.bundleId, bundleId: config.app.bundleId, kind: 'unknown', platforms: [] };
   }
   const state = await StateStore.load(paths.state).catch(() => undefined);
@@ -241,14 +239,11 @@ export async function buildOverview(root: string): Promise<Overview> {
     uploadPlan: paths.uploadPlan,
     renderManifest: paths.renderManifest,
     reviewFeedback: paths.reviewFeedback,
-    gemfile: join(root, 'Gemfile'),
-    fastfile: join(paths.fastlane, 'Fastfile'),
     env: paths.env,
     screensKit: join(paths.screens, 'kit'),
   };
   for (const [k, p] of Object.entries(flags)) base.files[k] = existsSync(p);
   base.listing = (await filesIn(root, paths.metadataDir, /^(?!app\.json$).+\.json$/)).map((f) => f.name.replace(/\.json$/, ''));
-  base.playListing = (await filesIn(root, join(paths.metadataDir, 'play'), /^(?!app\.json$).+\.json$/)).map((f) => f.name.replace(/\.json$/, ''));
   const validation = await readJsonIfExists(paths.validation, ValidationReport).catch(() => undefined);
   if (validation)
     base.validation = {
@@ -302,7 +297,7 @@ export async function buildOverview(root: string): Promise<Overview> {
   }
   if (base.configError) base.blockers.push({ code: 'config-error', severity: 'error', stage: 'analyze', params: { message: base.configError }, fixes: [] });
   if (config) {
-    base.blockers.push(...(await localeBlockers(paths, config, base.listing)), ...toolBlockers(base, config, profile?.app.platforms ?? ['ios']));
+    base.blockers.push(...(await localeBlockers(paths, config, base.listing)), ...toolBlockers(base, config));
     base.questions = (await readJsonIfExists(paths.questions, StudioQuestions).catch(() => undefined))?.questions ?? [];
     // When Claude asked about the design itself, its question replaces the guess from the samples.
     const choice = base.questions.some((q) => q.stage === 'design') ? undefined : designChoice(base, await mtime(paths.artDirection));
@@ -471,18 +466,14 @@ async function localeBlockers(paths: AppPaths, config: VitrinConfig, listing: st
   return out;
 }
 
-function toolBlockers(o: Pick<Overview, 'tools' | 'missingKeys'>, config: VitrinConfig, platforms: string[]): Blocker[] {
+function toolBlockers(o: Pick<Overview, 'tools' | 'missingKeys'>, config: VitrinConfig): Blocker[] {
   const out: Blocker[] = [];
   const assets = config.selection?.assets;
   const video = (!assets || assets.includes('previews') || assets.includes('creatives')) && (config.video.enabled || Boolean(assets?.includes('previews')));
   if (video && !o.tools.ffmpeg) out.push({ code: 'ffmpeg-missing', severity: 'error', stage: 'video', params: { install: 'brew install ffmpeg' }, fixes: [] });
   if (!o.tools.claude) out.push({ code: 'claude-missing', severity: 'warning', stage: 'analyze', params: { install: 'npm install -g @anthropic-ai/claude-code' }, fixes: [] });
-  // App Store: always the asc CLI. Google Play: fastlane supply.
-  if (platforms.some((p) => p !== 'android') && !o.tools.asc) {
-    out.push({ code: 'uploader-missing', severity: 'error', stage: 'upload', params: { tool: 'asc', install: 'brew install asc' }, fixes: [] });
-  } else if (platforms.includes('android') && !o.tools.fastlane) {
-    out.push({ code: 'uploader-missing', severity: 'error', stage: 'upload', params: { tool: 'fastlane', install: 'bundle install' }, fixes: [] });
-  }
+  // Uploads always use the asc CLI.
+  if (!o.tools.asc) out.push({ code: 'uploader-missing', severity: 'error', stage: 'upload', params: { tool: 'asc', install: 'brew install asc' }, fixes: [] });
   if (o.missingKeys.length) out.push({ code: 'keys-missing', severity: 'error', stage: 'upload', params: { keys: o.missingKeys }, fixes: [] });
   return out;
 }

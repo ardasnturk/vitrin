@@ -72,9 +72,9 @@ export interface KeptFile {
   bytes: number;
 }
 
-/** `metadata/<store>/<platform>/<locale>/…` destination for one item file. */
+/** `metadata/app-store/<platform>/<locale>/…` destination for one item file. */
 function keepPath(item: InventoryItem, source: string): string {
-  const base = `metadata/${item.store}/${item.platform}/${item.locale ?? 'all'}`;
+  const base = `metadata/app-store/${item.platform}/${item.locale ?? 'all'}`;
   if (item.kind === 'metadata') {
     const field = item.fields?.find((f) => f.file === source);
     return field ? `${base}/${field.key}${field.key.endsWith('.txt') ? '' : '.txt'}` : `${base}/source/${source.split('/').pop()}`;
@@ -93,7 +93,7 @@ async function readProjectManifest(file: string): Promise<ProjectManifest | unde
 
 /**
  * After a successful `vitrin write`: the validated store text, readable in the project as
- * `metadata/<store>/<platform>/<locale>/<field>.txt` next to the rest of the workspace.
+ * `metadata/app-store/<platform>/<locale>/<field>.txt` next to the rest of the workspace.
  */
 export async function exportProjectMetadata(ctx: Ctx): Promise<{ files: string[]; skipped?: string }> {
   const outRoot = insideProject(ctx.root, 'metadata');
@@ -150,7 +150,7 @@ export async function finalizeCommand(ctx: Ctx, opts: FinalizeOptions): Promise<
 
 The upload of the approved content (hash \`${approval.overallHash.slice(0, 12)}\`) finished on ${approval.upload.uploadedAt} and the read-back matched.
 ${opts.checked ? '' : `
-1. Show the user the read-back result and ask them to check the listing in App Store Connect / Google Play. Continue only when they confirm it looks right.`}
+1. Show the user the read-back result and ask them to check the listing in App Store Connect. Continue only when they confirm it looks right.`}
 
 2. Everything Vitrin generated stays in \`metadata/\` (store text, screenshots, previews, creatives, mockups, design samples). **Ask** the user whether to delete all research data now (${fmtSize(researchBytes)}):
 ${list}

@@ -19,10 +19,9 @@ export function findVitrinHome(start: string): string | undefined {
 }
 
 const MODULE_DIR = dirname(fileURLToPath(import.meta.url));
-/** Root of the Vitrin installation (monorepo root or installed package root), where data/ and fastlane/ templates live. */
+/** Root of the Vitrin installation (monorepo root or installed package root), where data/ lives. */
 export const VITRIN_HOME = findVitrinHome(MODULE_DIR) ?? resolve(MODULE_DIR, '..', '..', '..');
 export const DATA_DIR = join(VITRIN_HOME, 'data');
-export const TEMPLATES_DIR = join(VITRIN_HOME, 'fastlane');
 
 /** The Vitrin release version: `version` of the package.json at VITRIN_HOME (the root package.json in the monorepo). */
 export function vitrinVersion(home: string = VITRIN_HOME): string {
@@ -91,9 +90,7 @@ export function appPaths(root: string) {
     config: join(root, 'vitrin.config.yaml'),
     env: join(root, '.env'),
     envExample: join(root, '.env.example'),
-    /** Only the Fastfile lives here, and only for Google Play (fastlane supply). */
-    fastlane: join(root, 'fastlane'),
-    /** The generated store set: metadata text (also supply's Google Play tree under metadata/android), screenshots and App Previews. */
+    /** The generated store set: metadata text, screenshots and App Previews. */
     store: join(v, 'store'),
     storeMetadata: join(v, 'store', 'metadata'),
     screenshots: join(v, 'store', 'screenshots'),
@@ -102,8 +99,6 @@ export function appPaths(root: string) {
     cppScreenshots: join(v, 'store', 'cpp'),
     /** Each test treatment's screenshot set: experiments/<test id>/<treatment id>/<locale>/NN_slug_<target>.png. */
     experimentScreenshots: join(v, 'store', 'experiments'),
-    /** Google Play listing in the supply layout. */
-    androidMetadata: join(v, 'store', 'metadata', 'android'),
     /** HTML recreations of the app's screens (capture.mode: html), written by Claude from the source code. */
     screens: join(v, 'screens'),
     /** Bespoke screenshot layouts Claude writes for this app (`shots[].template`). */

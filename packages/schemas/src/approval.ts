@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { StoreEnum } from './targets.js';
 
 /** What a review item is; drives the gallery section and the summary counts. */
 export const ReviewItemKind = z.enum(['screenshot', 'preview', 'creative', 'event', 'metadata', 'cpp', 'experiment', 'other']);
@@ -15,11 +14,10 @@ export type HashedFile = z.infer<typeof HashedFile>;
 
 /** One reviewable unit: a screenshot, a video, a locale's metadata, a CPP, an event… */
 export const ReviewItem = z.object({
-  /** Stable id: the file path for media, `metadata/<store>/<locale>` for text, `cpp/<id>`, `event/<id>`. */
+  /** Stable id: the file path for media, `metadata/app-store/<locale>` for text, `cpp/<id>`, `event/<id>`. */
   id: z.string(),
   kind: ReviewItemKind,
-  store: StoreEnum,
-  /** Platform id (ios, macos, android…) or `any` for store-level items. */
+  /** Platform id (ios, macos…) or `any` for store-level items. */
   platform: z.string(),
   locale: z.string().optional(),
   target: z.string().optional(),

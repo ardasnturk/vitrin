@@ -98,7 +98,7 @@ describe('listAscApps', () => {
       { type: 'appStoreVersions', id: 'd', attributes: { platform: 'TV_OS', versionString: '1' } },
     ]);
     expect(latest.map((v) => `${platformLabel(v.platform)} ${v.version}`)).toEqual(['iOS 2', 'tvOS 1', 'visionOS 1']);
-    expect(platformLabel('ANDROID')).toBe('ANDROID');
+    expect(platformLabel('WEB')).toBe('WEB');
   });
 });
 

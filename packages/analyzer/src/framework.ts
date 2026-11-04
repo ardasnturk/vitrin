@@ -5,7 +5,7 @@ import { join, relative } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 
 /**
- * Cross-platform project detection: Flutter, React Native, Expo and native Android, next to native Xcode.
+ * Cross-platform project detection: Flutter, React Native and Expo, next to native Xcode.
  * Everything here reads files only (nothing is executed, app.config.js is matched with regexes),
  * and every value keeps the file it came from so features stay App-Review-safe.
  */
@@ -22,13 +22,11 @@ export interface FrameworkInfo {
   evidence: Evidence[];
   /** Directory that should contain the Xcode host project, relative to root (`.` for native). */
   iosDir?: string;
-  androidDir?: string;
   macosDir?: string;
   /** Expo: a declared platform has no native folder yet. */
   needsPrebuild: boolean;
   displayName?: { value: string; path: string };
   bundleId?: { value: string; path: string };
-  androidApplicationId?: { value: string; path: string };
   version?: { value: string; path: string };
   build?: { value: string; path: string };
   /** Expo `ios.supportsTablet`. */
@@ -70,113 +68,17 @@ async function hasEntry(dir: string, test: (name: string) => boolean): Promise<s
   }
 }
 
-/** Normalises framework locale spellings (`pt_BR`, `zh-rTW`, `b+sr+Latn`) to BCP 47 (`pt-BR`, `zh-TW`, `sr-Latn`). */
+/** Normalises framework locale spellings (`pt_BR`, `zh_Hans`) to BCP 47 (`pt-BR`, `zh-Hans`). */
 export function normalizeLocale(code: string): string | undefined {
-  const parts = code.replace(/^b\+/, '').split(/[-_+]/).filter(Boolean);
+  const parts = code.split(/[-_]/).filter(Boolean);
   if (!parts.length || !/^[a-zA-Z]{2,3}$/.test(parts[0]!)) return undefined;
   const out = [parts[0]!.toLowerCase()];
   for (const p of parts.slice(1)) {
-    const q = p.startsWith('r') && p.length === 3 && /^r[A-Z]{2}$/.test(p) ? p.slice(1) : p;
-    if (/^[A-Za-z]{4}$/.test(q)) out.push(q[0]!.toUpperCase() + q.slice(1).toLowerCase());
-    else if (/^[A-Za-z]{2}$|^\d{3}$/.test(q)) out.push(q.toUpperCase());
+    if (/^[A-Za-z]{4}$/.test(p)) out.push(p[0]!.toUpperCase() + p.slice(1).toLowerCase());
+    else if (/^[A-Za-z]{2}$|^\d{3}$/.test(p)) out.push(p.toUpperCase());
     else return undefined;
   }
   return out.join('-');
-}
-
-// ---------------------------------------------------------------- Android
-
-export interface AndroidInfo {
-  dir: string;
-  module: string;
-  applicationId?: { value: string; path: string };
-  versionName?: { value: string; path: string };
-  versionCode?: { value: string; path: string };
-  label?: { value: string; path: string };
-  locales: FrameworkLocale[];
-  /** Tablet layouts (sw600dp/sw720dp/large resources). */
-  tablet?: Evidence;
-  manifest: string;
-}
-
-/** Android locale qualifiers: `values-tr`, `values-pt-rBR`, `values-b+zh+Hans`. Other qualifiers (night, v21, sw600dp) are skipped. */
-export function androidValuesLocale(dirName: string): string | undefined {
-  const m = /^values-((?:[a-z]{2,3})(?:-r[A-Z]{2})?|b\+[a-z]{2,3}(?:\+[A-Za-z]{4})?(?:\+[A-Z]{2})?)$/.exec(dirName);
-  return m ? normalizeLocale(m[1]!) : undefined;
-}
-
-/** Literal `key = "value"` / `key "value"` in build.gradle or build.gradle.kts (Groovy and Kotlin DSL). */
-export function gradleValue(text: string, key: string): string | undefined {
-  const re = new RegExp(`^\\s*${key}\\s*(?:=\\s*|\\(\\s*|\\s+)["']([^"'$]+)["']`, 'm');
-  const m = re.exec(text);
-  if (m) return m[1];
-  if (key === 'versionCode') return new RegExp(`^\\s*${key}\\s*(?:=\\s*|\\s+)(\\d+)\\s*$`, 'm').exec(text)?.[1];
-  return undefined;
-}
-
-/** Finds the Gradle application module (`com.android.application`) under `dir`. */
-async function androidAppModule(root: string, dir: string): Promise<string | undefined> {
-  const abs = join(root, dir);
-  const settings = (await readText(join(abs, 'settings.gradle.kts'))) ?? (await readText(join(abs, 'settings.gradle')));
-  if (settings === undefined) return undefined;
-  const modules = [...settings.matchAll(/["']:([\w-]+(?::[\w-]+)*)["']/g)].map((m) => m[1]!.replace(/:/g, '/'));
-  for (const m of [...new Set(['app', ...modules])]) {
-    if (!existsSync(join(abs, m, 'src', 'main', 'AndroidManifest.xml'))) continue;
-    const build = (await readText(join(abs, m, 'build.gradle.kts'))) ?? (await readText(join(abs, m, 'build.gradle'))) ?? '';
-    if (m === 'app' || /com\.android\.application|android\.application/.test(build)) return m;
-  }
-  return undefined;
-}
-
-export async function readAndroidProject(root: string, dir: string): Promise<AndroidInfo | undefined> {
-  const module = await androidAppModule(root, dir);
-  if (!module) return undefined;
-  const abs = join(root, dir, module);
-  const rel = (p: string) => relative(root, p);
-  const buildFile = existsSync(join(abs, 'build.gradle.kts')) ? join(abs, 'build.gradle.kts') : join(abs, 'build.gradle');
-  const build = (await readText(buildFile)) ?? '';
-  const manifestPath = join(abs, 'src', 'main', 'AndroidManifest.xml');
-  const manifest = (await readText(manifestPath)) ?? '';
-  const info: AndroidInfo = { dir, module, locales: [], manifest: rel(manifestPath) };
-
-  const appId = gradleValue(build, 'applicationId') ?? gradleValue(build, 'namespace') ?? /\bpackage="([^"]+)"/.exec(manifest)?.[1];
-  if (appId) info.applicationId = { value: appId, path: rel(buildFile) };
-  const vn = gradleValue(build, 'versionName');
-  if (vn) info.versionName = { value: vn, path: rel(buildFile) };
-  const vc = gradleValue(build, 'versionCode');
-  if (vc) info.versionCode = { value: vc, path: rel(buildFile) };
-
-  const res = join(abs, 'src', 'main', 'res');
-  const label = /<application\b[^>]*?android:label="([^"]+)"/s.exec(manifest)?.[1];
-  if (label && !label.startsWith('@')) info.label = { value: label, path: rel(manifestPath) };
-  else if (label?.startsWith('@string/')) {
-    const key = label.slice('@string/'.length);
-    const stringsPath = join(res, 'values', 'strings.xml');
-    const strings = (await readText(stringsPath)) ?? '';
-    const v = new RegExp(`<string\\s+name="${key}"[^>]*>([^<]+)</string>`).exec(strings)?.[1];
-    if (v) info.label = { value: v.replace(/\\'/g, "'").trim(), path: rel(stringsPath) };
-  }
-
-  let resDirs: string[] = [];
-  try {
-    resDirs = await readdir(res);
-  } catch {
-    // no resources
-  }
-  for (const d of resDirs) {
-    const code = androidValuesLocale(d);
-    if (code && existsSync(join(res, d, 'strings.xml'))) info.locales.push({ code, path: rel(join(res, d, 'strings.xml')) });
-    if (!info.tablet && /^(layout|values)-(sw(6\d\d|7\d\d|[89]\d\d)dp|large|xlarge)(-|$)/.test(d)) info.tablet = { path: rel(join(res, d)), note: 'tablet resource qualifier' };
-  }
-  // Per-app language list (Android 13+).
-  const localesConfig = await readText(join(res, 'xml', 'locales_config.xml'));
-  if (localesConfig) {
-    for (const m of localesConfig.matchAll(/android:name="([^"]+)"/g)) {
-      const code = normalizeLocale(m[1]!);
-      if (code) info.locales.push({ code, path: rel(join(res, 'xml', 'locales_config.xml')) });
-    }
-  }
-  return info;
 }
 
 // ---------------------------------------------------------------- JS / ARB locales
@@ -269,7 +171,6 @@ async function readExpoDynamicConfig(root: string): Promise<{ path: string; expo
     };
     const expo: Record<string, unknown> = {};
     const ios: Record<string, unknown> = {};
-    const android: Record<string, unknown> = {};
     const name_ = lit('name');
     if (name_) expo.name = name_;
     const version = lit('version');
@@ -277,12 +178,9 @@ async function readExpoDynamicConfig(root: string): Promise<{ path: string; expo
     const bid = lit('bundleIdentifier', 'ios');
     if (bid) ios.bundleIdentifier = bid;
     if (/\bsupportsTablet\s*:\s*true/.test(text)) ios.supportsTablet = true;
-    const pkg = lit('package', 'android');
-    if (pkg) android.package = pkg;
     const platforms = /\bplatforms\s*:\s*\[([^\]]*)\]/.exec(text)?.[1];
     if (platforms) expo.platforms = [...platforms.matchAll(/["'](\w+)["']/g)].map((m) => m[1]);
     if (Object.keys(ios).length) expo.ios = ios;
-    if (Object.keys(android).length) expo.android = android;
     return { path: name, expo };
   }
   return undefined;
@@ -305,11 +203,6 @@ export function splitFlutterVersion(v: string | undefined): { name?: string; bui
   if (!v) return {};
   const [name, build] = v.split('+');
   return { name: name || undefined, build: build || undefined };
-}
-
-async function detectAndroidDir(root: string, candidates: string[]): Promise<string | undefined> {
-  for (const c of candidates) if (await androidAppModule(root, c)) return c;
-  return undefined;
 }
 
 async function xcodeIn(root: string, dir: string): Promise<string | undefined> {
@@ -363,17 +256,14 @@ export async function detectFramework(root: string): Promise<FrameworkInfo> {
       if (expo) {
         const e = expo.expo;
         const ios = obj(e.ios);
-        const android = obj(e.android);
         if (str(e.name)) info.displayName = { value: str(e.name)!, path: expo.path };
         if (str(e.version)) info.version = { value: str(e.version)!, path: expo.path };
         if (str(ios.buildNumber)) info.build = { value: str(ios.buildNumber)!, path: expo.path };
         if (str(ios.bundleIdentifier)) info.bundleId = { value: str(ios.bundleIdentifier)!, path: expo.path };
-        if (str(android.package)) info.androidApplicationId = { value: str(android.package)!, path: expo.path };
         if (ios.supportsTablet === true || ios.isTabletOnly === true) info.supportsTablet = { value: true, path: expo.path };
-        // Expo builds for iOS and Android unless `platforms` says otherwise.
-        const declared = Array.isArray(e.platforms) ? (e.platforms as unknown[]).map(String) : ['ios', 'android'];
-        if (declared.includes('ios')) addPlatform('ios', { path: expo.path, note: Array.isArray(e.platforms) ? 'expo.platforms' : 'Expo default platforms (ios, android)' });
-        if (declared.includes('android')) addPlatform('android', { path: expo.path, note: Array.isArray(e.platforms) ? 'expo.platforms' : 'Expo default platforms (ios, android)' });
+        // Expo builds for iOS unless `platforms` leaves it out.
+        const declared = Array.isArray(e.platforms) ? (e.platforms as unknown[]).map(String) : ['ios'];
+        if (declared.includes('ios')) addPlatform('ios', { path: expo.path, note: Array.isArray(e.platforms) ? 'expo.platforms' : 'Expo default platforms' });
         for (const [code, file] of Object.entries(obj(e.locales))) {
           const c = normalizeLocale(code);
           if (c) info.locales.push({ code: c, path: typeof file === 'string' ? file.replace(/^\.\//, '') : expo.path });
@@ -396,18 +286,10 @@ export async function detectFramework(root: string): Promise<FrameworkInfo> {
     }
   }
 
-  // ---------- Android (framework android/ folder, or a native Android app) ----------
-  const androidDir = await detectAndroidDir(root, info.kind === 'native' ? ['.', 'android'] : ['android']);
-  if (androidDir) {
-    info.androidDir = androidDir;
-    addPlatform('android', { path: androidDir === '.' ? 'settings.gradle' : androidDir, note: 'Gradle application module' });
-  }
   if (info.kind === 'expo') {
     const wantsIos = info.platforms.some((p) => p.platform === 'ios');
-    const wantsAndroid = info.platforms.some((p) => p.platform === 'android');
     info.iosDir ??= wantsIos ? 'ios' : undefined;
-    info.androidDir ??= wantsAndroid ? 'android' : undefined;
-    info.needsPrebuild = (wantsIos && !(await xcodeIn(root, 'ios'))) || (wantsAndroid && !androidDir);
+    info.needsPrebuild = wantsIos && !(await xcodeIn(root, 'ios'));
   }
   return info;
 }

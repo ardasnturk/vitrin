@@ -17,7 +17,7 @@ export const ASC_PLATFORM: Record<AppStorePlatform, string> = { ios: 'IOS', osx:
  * Shipping platform → App Store version. watchOS has no App Store version of its own: Apple Watch screenshots
  * belong to the iOS version (display types APP_WATCH_*).
  */
-export function appStorePlatformFor(platform: Platform): AppStorePlatform | null {
+export function appStorePlatformFor(platform: Platform): AppStorePlatform {
   switch (platform) {
     case 'ios':
     case 'watchos':
@@ -28,14 +28,12 @@ export function appStorePlatformFor(platform: Platform): AppStorePlatform | null
       return 'appletvos';
     case 'visionos':
       return 'xros';
-    default:
-      return null;
   }
 }
 
 /** The App Store versions an app has, in a stable order (iOS first). */
 export function applePlatformsOf(platforms: Platform[]): AppStorePlatform[] {
-  const set = new Set(platforms.map(appStorePlatformFor).filter((p): p is AppStorePlatform => p !== null));
+  const set = new Set(platforms.map(appStorePlatformFor));
   return APP_STORE_PLATFORMS.filter((p) => set.has(p));
 }
 
@@ -119,22 +117,16 @@ export interface RoutedAssets {
   apple: Record<AppStorePlatform, RenderedAsset[]>;
   /** App Store creatives (product page header, search, In-App Events): App Asset Library. */
   appleCreatives: RenderedAsset[];
-  play: RenderedAsset[];
 }
 
 export function routeAssets(assets: RenderedAsset[]): RoutedAssets {
-  const out: RoutedAssets = { apple: { ios: [], osx: [], appletvos: [], xros: [] }, appleCreatives: [], play: [] };
+  const out: RoutedAssets = { apple: { ios: [], osx: [], appletvos: [], xros: [] }, appleCreatives: [] };
   for (const a of assets) {
-    if (a.target.store === 'google-play') {
-      out.play.push(a);
-      continue;
-    }
     if (a.kind === 'creative' || a.kind === 'event') {
       out.appleCreatives.push(a);
       continue;
     }
-    const p = appStorePlatformFor(a.target.platform);
-    if (p) out.apple[p].push(a);
+    out.apple[appStorePlatformFor(a.target.platform)].push(a);
   }
   return out;
 }

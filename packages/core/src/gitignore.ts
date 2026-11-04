@@ -10,7 +10,7 @@ export const GITIGNORE_END = '# <<< vitrin';
 export const VITRIN_COMMITTED = ['.vitrin-workspace', 'app_profile.json', 'listing/', 'art-direction.json', 'shots.json', 'video-plan.json', 'cpp-suggestions.json', 'experiments.json', 'screens/', 'designs/', 'photos/', 'rankings/'];
 
 /** Readable outputs under `metadata/` that are committed only with `retention.commit: true`. */
-export const VITRIN_OUTPUTS = ['app-store/', 'google-play/', 'manifest.json', 'store/', 'creative/', 'mockups/'];
+export const VITRIN_OUTPUTS = ['app-store/', 'manifest.json', 'store/', 'creative/', 'mockups/'];
 
 /** The ignore patterns Vitrin maintains: secrets and everything it generates. */
 export function vitrinGitignoreLines(config?: Pick<VitrinConfig, 'retention'>): string[] {
@@ -29,11 +29,6 @@ export function vitrinGitignoreLines(config?: Pick<VitrinConfig, 'retention'>): 
     ...(config?.retention?.commit ? ['# store outputs (retention.commit: true)', ...VITRIN_OUTPUTS.map((f) => `!/metadata/${f}`)] : []),
     '# older Vitrin versions',
     '/.vitrin/',
-    '/fastlane/screenshots/',
-    '/fastlane/app-previews/',
-    '/fastlane/metadata/android/**/images/',
-    '/fastlane/report.xml',
-    '/fastlane/README.md',
   ];
 }
 
@@ -62,11 +57,6 @@ export interface GitignoreResult {
 function groupOf(file: string): string {
   const parts = file.split('/');
   if (parts[0] === 'metadata' || parts[0] === '.vitrin') return parts.length > 2 ? `${parts[0]}/${parts[1]}/` : file;
-  if (parts[0] === 'fastlane' && parts.length > 2) {
-    const img = parts.indexOf('images');
-    if (img > 0) return `${parts.slice(0, img + 1).join('/')}/`;
-    return `${parts[0]}/${parts[1]}/`;
-  }
   return file;
 }
 

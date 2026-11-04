@@ -1,0 +1,648 @@
+<!doctype html>
+<html data-copied="Copiato" data-copy-fallback="Premi ⌘C" lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vitrin: la tua scheda App Store, nata dal tuo codice</title>
+  <meta name="description" content="Gratis e open source. Vitrin legge il codice della tua app, crea metadati, screenshot e App Preview per l’App Store, poi gestisce tutto il tuo App Store Connect da un’unica app per Mac.">
+  <link rel="canonical" href="https://vitrin.ardasnturk.com/it/">
+  <link rel="alternate" hreflang="en" href="https://vitrin.ardasnturk.com/">
+  <link rel="alternate" hreflang="tr" href="https://vitrin.ardasnturk.com/tr/">
+  <link rel="alternate" hreflang="de" href="https://vitrin.ardasnturk.com/de/">
+  <link rel="alternate" hreflang="es" href="https://vitrin.ardasnturk.com/es/">
+  <link rel="alternate" hreflang="fr" href="https://vitrin.ardasnturk.com/fr/">
+  <link rel="alternate" hreflang="it" href="https://vitrin.ardasnturk.com/it/">
+  <link rel="alternate" hreflang="ja" href="https://vitrin.ardasnturk.com/ja/">
+  <link rel="alternate" hreflang="ko" href="https://vitrin.ardasnturk.com/ko/">
+  <link rel="alternate" hreflang="pt-BR" href="https://vitrin.ardasnturk.com/pt-BR/">
+  <link rel="alternate" hreflang="zh-Hans" href="https://vitrin.ardasnturk.com/zh-Hans/">
+  <link rel="alternate" hreflang="x-default" href="https://vitrin.ardasnturk.com/">
+  <meta name="theme-color" content="#FFF8F3" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#140D11" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="../favicon.ico" sizes="32x32">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+  <link rel="manifest" href="../site.webmanifest">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Vitrin">
+  <meta property="og:title" content="Vitrin: la tua scheda App Store, nata dal tuo codice">
+  <meta property="og:description" content="Metadati, screenshot e App Preview dal tuo codice, controllati secondo le regole dell’App Store e caricati dopo la tua approvazione. In più, tutto App Store Connect in un’app per Mac.">
+  <meta property="og:url" content="https://vitrin.ardasnturk.com/it/">
+  <meta property="og:image" content="https://vitrin.ardasnturk.com/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preload" href="../assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../styles.css">
+  <script>document.documentElement.classList.add('js')</script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Vitrin",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "macOS",
+    "description": "App per Mac e plugin per Claude Code open source che genera, controlla e carica le schede App Store e gestisce App Store Connect.",
+    "url": "https://vitrin.ardasnturk.com/",
+    "codeRepository": "https://github.com/ardasnturk/vitrin",
+    "license": "https://opensource.org/licenses/MIT",
+    "softwareVersion": "2.1.0",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Vai al contenuto</a>
+
+  <svg width="0" height="0" class="sprite" aria-hidden="true">
+    <defs>
+      <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF9E33"/><stop offset=".55" stop-color="#FA6B61"/><stop offset="1" stop-color="#ED5C9E"/></linearGradient>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0 5-5m-5 5-5-5M4 20h16"/></symbol>
+      <symbol id="i-terminal" viewBox="0 0 24 24"><path d="m5 7 5 5-5 5M13 18h7"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.500L19 7.500"/></symbol>
+      <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 10v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9M3 9l2-5h14l2 5a3 3 0 0 1-6 .5 3 3 0 0 1-6 0A3 3 0 0 1 3 9ZM10 20v-5h4v5"/></symbol>
+      <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M12 3.500 13.800 9l5.700 2-5.700 2L12 18.500 10.200 13l-5.700-2 5.700-2zM19 16.500v4M17 18.500h4"/></symbol>
+      <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.700"/><path d="m4 18 5-4.500 3.500 3 3-2.500 4.500 4"/></symbol>
+      <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5zM3 13l9 5 9-5"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.500 3 7.500 7 9 4-1.500 7-4.500 7-9V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5M4 20h16"/></symbol>
+      <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4.500"/><path d="m11.500 11.500 8-8M16 7l3 3"/></symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 4v16h16M8 15l3.500-4 3 2.500L20 8"/></symbol>
+      <symbol id="i-megaphone" viewBox="0 0 24 24"><path d="M4 10v4l14 5V5zM8 15.500V19h3v-2.300M18 9.500a2.500 2.500 0 0 1 0 5"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3.500 15 0 18-3.500-3-3-15 0-18"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+      <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M15 6.500a4 4 0 0 1 5-1.200l-3 3 2 2 3-3M15 6.500A4.500 4.500 0 0 0 14.500 11L5 20l-2-2 9-9.500"/></symbol>
+      <symbol id="i-rocket" viewBox="0 0 24 24"><path d="M9 15c-2-2-2-8 7-12 2 0 3 1 3 3-4 9-8 11-10 9ZM9 15l-3 3M6 13l-3 1 2 2M11 18l-1 3-2-2"/><circle cx="14.500" cy="9.500" r="1.300"/></symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6.500A1.500 1.500 0 0 1 4.500 5H9l2 3h8.500A1.500 1.500 0 0 1 21 9.500v8a1.500 1.500 0 0 1-1.500 1.500h-15A1.500 1.500 0 0 1 3 17.500z"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14-4.500L4 9m0-5v5h5M4 13a8 8 0 0 0 14 4.500l2-2.500m0 5v-5h-5"/></symbol>
+      <symbol id="i-text" viewBox="0 0 24 24"><path d="M5 6h14M5 11h14M5 16h9"/></symbol>
+      <symbol id="i-window" viewBox="0 0 24 24"><rect x="3" y="4.500" width="18" height="15" rx="3"/><path d="M3 9h18M6.500 6.800h.1M9 6.800h.1"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.500 2.700 3.800 5.700 3.800 9s-1.300 6.300-3.800 9c-2.500-2.700-3.800-5.700-3.800-9s1.300-6.300 3.800-9z"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.500v13l10.500-6.500z"/></symbol>
+      <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 18a9.500 9.500 0 1 1 16 0M12 15l4-5.500"/><circle cx="12" cy="15.500" r="1.200"/></symbol>
+      <symbol id="i-devices" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2.500"/><path d="M11 18h2"/></symbol>
+      <symbol id="i-testflight" viewBox="0 0 24 24"><path d="M21 3 3 10.500l7 3 3 7z"/><path d="M10 13.500 21 3"/></symbol>
+      <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 4 2.500 5.200 5.500.8-4 4 1 5.700L12 17.200 7 19.700l1-5.700-4-4 5.500-.8z"/></symbol>
+      <symbol id="i-box" viewBox="0 0 24 24"><path d="m12 3 8 4.500v9L12 21l-8-4.500v-9zM4 7.500l8 4.500 8-4.500M12 12v9"/></symbol>
+      <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="5.500" width="18" height="13" rx="2.500"/><path d="M3 10h18M7 15h4"/></symbol>
+      <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2.500-6 4 12L16 12h5"/></symbol>
+      <symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-4.500 1.500-4.500-2.500-6-3m12 5v-3.500c0-1 .1-1.400-.5-2 2.800-.3 5.500-1.400 5.500-6a4.600 4.600 0 0 0-1.300-3.200 4.300 4.300 0 0 0-.1-3.200s-1.100-.3-3.500 1.300a12 12 0 0 0-6.300 0C6.400 2.800 5.300 3.100 5.300 3.100a4.300 4.300 0 0 0-.1 3.200A4.600 4.600 0 0 0 3.900 9.500c0 4.600 2.700 5.700 5.500 6-.6.600-.6 1.200-.5 2V21"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="progress" aria-hidden="true"></div>
+
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#top" aria-label="Home di Vitrin">
+        <img src="../assets/logo.svg" alt="" width="30" height="30">
+        <span>Vitrin</span>
+      </a>
+      <nav class="nav-links" id="nav-links" aria-label="Principale">
+        <a href="#what">Cosa fa</a>
+        <a href="#how">Come funziona</a>
+        <a href="#design">Design</a>
+        <a href="#mac">App per Mac</a>
+        <a href="#trust">Sicurezza</a>
+        <a href="#start">Installa</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <div class="nav-end">
+        <details class="lang" translate="no"><summary aria-label="Lingua"><svg class="ico"><use href="#i-globe"/></svg><span>Italiano</span></summary><div class="lang-list"><a href="../" hreflang="en" lang="en" translate="no">English</a><a href="../tr/" hreflang="tr" lang="tr" translate="no">Türkçe</a><a href="../de/" hreflang="de" lang="de" translate="no">Deutsch</a><a href="../es/" hreflang="es" lang="es" translate="no">Español</a><a href="../fr/" hreflang="fr" lang="fr" translate="no">Français</a><a href="../it/" hreflang="it" lang="it" translate="no" aria-current="page">Italiano</a><a href="../ja/" hreflang="ja" lang="ja" translate="no">日本語</a><a href="../ko/" hreflang="ko" lang="ko" translate="no">한국어</a><a href="../pt-BR/" hreflang="pt-BR" lang="pt-BR" translate="no">Português (Brasil)</a><a href="../zh-Hans/" hreflang="zh-Hans" lang="zh-Hans" translate="no">简体中文</a></div></details>
+        <a class="icon-link" href="https://github.com/ardasnturk/vitrin" aria-label="Vitrin su GitHub"><svg class="ico"><use href="#i-github"/></svg></a>
+        <a class="btn btn-primary btn-sm" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg">Scarica</a>
+        <button class="menu" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-links"><svg class="ico"><use href="#i-menu"/></svg></button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero" id="top">
+      <div class="wrap hero-copy">
+        <p class="pill load" style="--d:0"><span class="dot"></span>Vitrin 2.1 · Gratis e open source</p>
+        <h1 class="load" style="--d:1">La tua scheda App Store,<br><span class="shine">nata dal tuo codice.</span></h1>
+        <p class="lead load" style="--d:2">Vitrin legge la tua app, crea testi, screenshot e App Preview e carica solo ciò che approvi. Poi gestisce tutto il tuo App Store Connect da un’unica app per Mac.</p>
+        <div class="cta load" style="--d:3">
+          <a class="btn btn-primary" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg"><svg class="ico"><use href="#i-download"/></svg>Scarica per Mac</a>
+          <a class="btn btn-ghost" href="#start"><svg class="ico"><use href="#i-terminal"/></svg>Usalo in Claude Code</a>
+        </div>
+        <p class="fine load" style="--d:4">macOS 15 o successivo · Notarizzata · Licenza MIT · Nessuna chiave AI aggiuntiva</p>
+      </div>
+
+      <div class="wrap stage-wrap load" style="--d:5">
+        <div class="awning" aria-hidden="true"></div>
+        <div class="win" id="win" role="group" aria-label="Uno sguardo a Vitrin per Mac, con l’app di esempio Ritim">
+          <div class="win-bar"><i></i><i></i><i></i><span>Ritim <em>com.jastech.ritim</em></span></div>
+          <div class="win-body">
+            <aside class="win-side" aria-hidden="true">
+              <b>App</b>
+              <span class="on"><i class="mini-icon"></i>Ritim</span>
+              <span><i class="mini-icon alt"></i>Atlas Notes</span>
+              <span><i class="mini-icon third"></i>Tempo</span>
+              <b>Team</b>
+              <span><svg class="ico"><use href="#i-key"/></svg>Utenti</span>
+              <span><svg class="ico"><use href="#i-devices"/></svg>Dispositivi</span>
+              <span><svg class="ico"><use href="#i-shield"/></svg>Certificati</span>
+              <span><svg class="ico"><use href="#i-megaphone"/></svg>Apple Ads</span>
+            </aside>
+            <div class="win-main">
+              <div class="app-head">
+                <i class="app-icon" aria-hidden="true"></i>
+                <div><strong>Ritim</strong><small>com.jastech.ritim</small><span class="state"><i></i>iOS 1.2.0 · Pronta per la distribuzione</span></div>
+              </div>
+              <div class="tabs" role="tablist" aria-label="Pagine dell’app">
+                <button role="tab" aria-selected="true" aria-controls="p-status" id="t-status" style="--a:#FA6B61;--b:#ED5C9E"><svg class="ico"><use href="#i-pulse"/></svg>Stato</button>
+                <button role="tab" aria-selected="false" aria-controls="p-text" id="t-text" tabindex="-1" style="--a:#9E52EB;--b:#ED5C9E"><svg class="ico"><use href="#i-text"/></svg>Testo dello store</button>
+                <button role="tab" aria-selected="false" aria-controls="p-shots" id="t-shots" tabindex="-1" style="--a:#FF9E33;--b:#FA6B61"><svg class="ico"><use href="#i-image"/></svg>Screenshot</button>
+                <button role="tab" aria-selected="false" aria-controls="p-builds" id="t-builds" tabindex="-1" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-box"/></svg>Build</button>
+                <button role="tab" aria-selected="false" aria-controls="p-tf" id="t-tf" tabindex="-1" style="--a:#0DA8AD;--b:#4D5CED"><svg class="ico"><use href="#i-testflight"/></svg>TestFlight</button>
+                <button role="tab" aria-selected="false" aria-controls="p-rev" id="t-rev" tabindex="-1" style="--a:#FF9E33;--b:#FA6B61"><svg class="ico"><use href="#i-star"/></svg>Recensioni</button>
+                <button role="tab" aria-selected="false" aria-controls="p-an" id="t-an" tabindex="-1" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-chart"/></svg>Analisi</button>
+              </div>
+              <div class="panes">
+                <div class="pane" id="p-status" role="tabpanel" aria-labelledby="t-status">
+                  <div class="tiles">
+                    <div><small>Online sullo store</small><strong>1.2.0</strong><span class="ok">Pronta per la distribuzione</span></div>
+                    <div><small>Prossima versione</small><strong>1.3.0</strong><span class="warn">Preparazione per l’invio</span></div>
+                    <div><small>Rilascio graduale</small><strong>Giorno 4 di 7</strong><span class="bar"><i style="--w:43%"></i></span></div>
+                  </div>
+                  <div class="list">
+                    <p><svg class="ico ok"><use href="#i-check"/></svg>Build 42 allegata</p>
+                    <p><svg class="ico ok"><use href="#i-check"/></svg>Testo dello store pronto in 2 lingue</p>
+                    <p><svg class="ico warn"><use href="#i-sparkles"/></svg>Novità mancanti per il turco</p>
+                  </div>
+                </div>
+                <div class="pane" id="p-text" role="tabpanel" aria-labelledby="t-text" hidden>
+                  <div class="fields">
+                    <label>Nome <span>5 / 30</span><b>Ritim</b></label>
+                    <label>Sottotitolo <span>27 / 30</span><b>Abitudini che restano</b></label>
+                    <label>Parole chiave <span>96 / 100</span><b>abitudini,tracker,serie,routine,obiettivi,quotidiano</b></label>
+                    <label>Testo promozionale <span>62 / 170</span><b>Segna la giornata con un tocco e guarda crescere la tua serie.</b></label>
+                  </div>
+                </div>
+                <div class="pane" id="p-shots" role="tabpanel" aria-labelledby="t-shots" hidden>
+                  <div class="shots">
+                    <img src="../assets/midnight-shot-01.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-02.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-03.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-04.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-05.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-06.webp" alt="" loading="lazy" width="500" height="1087">
+                  </div>
+                </div>
+                <div class="pane" id="p-builds" role="tabpanel" aria-labelledby="t-builds" hidden>
+                  <div class="rows">
+                    <p><b>Build 42</b><span>1.3.0</span><span class="ok">Valido</span><em>Oggi</em></p>
+                    <p><b>Build 41</b><span>1.3.0</span><span class="ok">Valido</span><em>Ieri</em></p>
+                    <p><b>Build 40</b><span>1.2.0</span><span class="warn">Scade tra 12 giorni</span><em>22 ott</em></p>
+                    <p><b>Build 39</b><span>1.2.0</span><span class="dim">Scaduto</span><em>30 set</em></p>
+                  </div>
+                </div>
+                <div class="pane" id="p-tf" role="tabpanel" aria-labelledby="t-tf" hidden>
+                  <div class="rows">
+                    <p><b>Tester interni</b><span>6 persone</span><span class="ok">Build 42</span><em>Interno</em></p>
+                    <p><b>Club beta</b><span>148 persone</span><span class="ok">Build 41</span><em>Esterno</em></p>
+                    <p><b>Stampa</b><span>12 persone</span><span class="warn">In revisione beta</span><em>Esterno</em></p>
+                  </div>
+                </div>
+                <div class="pane" id="p-rev" role="tabpanel" aria-labelledby="t-rev" hidden>
+                  <div class="reviews">
+                    <div><span class="stars" aria-label="5 stelle">★★★★★</span><b>Finalmente ci riesco</b><p>Il grafico delle serie è ciò che mi fa andare avanti.</p><span class="reply">Rispondi</span></div>
+                    <div><span class="stars" aria-label="4 stelle">★★★★<i>★</i></span><b>Quasi perfetta</b><p>Mi piacerebbe un widget per la schermata di blocco.</p><span class="reply">Rispondi</span></div>
+                  </div>
+                </div>
+                <div class="pane" id="p-an" role="tabpanel" aria-labelledby="t-an" hidden>
+                  <div class="tiles"><div><small>Impressioni</small><strong>41.2K</strong></div><div><small>Download</small><strong>3,180</strong></div><div><small>Conversione</small><strong>7.7%</strong></div></div>
+                  <div class="chart" aria-hidden="true"><i style="--h:32%"></i><i style="--h:44%"></i><i style="--h:38%"></i><i style="--h:58%"></i><i style="--h:50%"></i><i style="--h:66%"></i><i style="--h:60%"></i><i style="--h:78%"></i><i style="--h:72%"></i><i style="--h:92%"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="note">Un’illustrazione con Ritim, l’app di esempio nel repository.</p>
+      </div>
+    </section>
+
+    <!-- Numbers -->
+    <section class="numbers" aria-label="In breve">
+      <div class="wrap numbers-row reveal">
+        <p><strong data-count="6">6</strong>piattaforme Apple</p>
+        <p><strong data-count="16">16</strong>stili predefiniti</p>
+        <p><strong data-count="50">50</strong>lingue dell’App Store</p>
+        <p><strong data-count="1300" data-sep>1.300</strong>comandi App Store Connect</p>
+        <p><strong data-count="10">10</strong>lingue dell’app</p>
+      </div>
+    </section>
+
+    <!-- What it does -->
+    <section id="what" aria-labelledby="what-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">Cosa fa</p>
+          <h2 id="what-title">Due lavori. Un solo strumento.</h2>
+          <p class="sub">Ogni app ha bisogno di una bella pagina sullo store e di qualcuno che se ne occupi. Vitrin fa entrambe le cose.</p>
+        </div>
+        <div class="jobs">
+          <article class="job reveal">
+            <span class="badge" style="--a:#FF9E33;--b:#ED5C9E"><svg class="ico"><use href="#i-sparkles"/></svg></span>
+            <h3>Crea la scheda</h3>
+            <p>Claude legge il tuo codice e i tuoi concorrenti, poi scrive e progetta tutto ciò che serve alla tua pagina sullo store.</p>
+            <ul class="ticks">
+              <li>Nome, sottotitolo, parole chiave, descrizione, Novità</li>
+              <li>Screenshot per ogni dispositivo, in ogni lingua</li>
+              <li>App Preview, creatività e card In-App Event</li>
+              <li>Controllato secondo le regole dell’App Store, poi caricato</li>
+            </ul>
+          </article>
+          <article class="job reveal" style="--stagger:1">
+            <span class="badge" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-store"/></svg></span>
+            <h3>Gestisci lo store</h3>
+            <p>Tutte le app del tuo team in un’unica finestra nativa. Tutto ciò che fa App Store Connect, senza le schede del browser.</p>
+            <ul class="ticks">
+              <li>Versioni, build, TestFlight e recensioni</li>
+              <li>Prezzi, acquisti, vendite e analisi</li>
+              <li>Utenti, dispositivi, certificati e Apple Ads</li>
+              <li>Invia, rilascia o distribuisci gradualmente una versione dalla tua scrivania</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="ways">
+          <h3 class="reveal">Usalo come lavori tu</h3>
+          <div class="ways-row">
+            <article class="way reveal">
+              <svg class="ico"><use href="#i-window"/></svg>
+              <h4>Vitrin per Mac</h4>
+              <p>L’app nativa. Entrambi i lavori, senza bisogno del terminale. Installa con un clic gli strumenti che le servono.</p>
+            </article>
+            <article class="way reveal" style="--stagger:1">
+              <svg class="ico"><use href="#i-sparkles"/></svg>
+              <h4>Plugin per Claude Code</h4>
+              <p>Digita <code>/vitrin</code> nel tuo repository. Claude ti chiede cosa vuoi e procede fase per fase.</p>
+            </article>
+            <article class="way reveal" style="--stagger:2">
+              <svg class="ico"><use href="#i-terminal"/></svg>
+              <h4>CLI e Studio</h4>
+              <p>Ogni fase è un comando. <code>vitrin studio</code> apre lo stesso flusso in una pagina web locale.</p>
+            </article>
+          </div>
+          <p class="also reveal center">In giro? Con <a href="https://github.com/ardasnturk/remote-code">Remote Code</a>, Vitrin è una scheda nativa sul tuo iPhone: progetti, tutte le fasi e App Store Connect.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section id="how" aria-labelledby="how-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">Come funziona</p>
+          <h2 id="how-title">Dal tuo codice allo store in quattro passaggi</h2>
+          <p class="sub">Claude fa il lavoro creativo, tu fai le scelte. Tutto il resto è un comando testato che puoi leggere.</p>
+        </div>
+        <div class="how">
+          <ol class="steps">
+            <li class="step" data-step="0">
+              <span class="num">1</span>
+              <h3>Analizza</h3>
+              <p>Vitrin trova nel codice le tue piattaforme, lingue e funzioni. Ogni funzione rimanda al file che la dimostra, così la tua scheda dichiara solo ciò che la tua app fa davvero.</p>
+              <p class="also">Swift, Flutter, React Native ed Expo, rilevati automaticamente.</p>
+            </li>
+            <li class="step" data-step="1">
+              <span class="num">2</span>
+              <h3>Ricerca</h3>
+              <p>Cerca nell’App Store di ogni paese, legge gli screenshot dei concorrenti con l’OCR sul dispositivo e valuta le parole chiave per pertinenza, popolarità e concorrenza.</p>
+              <p class="also">Scegli tu piattaforme e lingue. Niente viene dato per scontato.</p>
+            </li>
+            <li class="step" data-step="2">
+              <span class="num">3</span>
+              <h3>Crea</h3>
+              <p>Claude ricrea le tue schermate dal codice, senza build e senza simulatore. Poi Vitrin genera screenshot e video, e tu scegli tra veri campioni della tua app.</p>
+              <p class="also">Ti servono catture reali? Può anche compilare la tua app e fotografarla nei simulatori.</p>
+            </li>
+            <li class="step" data-step="3">
+              <span class="num">4</span>
+              <h3>Rivedi e carica</h3>
+              <p>Vedi tutto in un’unica galleria e approvi, oppure rifiuti un singolo elemento con un commento. Vitrin carica esattamente ciò che hai approvato e rilegge ciò che lo store ha salvato.</p>
+              <p class="also">Il caricamento lo fa la CLI asc, quindi non c’è Ruby da installare.</p>
+            </li>
+          </ol>
+          <div class="scene" aria-hidden="true">
+            <div class="scene-box">
+              <div class="panel" data-panel="0">
+                <p class="panel-title"><svg class="ico"><use href="#i-folder"/></svg>Ritim · profilo dell’app</p>
+                <div class="scan">
+                  <p><b>Serie giornaliere</b><code>Streaks/StreakView.swift</code></p>
+                  <p><b>Promemoria</b><code>Reminders/Schedule.swift</code></p>
+                  <p><b>Grafici</b><code>Stats/ChartsView.swift</code></p>
+                  <p><b>iPhone, iPad</b><code>project.pbxproj</code></p>
+                  <p><b>Inglese, turco</b><code>Localizable.xcstrings</code></p>
+                </div>
+              </div>
+              <div class="panel" data-panel="1">
+                <p class="panel-title"><svg class="ico"><use href="#i-chart"/></svg>Parole chiave candidate · USA</p>
+                <div class="kw">
+                  <p>tracker abitudini<i style="--w:92%"></i></p>
+                  <p>routine quotidiana<i style="--w:78%"></i></p>
+                  <p>serie<i style="--w:64%"></i></p>
+                  <p>pianificatore obiettivi<i style="--w:55%"></i></p>
+                  <p>cura di sé<i style="--w:41%"></i></p>
+                </div>
+              </div>
+              <div class="panel" data-panel="2">
+                <div class="mini-fan">
+                  <img src="../assets/glass-shot-02.webp" alt="" loading="lazy" width="500" height="1087">
+                  <img src="../assets/midnight-shot-01.webp" alt="" loading="lazy" width="500" height="1087">
+                  <img src="../assets/candy-shot-03.webp" alt="" loading="lazy" width="500" height="1087">
+                </div>
+              </div>
+              <div class="panel" data-panel="3">
+                <p class="panel-title"><svg class="ico"><use href="#i-upload"/></svg>Piano di caricamento</p>
+                <div class="plan">
+                  <p><svg class="ico ok"><use href="#i-check"/></svg>Testo · en-US, tr</p>
+                  <p><svg class="ico ok"><use href="#i-check"/></svg>Screenshot · iPhone 6,9"</p>
+                  <p><svg class="ico ok"><use href="#i-check"/></svg>App Preview · en-US</p>
+                  <p class="keep">Gli screenshot iPad restano intatti</p>
+                </div>
+                <span class="go">Approvato · Caricamento in corso</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Design -->
+    <section id="design" aria-labelledby="design-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">Design</p>
+          <h2 id="design-title">Screenshot che somigliano al tuo brand</h2>
+          <p class="sub">16 stili predefiniti, tinti con i tuoi colori, più design creati da Claude per la tua app. Prima i titoli, poi la tua vera interfaccia dentro dispositivi realistici.</p>
+        </div>
+        <div class="switch reveal" role="tablist" aria-label="Campioni di stile">
+          <button role="tab" aria-selected="true" data-style="midnight">Midnight Glow</button>
+          <button role="tab" aria-selected="false" data-style="glass" tabindex="-1">Liquid Glass</button>
+          <button role="tab" aria-selected="false" data-style="candy" tabindex="-1">Candy Pop</button>
+        </div>
+        <div class="fan reveal" id="fan" role="img" aria-label="Cinque screenshot dello store dell’app di esempio Ritim nello stile selezionato">
+          <img src="../assets/midnight-shot-02.webp" alt="" width="500" height="1087" loading="lazy" data-n="02">
+          <img src="../assets/midnight-shot-03.webp" alt="" width="500" height="1087" loading="lazy" data-n="03">
+          <img src="../assets/midnight-shot-01.webp" alt="" width="500" height="1087" loading="lazy" data-n="01">
+          <img src="../assets/midnight-shot-04.webp" alt="" width="500" height="1087" loading="lazy" data-n="04">
+          <img src="../assets/midnight-shot-05.webp" alt="" width="500" height="1087" loading="lazy" data-n="05">
+        </div>
+
+        <div class="split">
+          <div class="reveal">
+            <h3>Ogni piattaforma su cui pubblichi</h3>
+            <p>Dimensioni esatte al pixel con frame realistici dei dispositivi. Si creano solo le piattaforme che selezioni.</p>
+            <ul class="chips">
+              <li>iPhone</li><li>iPad</li><li>Mac</li><li>Apple Watch</li><li>Apple TV</li><li>Vision Pro</li><li>iPhone Duo</li>
+            </ul>
+            <p class="also">Anche l’intestazione della pagina prodotto in 21:9 e le creatività di ricerca in 3:2.</p>
+          </div>
+          <div class="reveal" style="--stagger:1">
+            <h3>Misurato, non a occhio</h3>
+            <p>Ogni immagine supera un controllo di qualità prima di arrivare a te: dimensione del dispositivo, spazio vuoto, larghezza e contrasto del titolo, livelli visivi e leggibilità in miniatura.</p>
+            <h3 class="gap">Scritto per ogni mercato</h3>
+            <p>Il testo viene contato come lo contano gli store, in caratteri e byte. “alışkanlık” ha 10 caratteri ma 13 byte. Le lingue da destra a sinistra sono supportate.</p>
+          </div>
+        </div>
+
+        <div class="previews">
+          <div class="preview-head reveal">
+            <h3>App Preview in quattro modi di muoversi</h3>
+            <p>Generate via codice con le tue vere schermate, poi normalizzate per ciò che App Store Connect accetta.</p>
+          </div>
+          <div class="videos">
+            <figure class="reveal"><video data-autoplay muted loop playsinline preload="none" poster="../assets/style-showcase.jpg" src="../assets/style-showcase.mp4" aria-label="Campione dello stile Showcase"></video><figcaption><b>Showcase</b>Ingressi in 3D, zoom in avvicinamento</figcaption></figure>
+            <figure class="reveal" style="--stagger:1"><video data-autoplay muted loop playsinline preload="none" poster="../assets/style-kinetic.jpg" src="../assets/style-kinetic.mp4" aria-label="Campione dello stile Kinetic"></video><figcaption><b>Kinetic</b>Parola per parola, tagli incisivi</figcaption></figure>
+            <figure class="reveal" style="--stagger:2"><video data-autoplay muted loop playsinline preload="none" poster="../assets/style-energetic.jpg" src="../assets/style-energetic.mp4" aria-label="Campione dello stile Energetic"></video><figcaption><b>Energetic</b>Dispositivi inclinati, transizioni rapide</figcaption></figure>
+            <figure class="reveal" style="--stagger:3"><video data-autoplay muted loop playsinline preload="none" poster="../assets/style-classic.jpg" src="../assets/style-classic.mp4" aria-label="Campione dello stile Classic"></video><figcaption><b>Classic</b>Ingressi calmi e dissolvenze</figcaption></figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mac app -->
+    <section id="mac" aria-labelledby="mac-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">Vitrin per Mac</p>
+          <h2 id="mac-title">App Store Connect, senza le schede del browser</h2>
+          <p class="sub">Collegati una volta e ogni app del tuo team si apre con i suoi dati in tempo reale. Le cartelle dei tuoi progetti sono proprio lì accanto.</p>
+        </div>
+        <div class="bento">
+          <article class="tile wide reveal">
+            <span class="badge" style="--a:#FF9E33;--b:#FA6B61"><svg class="ico"><use href="#i-layers"/></svg></span>
+            <h3>I comandi diventano funzioni</h3>
+            <p>I 1.300 comandi della CLI asc stanno nella scheda a cui appartengono. Ciò che legge si carica da solo, in elenchi e card. Ciò che modifica qualcosa è un pulsante con un breve modulo. Codici lingua, categorie e stati si leggono in parole semplici.</p>
+            <div class="chips-move" aria-hidden="true">
+              <div><span>Stato</span><span>Testo dello store</span><span>Screenshot</span><span>Build</span><span>TestFlight</span><span>Recensioni</span><span>Acquisti</span><span>Analisi</span><span>Utenti</span><span>Dispositivi</span><span>Certificati</span><span>Profili</span><span>Bundle ID</span><span>Stato</span><span>Testo dello store</span><span>Screenshot</span><span>Build</span><span>TestFlight</span><span>Recensioni</span><span>Acquisti</span><span>Analisi</span><span>Utenti</span><span>Dispositivi</span><span>Certificati</span><span>Profili</span><span>Bundle ID</span></div>
+            </div>
+          </article>
+          <article class="tile reveal" style="--stagger:1">
+            <span class="badge" style="--a:#4ADE80;--b:#0DA8AD"><svg class="ico"><use href="#i-wrench"/></svg></span>
+            <h3>Si configura da solo</h3>
+            <p>Manca uno strumento? Lo installi con un clic, senza terminale e senza Homebrew.</p>
+            <ul class="install" aria-hidden="true">
+              <li>Node.js</li><li>Vitrin CLI</li><li>Claude Code</li><li>CLI asc</li><li>ffmpeg</li>
+            </ul>
+          </article>
+          <article class="tile reveal">
+            <span class="badge" style="--a:#FA6B61;--b:#ED5C9E"><svg class="ico"><use href="#i-rocket"/></svg></span>
+            <h3>Rilascia dalla scrivania</h3>
+            <p>Scopri perché una versione non può essere inviata e cosa vede App Review. Poi inviala, rilasciala o distribuiscila gradualmente.</p>
+          </article>
+          <article class="tile reveal" style="--stagger:1">
+            <span class="badge" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-key"/></svg></span>
+            <h3>Nuove app e chiavi</h3>
+            <p>Accedi con il tuo account Apple per creare un’app o una chiave API amministratore in un solo passaggio. La tua password resta nel portachiavi.</p>
+          </article>
+          <article class="tile reveal" style="--stagger:2">
+            <span class="badge" style="--a:#0DA8AD;--b:#4D5CED"><svg class="ico"><use href="#i-chart"/></svg></span>
+            <h3>Analisi e Apple Ads</h3>
+            <p>Dashboard di App Store Connect, vendite e campagne Apple Ads dentro l’app. La barra dei menu ti mostra quali app hanno bisogno di te.</p>
+          </article>
+          <article class="tile wide lang reveal">
+            <span class="badge" style="--a:#9E52EB;--b:#ED5C9E"><svg class="ico"><use href="#i-globe"/></svg></span>
+            <div>
+              <h3>Parla <span class="ticker" aria-hidden="true"><span>Türkçe</span><span>Deutsch</span><span>日本語</span><span>Español</span><span>한국어</span><span>Français</span><span>简体中文</span><span>Italiano</span><span>Português</span><span>English</span><span>Türkçe</span></span><span class="sr">dieci lingue</span></h3>
+              <p>Dieci lingue, seguendo il tuo sistema. Ogni sezione si spiega da sé con un pulsante info.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Safety -->
+    <section id="trust" aria-labelledby="trust-title">
+      <div class="wrap trust">
+        <div class="reveal">
+          <p class="kicker">Sicurezza</p>
+          <h2 id="trust-title">Niente arriva sullo store senza il tuo sì</h2>
+          <p class="sub">A Vitrin puoi affidare in tranquillità una scheda già online.</p>
+          <ul class="points">
+            <li><svg class="ico"><use href="#i-shield"/></svg><div><b>Onesto per natura</b><span>Ogni titolo e ogni affermazione devono rimandare a una funzione del tuo codice. Le valutazioni arrivano dall’App Store in tempo reale, le testimonianze solo dalle tue recensioni.</span></div></li>
+            <li><svg class="ico"><use href="#i-gauge"/></svg><div><b>Trovato prima di Apple</b><span>Un solo comando controlla testi, immagini e video secondo le regole dell’App Store e dice a Claude esattamente cosa correggere.</span></div></li>
+            <li><svg class="ico"><use href="#i-image"/></svg><div><b>Approvazione legata ai file</b><span>La tua approvazione registra un hash di ogni file. Se qualcosa cambia dopo, anche per mano di Claude, serve una nuova approvazione.</span></div></li>
+            <li><svg class="ico"><use href="#i-upload"/></svg><div><b>I caricamenti parziali restano parziali</b><span>Prima arriva un piano di simulazione. Ciò che non hai selezionato non viene mai eliminato o sovrascritto, e ogni caricamento viene riletto.</span></div></li>
+          </ul>
+        </div>
+        <div class="term reveal" style="--stagger:1" role="img" aria-label="vitrin validate elenca gli errori nella scheda di esempio, come testo segnaposto e un prezzo in uno screenshot, con le correzioni">
+          <div class="term-bar"><i></i><i></i><i></i><span>vitrin validate</span></div>
+          <pre><code><span class="ln"><span class="pr">$</span> vitrin validate</span><span class="ln"><span class="er">ERROR</span> promotionalText contiene "TODO"</span><span class="ln"><span class="er">ERROR</span> Screenshot 04: indicazione di prezzo, "sconto 50%"</span><span class="ln"><span class="er">ERROR</span> Screenshot 06: indirizzo di un sito web</span><span class="ln"><span class="er">ERROR</span> "abitudine" è già nel nome</span><span class="ln">      <span class="fx">→ Rimuovi "abitudine".</span></span><span class="ln"><span class="wa">WARN</span>  Novità troppo generiche</span><span class="ln"><span class="wa">WARN</span>  supportUrl è un segnaposto</span><span class="ln"><span class="fi">4 errori, 2 avvisi</span></span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- The rest -->
+    <section id="more" aria-labelledby="more-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">E i dettagli</p>
+          <h2 id="more-title">Tutto il resto che ti serve</h2>
+        </div>
+        <div class="facts">
+          <article class="reveal"><svg class="ico"><use href="#i-window"/></svg><h3>Vitrin Studio</h3><p>L’intero flusso in una pagina web locale: log in tempo reale, editor, campioni di design, galleria di revisione e il tuo Claude Code in un pannello laterale.</p></article>
+          <article class="reveal" style="--stagger:1"><svg class="ico"><use href="#i-key"/></svg><h3>Nessuna chiave AI aggiuntiva</h3><p>Il lavoro creativo gira nella tua sessione di Claude Code. La CLI non fa nessuna chiamata AI.</p></article>
+          <article class="reveal" style="--stagger:2"><svg class="ico"><use href="#i-refresh"/></svg><h3>Riparte da dove eri</h3><p>Le fasi saltano ciò che non è cambiato. Le chiavi mancanti non fermano il lavoro: solo il caricamento le aspetta.</p></article>
+          <article class="reveal"><svg class="ico"><use href="#i-folder"/></svg><h3>Un repository in ordine</h3><p>Tutto sta in un’unica cartella <code>metadata/</code>, fuori da git. Le chiavi restano in <code>.env</code> e vengono mascherate in ogni log.</p></article>
+          <article class="reveal" style="--stagger:1"><svg class="ico"><use href="#i-store"/></svg><h3>Custom Product Pages</h3><p>Carica Custom Product Pages, In-App Events e la libreria risorse dell’app insieme alla tua scheda.</p></article>
+          <article class="reveal" style="--stagger:2"><svg class="ico"><use href="#i-text"/></svg><h3>Regole dello store integrate</h3><p>Limiti di caratteri, regole sulle parole chiave e linee guida di App Review vengono controllati per ogni lingua prima che tu veda il risultato.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Install -->
+    <section id="start" aria-labelledby="start-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">Installa</p>
+          <h2 id="start-title">Parti in un minuto</h2>
+        </div>
+        <div class="starts">
+          <article class="start reveal">
+            <span class="badge" style="--a:#FF9E33;--b:#ED5C9E"><svg class="ico"><use href="#i-window"/></svg></span>
+            <h3>Vitrin per Mac</h3>
+            <p>Scarica, trascina in Applicazioni e segui il tour di benvenuto. Controlla il tuo Mac e installa con un clic ciò che manca.</p>
+            <a class="btn btn-primary" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg"><svg class="ico"><use href="#i-download"/></svg>Scarica per Mac</a>
+            <p class="fine">Oppure con Homebrew:</p>
+            <div class="code"><code>brew tap ardasnturk/vitrin https://github.com/ardasnturk/vitrin
+brew install --cask vitrin</code><button class="copy" type="button" data-copy="brew tap ardasnturk/vitrin https://github.com/ardasnturk/vitrin && brew install --cask vitrin">Copia</button></div>
+          </article>
+          <article class="start reveal" style="--stagger:1">
+            <span class="badge" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-sparkles"/></svg></span>
+            <h3>Plugin per Claude Code</h3>
+            <p>Installalo una volta, apri il repository della tua app in <a href="https://claude.com/claude-code">Claude Code</a> e digita <code>/vitrin</code>. Non c’è niente da clonare.</p>
+            <div class="code"><code>claude plugin install vitrin --marketplace ardasnturk/vitrin</code><button class="copy" type="button" data-copy="claude plugin install vitrin --marketplace ardasnturk/vitrin">Copia</button></div>
+            <p class="fine">Il primo avvio configura la CLI una sola volta: circa 450 MB con Chromium, senza sudo. Serve Node.js 22 o successivo. <code>vitrin doctor</code> controlla il resto.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" aria-labelledby="faq-title">
+      <div class="wrap narrow">
+        <div class="head reveal">
+          <p class="kicker">FAQ</p>
+          <h2 id="faq-title">Buone domande</h2>
+        </div>
+        <div class="qa reveal">
+          <details>
+            <summary>Funziona con le app Flutter o React Native?</summary>
+            <p>Sì. Swift e SwiftUI vengono prima, e i progetti Flutter, React Native ed Expo sono rilevati automaticamente. Le loro schermate vengono ricreate dal codice senza build, oppure compilate con i loro strumenti e catturate nei simulatori, se preferisci. Vitrin è fatto per l’App Store, quindi copre solo le loro app Apple.</p>
+          </details>
+          <details>
+            <summary>Mi serve una chiave API di OpenAI o Anthropic?</summary>
+            <p>No. Il lavoro creativo avviene nella tua sessione di Claude Code e la CLI non fa nessuna chiamata AI. Senza Claude puoi seguire i brief a mano.</p>
+          </details>
+          <details>
+            <summary>Posso usarlo dal mio iPhone?</summary>
+            <p>Sì. Con <a href="https://github.com/ardasnturk/remote-code">Remote Code</a> 1.6 sul tuo Mac, Vitrin è una scheda sul tuo iPhone. Puoi aggiungere cartelle di progetto, eseguire ogni fase e gestire App Store Connect con schermate native, senza che Vitrin per Mac sia aperto. I progetti restano allineati tra il telefono e il Mac.</p>
+          </details>
+          <details>
+            <summary>L’app per Mac richiede il terminale?</summary>
+            <p>No. Il tour di benvenuto controlla il tuo Mac e installa con un clic Node.js, Vitrin CLI, Claude Code, la CLI asc e ffmpeg. Usa Homebrew se ce l’hai e funziona anche senza.</p>
+          </details>
+          <details>
+            <summary>Posso collegare App Store Connect senza creare una chiave a mano?</summary>
+            <p>Sì. Accedi con il tuo account Apple e Vitrin crea una chiave API amministratore in un solo passaggio. Puoi anche aggiungere una chiave tu stesso o usare l’accesso che hai già nella CLI asc. I progetti funzionano anche senza collegamento.</p>
+          </details>
+          <details>
+            <summary>Può creare una nuova app in App Store Connect?</summary>
+            <p>Vitrin per Mac sì, dopo l’accesso con il tuo account Apple. Apple non lo consente con una chiave API, quindi la CLI e il plugin si fermano e ti avvisano quando l’app manca.</p>
+          </details>
+          <details>
+            <summary>Carica qualcosa senza chiedere?</summary>
+            <p>No. Ogni immagine, video e testo ti viene mostrato prima. Il caricamento parte da un piano di simulazione, aspetta il tuo sì e rifiuta i contenuti diversi da ciò che hai approvato. L’invio in revisione richiede una conferma a parte. Nel plugin, prezzi, rilasci e i questionari su classificazione per età e privacy restano in mano tua.</p>
+          </details>
+          <details>
+            <summary>Cosa viene caricato esattamente?</summary>
+            <p>Solo le piattaforme e i contenuti che hai selezionato, dopo la tua approvazione. I set di screenshot selezionati vengono sostituiti per tipo di schermo e tutto il resto resta com’è. Vitrin non carica mai una build.</p>
+          </details>
+          <details>
+            <summary>Deve compilare la mia app?</summary>
+            <p>No. Di default Claude ricrea le tue schermate in HTML dal codice sorgente, quindi niente build, niente simulatore e niente modalità demo. Se preferisci catture reali, può compilare la tua app e aprire ogni schermata in simulatori dedicati.</p>
+          </details>
+          <details>
+            <summary>Che fine fanno i file generati?</summary>
+            <p>Restano nella cartella <code>metadata/</code> del tuo progetto, e un blocco gestito in <code>.gitignore</code> li tiene fuori da git. Dopo un caricamento verificato, Vitrin chiede se eliminare i dati di ricerca. Nient’altro viene eliminato.</p>
+          </details>
+          <details>
+            <summary>E le licenze?</summary>
+            <p>Vitrin ha licenza MIT. Include font OFL e icone Lucide, e gli stili predefiniti sono adattati da <a href="https://github.com/ParthJadhav/app-store-screenshots">ParthJadhav/app-store-screenshots</a> (MIT). Le App Preview sono generate con Remotion, gratuito per i privati e per le aziende fino a tre dipendenti. I team più grandi hanno bisogno di una <a href="https://www.remotion.dev/license">licenza aziendale Remotion</a>.</p>
+          </details>
+          <details>
+            <summary>È un prodotto Apple?</summary>
+            <p>No. Vitrin è un progetto open source indipendente: non è affiliato, approvato o sponsorizzato da Apple Inc.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Closing -->
+    <section class="closing" aria-labelledby="closing-title">
+      <div class="wrap">
+        <div class="closing-card reveal">
+          <div class="awning small" aria-hidden="true"></div>
+          <h2 id="closing-title">Apri la tua vetrina</h2>
+          <p>Vitrin è gratis, open source e tutto da leggere.</p>
+          <div class="cta">
+            <a class="btn btn-light" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg"><svg class="ico"><use href="#i-download"/></svg>Scarica per Mac</a>
+            <a class="btn btn-outline" href="https://github.com/ardasnturk/vitrin"><svg class="ico"><use href="#i-github"/></svg>Vedi su GitHub</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div class="footer-top">
+        <a class="brand" href="#top"><img src="../assets/logo.svg" alt="" width="26" height="26"><span>Vitrin</span></a>
+        <a class="version" href="https://github.com/ardasnturk/vitrin/blob/main/CHANGELOG.md">v2.1.0</a>
+        <nav aria-label="Piè di pagina">
+          <a href="https://github.com/ardasnturk/vitrin">GitHub</a>
+          <a href="https://github.com/ardasnturk/vitrin/releases">Release</a>
+          <a href="https://github.com/ardasnturk/vitrin/blob/main/CHANGELOG.md">Changelog</a>
+          <a href="https://github.com/ardasnturk/vitrin/blob/main/CONTRIBUTING.md">Contribuisci</a>
+          <a href="https://github.com/ardasnturk/vitrin/blob/main/SECURITY.md">Sicurezza</a>
+          <a href="https://github.com/ardasnturk/vitrin/blob/main/LICENSE">Licenza MIT</a>
+        </nav>
+      </div>
+      <p class="legal">App Store, App Store Connect, iPhone, iPad, Mac, Apple Watch, Apple TV e Apple Vision Pro sono marchi di Apple Inc. Vitrin non è affiliato ad Apple.</p>
+    </div>
+  </footer>
+
+  <script src="../script.js" defer></script>
+</body>
+</html>

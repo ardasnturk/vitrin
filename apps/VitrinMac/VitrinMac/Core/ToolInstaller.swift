@@ -24,7 +24,7 @@ enum LocalTool: String, CaseIterable, Sendable {
         }
     }
 
-    /// The tool an install hint from the CLI names; nil for hints that belong to a project (`bundle install`).
+    /// The tool an install hint from the CLI names; nil for hints that belong to a project (`pod install`).
     init?(hint: String) {
         if hint.contains("claude-code") { self = .claude }
         else if hint.hasSuffix(" asc") { self = .asc }

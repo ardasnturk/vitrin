@@ -37,9 +37,8 @@ describe('doctor helpers', () => {
   });
 
   it('needs no ASC key when asc has its own login, unless a Vitrin key is half set', () => {
-    expect(missingUploadKeys({}, ['ios'], { ascLogin: true })).toEqual([]);
-    expect(missingUploadKeys({ ASC_KEY_ID: 'a' }, ['ios'], { ascLogin: true }).map((k) => k.name)).toEqual(['ASC_ISSUER_ID', 'ASC_KEY_PATH']);
-    expect(missingUploadKeys({}, ['ios', 'android'], { ascLogin: true }).map((k) => k.name)).toEqual(['GOOGLE_PLAY_JSON_KEY_PATH']);
+    expect(missingUploadKeys({}, { ascLogin: true })).toEqual([]);
+    expect(missingUploadKeys({ ASC_KEY_ID: 'a' }, { ascLogin: true }).map((k) => k.name)).toEqual(['ASC_ISSUER_ID', 'ASC_KEY_PATH']);
   });
 });
 

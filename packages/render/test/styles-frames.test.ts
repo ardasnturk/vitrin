@@ -33,8 +33,7 @@ const T = (id: string, family: RenderTarget['family'], w: number, h: number, sca
   kind,
   label: id,
   family,
-  store: family.startsWith('android') ? 'google-play' : 'app-store',
-  platform: family.startsWith('android') ? 'android' : 'ios',
+  platform: 'ios',
   width: w * scale,
   height: h * scale,
   logical: { width: w, height: h, scale },
@@ -47,8 +46,6 @@ const T = (id: string, family: RenderTarget['family'], w: number, h: number, sca
 const PORTRAIT: Array<[RenderTarget, DeviceFamily, number]> = [
   [T('iphone-6.9', 'iphone', 440, 956, 3), 'iphone', 2622 / 1206],
   [T('ipad-13', 'ipad', 1032, 1376, 2), 'ipad', 2752 / 2064],
-  [T('play-phone', 'android-phone', 360, 640, 3), 'android-phone', 2400 / 1080],
-  [T('play-tablet-10', 'android-tablet', 800, 1280, 2), 'android-tablet', 2560 / 1600],
   [T('duo-outer', 'duo', 699, 1017, 2), 'duo', 2034 / 1398],
 ];
 
@@ -182,7 +179,7 @@ describe('style presets', () => {
 });
 
 describe('device frames', () => {
-  const families: DeviceFamily[] = ['iphone', 'ipad', 'duo', 'mac', 'tv', 'vision', 'watch', 'android-phone', 'android-tablet'];
+  const families: DeviceFamily[] = ['iphone', 'ipad', 'duo', 'mac', 'tv', 'vision', 'watch'];
 
   it('draws a frame for every family with the capture filling the screen', () => {
     for (const family of families) {
@@ -197,7 +194,6 @@ describe('device frames', () => {
 
   it('has family-specific hardware cues', () => {
     expect(DeviceFrame({ family: 'iphone', width: 400, aspect: 2.17, src: 'x' })).toContain('border-radius:999px'); // Dynamic Island
-    expect(DeviceFrame({ family: 'android-phone', width: 400, aspect: 2.2, src: 'x' })).toContain('border-radius:50%'); // punch-hole
     expect(DeviceFrame({ family: 'mac', width: 800, aspect: 0.625, src: 'x', variant: { mac: 'window' } })).toContain('#FF5F57'); // traffic lights
     expect(DeviceFrame({ family: 'watch', width: 200, aspect: 1.22, src: 'x' })).toContain('repeating-linear-gradient'); // crown
   });
@@ -332,11 +328,6 @@ describe('layout math', () => {
         expect(html).toContain('class="w"');
       }
     }
-    const fg = buildPage({ target: T('play-feature-graphic', 'any', 1024, 500, 1, 'creative'), locale: 'en-US', ad: { id: 'x', name: 'x', rationale: '', differentiation: '', preset: 'midnight-glow-pro' }, archetype: 'hero', headline: 'Keep your *streak*', subheadline: '', badges: [], screens: [], appName: 'Ritim' });
-    expect(fg).toContain('data-layout="feature-graphic"');
-    expect(fg).not.toContain('class="device');
-    const icon = buildPage({ target: T('play-icon', 'any', 512, 512, 1, 'creative'), locale: 'en-US', ad: { id: 'x', name: 'x', rationale: '', differentiation: '', preset: 'midnight-glow-pro' }, archetype: 'hero', headline: 'x', subheadline: '', badges: [], screens: [], appName: 'Ritim' });
-    expect(icon).toContain('data-layout="icon"');
   });
 
   it('renders the new archetypes and marks the cross-canvas bridge', () => {

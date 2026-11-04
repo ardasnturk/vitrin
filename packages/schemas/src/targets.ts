@@ -3,23 +3,21 @@ import { z } from 'zod';
 export const TargetKindEnum = z.enum(['screenshot', 'preview', 'creative', 'event']);
 
 /** Device family a target is rendered for (drives device frames and raw-capture lookup). */
-export const TargetFamilyEnum = z.enum(['iphone', 'ipad', 'duo', 'mac', 'tv', 'vision', 'watch', 'android-phone', 'android-tablet', 'any']);
+export const TargetFamilyEnum = z.enum(['iphone', 'ipad', 'duo', 'mac', 'tv', 'vision', 'watch', 'any']);
 export type TargetFamily = z.infer<typeof TargetFamilyEnum>;
 
-export const StoreEnum = z.enum(['app-store', 'google-play']);
-export type Store = z.infer<typeof StoreEnum>;
-
 /** Platforms Vitrin can detect in a project and produce store assets for. */
-export const PlatformEnum = z.enum(['ios', 'macos', 'watchos', 'tvos', 'visionos', 'android']);
+export const PlatformEnum = z.enum(['ios', 'macos', 'watchos', 'tvos', 'visionos']);
 export type Platform = z.infer<typeof PlatformEnum>;
+
+/** A platform list read from a file. Android support was removed in 2.1: an older file may still name it, and the entry is dropped. */
+export const PlatformList = z.preprocess((v) => (Array.isArray(v) ? v.filter((p) => p !== 'android') : v), z.array(PlatformEnum));
 
 export const RenderTarget = z.object({
   id: z.string(),
   kind: TargetKindEnum,
   label: z.string(),
   family: TargetFamilyEnum,
-  /** Store the asset is uploaded to. */
-  store: StoreEnum.default('app-store'),
   /** Platform the asset belongs to; only targets whose platform the app ships on are enabled. */
   platform: PlatformEnum.default('ios'),
   width: z.number().int(),

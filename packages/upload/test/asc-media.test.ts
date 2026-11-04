@@ -185,7 +185,7 @@ describe('data/asc-display-types.json', () => {
   });
 
   it('covers every App Store target and none of the guessed names', () => {
-    const apple = loadTargets().filter((t) => t.store === 'app-store');
+    const apple = loadTargets();
     for (const t of apple) expect(file.targets[t.id], t.id).toBeDefined();
     for (const t of apple) expect(t.assetLibraryDisplayClass, t.id).toBeUndefined();
     const all = JSON.stringify(file.targets);
@@ -205,7 +205,7 @@ describe('data/asc-display-types.json', () => {
   });
 
   it('names every preview file with its classic PreviewType, including Vision Pro', () => {
-    const previews = loadTargets().filter((t) => t.kind === 'preview' && t.store === 'app-store');
+    const previews = loadTargets().filter((t) => t.kind === 'preview');
     expect(previews.map((t) => t.id)).toContain('preview-vision');
     expect(T('preview-vision')).toMatchObject({ width: 3840, height: 2160, platform: 'visionos', family: 'vision', defaultEnabled: false });
     for (const t of previews) expect(PREVIEW_FILE_DEVICE[t.id], t.id).toBe(file.targets[t.id]?.previewType);

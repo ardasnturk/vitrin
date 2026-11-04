@@ -33,7 +33,5 @@
 	<string>© 2026 Arda Sentürk</string>
 	<key>NSUserNotificationsUsageDescription</key>
 	<string>Vitrin tells you when a stage finished, when Claude asks a question and when a new version is available.</string>
-	<key>SUFeedURL</key>
-	<string>https://github.com/ardasnturk/vitrin/releases.atom</string>
 </dict>
 </plist>

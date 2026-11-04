@@ -1,7 +1,7 @@
 /*
- * Vitrin screen kit — Android, Material Design 3 (Jetpack Compose / Material Components defaults).
- * <link rel="stylesheet" href="kit/material.css">. Set the tokens from the app's theme (colors.xml, Theme.kt,
- * MaterialTheme colorScheme, Flutter ThemeData) — a dynamic-color app should use its seed's tonal palette.
+ * Vitrin screen kit — Material Design 3, for Flutter and React Native apps that draw Material widgets on iOS.
+ * <link rel="stylesheet" href="kit/material.css">. Set the tokens from the app's theme (Flutter ThemeData or the
+ * React Native theme) — a seeded color scheme should use its tonal palette.
  */
 :root {
   --primary: #6750A4; --on-primary: #fff; --primary-container: #EADDFF; --on-primary-container: #21005D;

@@ -53,21 +53,26 @@ describe('inventory, approval and change detection', () => {
     expect(paths).toContain('metadata/store/screenshots/en-US/01_shot1_iphone-6.3.png');
     expect(paths).toContain('metadata/store/app-previews/tr/01_IPHONE_67.mp4');
     expect(paths).toContain('metadata/creative/en-US/header_header.png');
-    expect(paths).toContain('metadata/store/metadata/android/en-US/images/phoneScreenshots/1_shot1.png');
     expect(paths.some((p) => p.includes('.remotion.'))).toBe(false);
     expect(inv.files.every((f) => /^[0-9a-f]{64}$/.test(f.sha256))).toBe(true);
     expect(inv.metadataJson.map((f) => f.path)).toEqual(expect.arrayContaining(['metadata/listing/en-US.json', 'metadata/listing/app.json', 'metadata/cpp-suggestions.json', 'metadata/shots.json']));
 
     const shot = inv.items.find((i) => i.id === 'metadata/store/screenshots/tr/02_shot2_iphone-6.9.png')!;
-    expect(shot).toMatchObject({ kind: 'screenshot', store: 'app-store', platform: 'ios', locale: 'tr', target: 'iphone-6.9', order: 2 });
+    expect(shot).toMatchObject({ kind: 'screenshot', platform: 'ios', locale: 'tr', target: 'iphone-6.9', order: 2 });
     expect(inv.items.find((i) => i.id.endsWith('01_IPHONE_67.mp4'))).toMatchObject({ kind: 'preview', target: 'preview-iphone', durationSec: 2 });
     expect(inv.items.find((i) => i.id.endsWith('event-card_event-launch-card.png'))).toMatchObject({ kind: 'event', target: 'event-card' });
     expect(inv.items.find((i) => i.id === 'event/launch')?.files).toContain('metadata/creative/en-US/event-card_event-launch-card.png');
-    expect(inv.items.find((i) => i.id === 'cpp/students')).toMatchObject({ kind: 'cpp', store: 'app-store' });
-    const play = inv.items.filter((i) => i.store === 'google-play');
-    expect(play.find((i) => i.kind === 'screenshot')).toMatchObject({ platform: 'android', locale: 'en-US' });
-    expect(play.find((i) => i.id === 'metadata/google-play/en-US')?.fields?.map((f) => f.key)).toEqual(['changelogs/42', 'full_description', 'short_description', 'title']);
-    expect(summarize(inv).lines.join('\n')).toMatch(/Google Play · android · en-US: .*2 screenshots/);
+    expect(inv.items.find((i) => i.id === 'cpp/students')).toMatchObject({ kind: 'cpp' });
+    expect(summarize(inv).lines.join('\n')).toMatch(/App Store · ios · en-US: /);
+  });
+
+  it('never reviews or uploads what an older Vitrin left for Google Play', async () => {
+    const clean = await buildInventory(ctx);
+    const old = await makeFixture({ oldPlayFiles: true });
+    const inv = await buildInventory(await createContext({ cwd: old.root }));
+    expect(inv.files.map((f) => f.path)).toEqual(clean.files.map((f) => f.path));
+    expect(inv.metadataJson.map((f) => f.path)).toEqual(clean.metadataJson.map((f) => f.path));
+    expect(inv.items.map((i) => i.id)).toEqual(clean.items.map((i) => i.id));
   });
 
   it('exports and covers the App Store text files from metadata/listing', async () => {
@@ -159,7 +164,7 @@ describe('inventory, approval and change detection', () => {
 
 describe('approval and validation', () => {
   it('refuses to approve while the last validation found errors, and approves once it passes', async () => {
-    const fx = await makeFixture({ android: false });
+    const fx = await makeFixture();
     try {
       const ctx = await createContext({ cwd: fx.root });
       const inv = await buildInventory(ctx);

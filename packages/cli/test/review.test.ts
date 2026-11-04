@@ -25,7 +25,7 @@ describe('review report', () => {
   it('shows every screenshot of every locale × target with relative, lazy-loaded paths', async () => {
     const inv = await buildInventory(ctx);
     const shots = inv.items.filter((i) => i.kind === 'screenshot');
-    expect(shots.length).toBe(14); // 2 locales × 2 targets × 3 + 2 Play screenshots
+    expect(shots.length).toBe(12); // 2 locales × 2 targets × 3
     for (const s of shots) expect(html).toContain(`data-item="${s.id}"`);
     expect(html).toContain('src="store/screenshots/tr/03_shot3_iphone-6.9.png" loading="lazy"');
     expect(html).not.toContain(fx.root); // self-contained, relative paths only
@@ -42,9 +42,7 @@ describe('review report', () => {
     expect(html).toContain('Study habits');
     expect(html).toContain('20 / 30 chars'); // name "Ritim: Habit Tracker"
     expect(html).toContain('49 / 100 bytes'); // keywords
-    expect(html).toContain('Google Play › Android ›');
-    expect(html).toContain('Short description');
-    expect(html).toContain('/ 80 chars');
+    expect(html).toContain('App Store › iOS / iPadOS ›');
     expect(html).toContain('Search result');
     expect(html).toContain('Product page');
   });
@@ -55,7 +53,6 @@ describe('review report', () => {
     const tr = html.slice(html.indexOf('data-item="metadata/app-store/tr"'));
     expect(tr.slice(0, tr.indexOf('data-reject'))).toContain('text.subtitle-duplicate');
     expect(html).toContain('What will be uploaded');
-    expect(html).toContain('Google Play · fastlane supply');
     expect(html).toContain('App Asset Library · only with --creatives');
     expect(html).toMatch(/Overall hash: <span class="hash" id="overall-hash">[0-9a-f]{64}</);
     expect(existsSync(ctx.paths.reviewSnapshot)).toBe(true);
@@ -104,7 +101,7 @@ describe('review server', () => {
     expect((await vid.arrayBuffer()).byteLength).toBe(4);
     const state = await (await fetch(new URL('/api/state', server.url))).json();
     expect(state.overallHash).toMatch(/^[0-9a-f]{64}$/);
-    expect(state.items.some((i: { id: string }) => i.id === 'metadata/google-play/en-US')).toBe(true);
+    expect(state.items.some((i: { id: string }) => i.id === 'metadata/app-store/en-US')).toBe(true);
   });
 
   it('rejects path traversal, secrets, files outside the served trees and foreign hosts', async () => {
@@ -144,12 +141,12 @@ describe('review server', () => {
     expect(res.status).toBe(200);
     const approval = ApprovalManifest.parse(JSON.parse(readFileSync(ctx.paths.approval, 'utf8')));
     expect(approval).toMatchObject({ status: 'approved', via: 'review-server' });
-    expect(approval.files.some((f) => f.path === 'metadata/store/metadata/android/en-US/title.txt')).toBe(true);
+    expect(approval.files.some((f) => f.path === 'metadata/store/metadata/en-US/name.txt')).toBe(true);
     await expect(server.decision).resolves.toMatchObject({ kind: 'approved', overallHash: approval.overallHash });
   });
 
   it('reject writes review-feedback.json and the review brief', async () => {
-    const fx2 = await makeFixture({ android: false });
+    const fx2 = await makeFixture();
     const ctx2 = await createContext({ cwd: fx2.root });
     const s2 = await startReviewServer(ctx2, { port: 0 });
     try {
@@ -227,7 +224,7 @@ describe('upload approval gate (cli)', () => {
   }, 120_000);
 
   it('vitrin all stops after review until the content is approved', async () => {
-    const fx = await makeFixture({ android: false });
+    const fx = await makeFixture();
     const ctx = await createContext({ cwd: fx.root });
     expect(await approvalStage(ctx)).toBe(2);
     await recordApproval(ctx, await buildInventory(ctx), 'cli');

@@ -114881,70 +114881,6 @@
         }
       }
     },
-    "fix.useDeliver" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use fastlane deliver"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fastlane deliver kullan"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fastlane deliver verwenden"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usar fastlane deliver"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Utiliser fastlane deliver"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usa fastlane deliver"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fastlane deliver を使う"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fastlane deliver 사용"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usar fastlane deliver"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "使用 fastlane deliver"
-          }
-        }
-      }
-    },
     "flow.accountSettings" : {
       "localizations" : {
         "en" : {
@@ -132614,61 +132550,61 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A dry run first, then the upload through the asc CLI or fastlane, and the review submission."
+            "value" : "A dry run first, then the upload through the asc CLI, and the review submission."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Önce deneme planı, sonra asc CLI ya da fastlane ile yükleme ve incelemeye gönderme."
+            "value" : "Önce deneme planı, sonra asc CLI ile yükleme ve incelemeye gönderme."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zuerst ein Testlauf, dann der Upload über die asc CLI oder fastlane und die Einreichung zur Prüfung."
+            "value" : "Zuerst ein Testlauf, dann der Upload über die asc CLI und die Einreichung zur Prüfung."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Primero una simulación, después la subida mediante la CLI de asc o fastlane y el envío a revisión."
+            "value" : "Primero una simulación, después la subida mediante la CLI de asc y el envío a revisión."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "D’abord une simulation, puis l’envoi via la CLI asc ou fastlane, et la soumission à la revue."
+            "value" : "D’abord une simulation, puis l’envoi via la CLI asc, et la soumission à la revue."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prima una simulazione, poi il caricamento tramite la CLI asc o fastlane e l’invio in revisione."
+            "value" : "Prima una simulazione, poi il caricamento tramite la CLI asc e l’invio in revisione."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "まずドライランを行い、続いて asc CLI または fastlane でアップロードし、審査に提出します。"
+            "value" : "まずドライランを行い、続いて asc CLI でアップロードし、審査に提出します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "먼저 드라이런을 한 다음 asc CLI 또는 fastlane으로 업로드하고 심사에 제출합니다."
+            "value" : "먼저 드라이런을 한 다음 asc CLI로 업로드하고 심사에 제출합니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Primeiro uma simulação, depois o envio pela CLI do asc ou pelo fastlane e o envio para análise."
+            "value" : "Primeiro uma simulação, depois o envio pela CLI do asc e o envio para análise."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "先试运行，然后通过 asc CLI 或 fastlane 上传，最后提交审核。"
+            "value" : "先试运行，然后通过 asc CLI 上传，最后提交审核。"
           }
         }
       }
@@ -148161,70 +148097,6 @@
         }
       }
     },
-    "updates.appcast" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appcast URL"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appcast adresi"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appcast-URL"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "URL del appcast"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "URL Appcast"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "URL Appcast"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appcast URL"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appcast URL"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "URL do appcast"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appcast URL"
-          }
-        }
-      }
-    },
     "updates.availableBody" : {
       "localizations" : {
         "en" : {
@@ -148349,6 +148221,134 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vitrin 有新版本"
+          }
+        }
+      }
+    },
+    "updates.banner" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version {version} is ready"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "{version} sürümü hazır"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version {version} ist bereit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La versión {version} está lista"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La version {version} est prête"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La versione {version} è pronta"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バージョン {version} の準備ができました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "버전 {version} 준비 완료"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A versão {version} está pronta"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本 {version} 已就绪"
+          }
+        }
+      }
+    },
+    "updates.check" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check for Updates…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncellemeleri denetle…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach Updates suchen…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar actualizaciones…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher des mises à jour…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controlla aggiornamenti…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデートを確認…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 확인…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificar atualizações…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检查更新…"
           }
         }
       }
@@ -148550,61 +148550,637 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Releases on GitHub (ardasnturk/vitrin) carry the CLI tarball and SHA256SUMS. Each app version installs its own Vitrin CLI with the button here, or update the Claude Code plugin."
+            "value" : "Each app version installs its own Vitrin CLI after it updates. Releases on GitHub (ardasnturk/vitrin) carry the CLI tarball and SHA256SUMS."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GitHub sürümleri (ardasnturk/vitrin) CLI tarball'ını ve SHA256SUMS'u taşır. Her uygulama sürümü kendi Vitrin CLI'ını buradaki butonla kurar; Claude Code eklentisini güncellemek de yeterlidir."
+            "value" : "Her uygulama sürümü, güncellendikten sonra kendi Vitrin CLI'ını kurar. GitHub sürümleri (ardasnturk/vitrin) CLI tarball'ını ve SHA256SUMS'u taşır."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GitHub-Releases (ardasnturk/vitrin) enthalten das CLI-Tarball und SHA256SUMS. Jede App-Version installiert ihre Vitrin CLI mit der Taste hier, oder aktualisieren Sie das Claude-Code-Plugin."
+            "value" : "Jede App-Version installiert nach dem Update ihre eigene Vitrin CLI. GitHub-Releases (ardasnturk/vitrin) enthalten das CLI-Tarball und SHA256SUMS."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las versiones de GitHub (ardasnturk/vitrin) incluyen el tarball de la CLI y SHA256SUMS. Cada versión de la app instala su Vitrin CLI con el botón de aquí, o actualiza el plugin de Claude Code."
+            "value" : "Cada versión de la app instala su propia Vitrin CLI tras actualizarse. Las versiones de GitHub (ardasnturk/vitrin) incluyen el tarball de la CLI y SHA256SUMS."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les versions GitHub (ardasnturk/vitrin) contiennent le tarball de la CLI et SHA256SUMS. Chaque version de l'app installe sa Vitrin CLI avec le bouton ici, ou mettez à jour le plugin Claude Code."
+            "value" : "Chaque version de l'app installe sa propre Vitrin CLI après sa mise à jour. Les versions GitHub (ardasnturk/vitrin) contiennent le tarball de la CLI et SHA256SUMS."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le release su GitHub (ardasnturk/vitrin) includono il tarball della CLI e SHA256SUMS. Ogni versione dell'app installa la sua Vitrin CLI con il pulsante qui, oppure aggiorna il plugin di Claude Code."
+            "value" : "Ogni versione dell'app installa la propria Vitrin CLI dopo l'aggiornamento. Le release su GitHub (ardasnturk/vitrin) includono il tarball della CLI e SHA256SUMS."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GitHub のリリース(ardasnturk/vitrin)には CLI の tarball と SHA256SUMS が含まれます。アプリの各バージョンは、ここのボタンで対応する Vitrin CLI をインストールします。Claude Code プラグインの更新でも構いません。"
+            "value" : "アプリの各バージョンは、更新後に対応する Vitrin CLI をインストールします。GitHub のリリース(ardasnturk/vitrin)には CLI の tarball と SHA256SUMS が含まれます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GitHub 릴리스(ardasnturk/vitrin)에는 CLI tarball과 SHA256SUMS가 포함됩니다. 앱의 각 버전은 여기 버튼으로 자신의 Vitrin CLI를 설치하며, Claude Code 플러그인을 업데이트해도 됩니다."
+            "value" : "앱의 각 버전은 업데이트 후 자신의 Vitrin CLI를 설치합니다. GitHub 릴리스(ardasnturk/vitrin)에는 CLI tarball과 SHA256SUMS가 포함됩니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "As versões no GitHub (ardasnturk/vitrin) trazem o tarball da CLI e SHA256SUMS. Cada versão do app instala sua Vitrin CLI com o botão aqui, ou atualize o plugin do Claude Code."
+            "value" : "Cada versão do app instala sua própria Vitrin CLI depois de atualizar. As versões no GitHub (ardasnturk/vitrin) trazem o tarball da CLI e SHA256SUMS."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GitHub 发布版本(ardasnturk/vitrin)包含 CLI tarball 和 SHA256SUMS。每个应用版本可通过此处的按钮安装对应的 Vitrin CLI,也可以更新 Claude Code 插件。"
+            "value" : "每个应用版本更新后都会安装对应的 Vitrin CLI。GitHub 发布版本(ardasnturk/vitrin)包含 CLI tarball 和 SHA256SUMS。"
+          }
+        }
+      }
+    },
+    "updates.downloading" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Downloading the update…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncelleme indiriliyor…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update wird geladen…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descargando la actualización…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Téléchargement de la mise à jour…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download dell'aggiornamento…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデートをダウンロード中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 다운로드 중…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baixando a atualização…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在下载更新…"
+          }
+        }
+      }
+    },
+    "updates.fail.damaged" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The download is damaged. Nothing was installed."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İndirilen dosya bozuk. Hiçbir şey kurulmadı."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Download ist beschädigt. Es wurde nichts installiert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La descarga está dañada. No se ha instalado nada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le téléchargement est endommagé. Rien n'a été installé."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il download è danneggiato. Non è stato installato nulla."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダウンロードしたファイルが破損しています。何もインストールされていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다운로드한 파일이 손상되었습니다. 아무것도 설치되지 않았습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O download está danificado. Nada foi instalado."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下载的文件已损坏。未安装任何内容。"
+          }
+        }
+      }
+    },
+    "updates.fail.generic" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installing the update failed. Try again, or download it from GitHub."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncelleme kurulamadı. Yeniden deneyin ya da GitHub'dan indirin."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Update konnte nicht installiert werden. Versuchen Sie es erneut oder laden Sie es von GitHub."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo instalar la actualización. Inténtalo de nuevo o descárgala de GitHub."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'installation de la mise à jour a échoué. Réessayez ou téléchargez-la sur GitHub."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installazione dell'aggiornamento non riuscita. Riprova o scaricalo da GitHub."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデートをインストールできませんでした。もう一度試すか、GitHub からダウンロードしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트를 설치하지 못했습니다. 다시 시도하거나 GitHub에서 다운로드하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível instalar a atualização. Tente novamente ou baixe no GitHub."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安装更新失败。请重试,或从 GitHub 下载。"
+          }
+        }
+      }
+    },
+    "updates.fail.location" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vitrin can't replace itself where it is. Move it to Applications, or use the download page that just opened."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vitrin bulunduğu yerde kendini değiştiremiyor. Uygulamalar klasörüne taşıyın ya da az önce açılan indirme sayfasını kullanın."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vitrin kann sich an diesem Ort nicht ersetzen. Verschieben Sie es nach „Programme“ oder nutzen Sie die eben geöffnete Download-Seite."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vitrin no puede reemplazarse en esta ubicación. Muévela a Aplicaciones o usa la página de descarga que se acaba de abrir."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vitrin ne peut pas se remplacer à cet emplacement. Déplacez-la dans Applications ou utilisez la page de téléchargement qui vient de s'ouvrir."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vitrin non può sostituirsi in questa posizione. Spostala in Applicazioni o usa la pagina di download appena aperta."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vitrin は現在の場所では自身を置き換えられません。アプリケーションフォルダに移動するか、開いたダウンロードページをご利用ください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vitrin은 현재 위치에서 자신을 교체할 수 없습니다. 응용 프로그램으로 옮기거나 방금 열린 다운로드 페이지를 사용하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Vitrin não consegue se substituir neste local. Mova-o para Aplicativos ou use a página de download que acabou de abrir."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vitrin 无法在当前位置替换自身。请将其移到“应用程序”,或使用刚打开的下载页面。"
+          }
+        }
+      }
+    },
+    "updates.fail.network" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The update couldn't be downloaded. Check your connection and try again."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncelleme indirilemedi. Bağlantınızı denetleyip yeniden deneyin."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Update konnte nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo descargar la actualización. Comprueba la conexión e inténtalo de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de télécharger la mise à jour. Vérifiez votre connexion et réessayez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile scaricare l'aggiornamento. Controlla la connessione e riprova."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデートをダウンロードできませんでした。接続を確認してもう一度お試しください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트를 다운로드할 수 없습니다. 연결을 확인하고 다시 시도하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível baixar a atualização. Verifique a conexão e tente novamente."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法下载更新。请检查网络连接后重试。"
+          }
+        }
+      }
+    },
+    "updates.fail.signature" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The update's signature couldn't be verified. Nothing was installed."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncellemenin imzası doğrulanamadı. Hiçbir şey kurulmadı."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Signatur des Updates konnte nicht bestätigt werden. Es wurde nichts installiert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo verificar la firma de la actualización. No se ha instalado nada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La signature de la mise à jour n'a pas pu être vérifiée. Rien n'a été installé."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile verificare la firma dell'aggiornamento. Non è stato installato nulla."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデートの署名を確認できませんでした。何もインストールされていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 서명을 확인할 수 없습니다. 아무것도 설치되지 않았습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível verificar a assinatura da atualização. Nada foi instalado."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法验证更新的签名。未安装任何内容。"
+          }
+        }
+      }
+    },
+    "updates.fail.unsigned" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This copy of Vitrin isn't a signed release, so it can't update itself. Download the update from GitHub."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu Vitrin kopyası imzalı bir sürüm değil, kendini güncelleyemez. Güncellemeyi GitHub'dan indirin."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Vitrin-Kopie ist keine signierte Version und kann sich nicht selbst aktualisieren. Laden Sie das Update von GitHub."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta copia de Vitrin no es una versión firmada y no puede actualizarse sola. Descarga la actualización de GitHub."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette copie de Vitrin n'est pas une version signée et ne peut pas se mettre à jour. Téléchargez la mise à jour sur GitHub."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa copia di Vitrin non è una versione firmata e non può aggiornarsi da sola. Scarica l'aggiornamento da GitHub."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この Vitrin は署名済みのリリースではないため、自動更新できません。GitHub からダウンロードしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 Vitrin은 서명된 릴리스가 아니어서 스스로 업데이트할 수 없습니다. GitHub에서 업데이트를 다운로드하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta cópia do Vitrin não é uma versão assinada e não pode se atualizar. Baixe a atualização no GitHub."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 Vitrin 副本不是已签名的发布版本,无法自行更新。请从 GitHub 下载更新。"
+          }
+        }
+      }
+    },
+    "updates.install" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Install and Relaunch"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kur ve yeniden başlat"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installieren und neu starten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar y reiniciar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installer et relancer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installa e riavvia"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インストールして再起動"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설치 후 다시 시작"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar e reabrir"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安装并重新打开"
+          }
+        }
+      }
+    },
+    "updates.installing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installing the update…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncelleme kuruluyor…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update wird installiert…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalando la actualización…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installation de la mise à jour…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installazione dell'aggiornamento…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデートをインストール中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 설치 중…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalando a atualização…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在安装更新…"
           }
         }
       }
@@ -148733,70 +149309,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "打开发布页面"
-          }
-        }
-      }
-    },
-    "updates.sparkleHint" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sparkle is not bundled yet: in-app updates need the Sparkle framework, an EdDSA key and a signed, notarized build. Until then this app checks GitHub and opens the release page."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sparkle henüz paketlenmedi: uygulama içi güncelleme için Sparkle çerçevesi, bir EdDSA anahtarı ve imzalı, noter onaylı bir derleme gerekir. O zamana kadar bu uygulama GitHub’ı denetler ve sürüm sayfasını açar."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sparkle ist noch nicht eingebunden: In-App-Updates benötigen das Sparkle-Framework, einen EdDSA-Schlüssel und einen signierten, notarisierten Build. Bis dahin prüft diese App GitHub und öffnet die Release-Seite."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sparkle aún no está incluido: las actualizaciones dentro de la app necesitan el framework Sparkle, una clave EdDSA y una compilación firmada y notarizada. Hasta entonces, esta app consulta GitHub y abre la página del lanzamiento."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sparkle n’est pas encore intégré : les mises à jour dans l’app nécessitent le framework Sparkle, une clé EdDSA et un build signé et notarisé. D’ici là, cette app consulte GitHub et ouvre la page de la version."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sparkle non è ancora incluso: gli aggiornamenti nell’app richiedono il framework Sparkle, una chiave EdDSA e una build firmata e notarizzata. Fino ad allora questa app controlla GitHub e apre la pagina di rilascio."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sparkle はまだ組み込まれていません。アプリ内アップデートには、Sparkle フレームワーク、EdDSA キー、署名と公証済みのビルドが必要です。それまでは、GitHub を確認してリリースページを開きます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sparkle이 아직 포함되어 있지 않습니다. 앱 내 업데이트에는 Sparkle 프레임워크, EdDSA 키, 서명 및 공증된 빌드가 필요합니다. 그때까지는 GitHub를 확인하고 릴리스 페이지를 엽니다."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O Sparkle ainda não está incluído: as atualizações dentro do app exigem o framework Sparkle, uma chave EdDSA e um build assinado e notarizado. Até lá, este app consulta o GitHub e abre a página do lançamento."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "尚未内置 Sparkle：App 内更新需要 Sparkle 框架、EdDSA 密钥以及经过签名和公证的构建版本。在此之前，本 App 会检查 GitHub 并打开发布页面。"
           }
         }
       }
@@ -148934,61 +149446,61 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "asc: Apple’s App Store Connect CLI (brew install asc); no Ruby."
+            "value" : "asc: Apple’s App Store Connect CLI (brew install asc)."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "asc: Apple’ın App Store Connect CLI’ı (brew install asc); Ruby gerekmez."
+            "value" : "asc: Apple’ın App Store Connect CLI’ı (brew install asc)."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "asc: Apples App-Store-Connect-CLI (brew install asc); kein Ruby."
+            "value" : "asc: Apples App-Store-Connect-CLI (brew install asc)."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "asc: la CLI de App Store Connect de Apple (brew install asc); sin Ruby."
+            "value" : "asc: la CLI de App Store Connect de Apple (brew install asc)."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "asc : la CLI d’App Store Connect d’Apple (brew install asc) ; sans Ruby."
+            "value" : "asc : la CLI d’App Store Connect d’Apple (brew install asc)."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "asc: la CLI di App Store Connect di Apple (brew install asc); senza Ruby."
+            "value" : "asc: la CLI di App Store Connect di Apple (brew install asc)."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "asc: Apple の App Store Connect 用 CLI (brew install asc)。Ruby は不要です。"
+            "value" : "asc: Apple の App Store Connect 用 CLI (brew install asc)。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "asc: Apple의 App Store Connect CLI(brew install asc), Ruby 불필요."
+            "value" : "asc: Apple의 App Store Connect CLI(brew install asc)."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "asc: a CLI do App Store Connect da Apple (brew install asc); sem Ruby."
+            "value" : "asc: a CLI do App Store Connect da Apple (brew install asc)."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "asc：Apple 的 App Store Connect CLI（brew install asc）；无需 Ruby。"
+            "value" : "asc：Apple 的 App Store Connect CLI（brew install asc）。"
           }
         }
       }
@@ -149309,70 +149821,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "删除调研数据"
-          }
-        }
-      }
-    },
-    "upload.deliverHint" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fastlane deliver: needs Ruby and the project’s Gemfile (bundle install)."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fastlane deliver: Ruby ve projenin Gemfile’ı gerekir (bundle install)."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fastlane deliver: benötigt Ruby und das Gemfile des Projekts (bundle install)."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fastlane deliver: necesita Ruby y el Gemfile del proyecto (bundle install)."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fastlane deliver : nécessite Ruby et le Gemfile du projet (bundle install)."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fastlane deliver: richiede Ruby e il Gemfile del progetto (bundle install)."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fastlane deliver: Ruby とプロジェクトの Gemfile が必要です (bundle install)。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fastlane deliver: Ruby와 프로젝트의 Gemfile이 필요합니다(bundle install)."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fastlane deliver: exige Ruby e o Gemfile do projeto (bundle install)."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fastlane deliver：需要 Ruby 和项目的 Gemfile（bundle install）。"
           }
         }
       }

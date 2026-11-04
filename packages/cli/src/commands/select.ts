@@ -36,14 +36,13 @@ export const PLATFORM_LABEL: Record<Platform, string> = {
   watchos: 'Apple Watch (App Store)',
   tvos: 'Apple TV (App Store)',
   visionos: 'Apple Vision Pro (App Store)',
-  android: 'Android (Google Play)',
 };
 
 export const ASSET_LABEL: Record<AssetKind, string> = {
   metadata: 'Store metadata (name, subtitle, keywords, description)',
   screenshots: 'Screenshots',
   previews: 'App Preview videos',
-  creatives: 'Creatives (product page header, search result, Play feature graphic and icon)',
+  creatives: 'Creatives (product page header, search result)',
   events: 'In-App Event cards',
 };
 
@@ -272,7 +271,6 @@ export async function selectCommand(ctx: Ctx, opts: SelectOptions): Promise<numb
     const extra = locales.filter((l) => !known.includes(l));
     if (extra.length) log.warn(`Not localized in the project: ${extra.join(', ')}. The store listing can still be written in them; captured screens show the app's fallback language.`);
   }
-  // fastlane files (Google Play supply only) are written when the upload is prepared, not here.
   return EXIT.OK;
 }
 
@@ -280,15 +278,13 @@ export interface UploaderReport {
   /** Always `asc`: the asc CLI is the only App Store uploader. */
   chosen: Uploader;
   tools: UploaderTools;
-  /** fastlane is still needed for Google Play (supply). */
-  fastlaneNeededForPlay: boolean;
   /** One entry (asc); kept as a list so older readers of `vitrin uploader --json` keep working. */
   options: Array<{ uploader: Uploader; label: string; installed: boolean; install: string; note: string; warning?: string }>;
   recommended: Uploader;
 }
 
 /** Pure: the data behind `vitrin uploader --json`. */
-export function uploaderReport(config: VitrinConfig, tools: UploaderTools, platforms: Platform[]): UploaderReport {
+export function uploaderReport(config: VitrinConfig, tools: UploaderTools): UploaderReport {
   const login = tools.ascLogin ? '; signed in (asc auth login)' : '';
   const options: UploaderReport['options'] = [
     {
@@ -296,7 +292,7 @@ export function uploaderReport(config: VitrinConfig, tools: UploaderTools, platf
       label: 'asc CLI (App-Store-Connect-CLI)',
       installed: Boolean(tools.asc),
       install: 'brew install asc',
-      note: tools.asc ? `installed (${tools.asc})${login}` : 'not installed; one Homebrew command, no Ruby needed',
+      note: tools.asc ? `installed (${tools.asc})${login}` : 'not installed; one Homebrew command',
       // Installing is the user's call: they hear it before anything runs, and Claude installs only after a yes.
       warning: tools.asc
         ? undefined
@@ -305,13 +301,12 @@ export function uploaderReport(config: VitrinConfig, tools: UploaderTools, platf
           : 'The asc CLI is not installed on this computer. Tell the user it will be installed with `brew install asc` before the upload, and run it only after their yes.',
     },
   ];
-  return { chosen: uploaderOf(config), tools, fastlaneNeededForPlay: platforms.includes('android'), options, recommended: 'asc' };
+  return { chosen: uploaderOf(config), tools, options, recommended: 'asc' };
 }
 
 /** `vitrin uploader`: whether the asc CLI (the App Store uploader) is installed and signed in. */
 export async function uploaderCommand(ctx: Ctx, opts: { json?: boolean } = {}): Promise<number> {
-  const profile = await loadProfile(ctx).catch(() => undefined);
-  const report = uploaderReport(ctx.config, await detectUploaderTools(ctx.root), selectedPlatforms(ctx.config, profile).platforms);
+  const report = uploaderReport(ctx.config, await detectUploaderTools());
   if (opts.json ?? ctx.json) {
     process.stdout.write(JSON.stringify(report, null, 2) + '\n');
     return EXIT.OK;
@@ -321,6 +316,5 @@ export async function uploaderCommand(ctx: Ctx, opts: { json?: boolean } = {}): 
     log.info(`${o.installed ? pc.green('✓') : pc.dim('○')} ${o.uploader.padEnd(8)} ${o.label} — ${o.note}${o.installed ? '' : pc.dim(` → ${o.install}`)}`);
     if (o.warning) log.warn(`  ${o.warning}`);
   }
-  if (report.fastlaneNeededForPlay) log.dim('Google Play uploads use fastlane supply (Ruby, Bundler, fastlane).');
   return EXIT.OK;
 }

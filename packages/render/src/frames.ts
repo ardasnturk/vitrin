@@ -4,7 +4,7 @@
  * exposed separately (`deviceGeometry`) for the layout math and the tests.
  */
 
-export type DeviceFamily = 'iphone' | 'ipad' | 'duo' | 'mac' | 'tv' | 'vision' | 'watch' | 'android-phone' | 'android-tablet';
+export type DeviceFamily = 'iphone' | 'ipad' | 'duo' | 'mac' | 'tv' | 'vision' | 'watch';
 export type DeviceFinish = 'graphite' | 'titanium' | 'silver' | 'black';
 
 /** Families whose frame stays fully inside the canvas (a cropped TV or watch reads as a mistake). */
@@ -37,12 +37,8 @@ function border(family: DeviceFamily, v: FrameVariant): number {
   switch (family) {
     case 'iphone':
       return 0.041;
-    case 'android-phone':
-      return 0.03;
     case 'ipad':
       return 0.042;
-    case 'android-tablet':
-      return 0.036;
     case 'duo':
       return v.duo === 'inner' ? 0.024 : 0.034;
     case 'watch':
@@ -61,12 +57,8 @@ function screenRadius(family: DeviceFamily, v: FrameVariant): number {
   switch (family) {
     case 'iphone':
       return 0.128;
-    case 'android-phone':
-      return 0.085;
     case 'ipad':
       return 0.03;
-    case 'android-tablet':
-      return 0.032;
     case 'duo':
       return v.duo === 'inner' ? 0.045 : 0.085;
     case 'watch':
@@ -201,37 +193,16 @@ function iphone(o: DeviceOptions, g: FrameGeometry): string {
   );
 }
 
-function androidPhone(o: DeviceOptions, g: FrameGeometry): string {
-  const f = FINISH[o.finish === 'titanium' ? 'silver' : (o.finish ?? 'black')];
-  const W = g.width;
-  const H = g.height;
-  const band = W * 0.009;
-  const hole = g.screen.w * 0.036;
-  const camera = `<div style="position:absolute;left:50%;top:${r(g.screen.w * 0.03)}px;transform:translateX(-50%);width:${r(hole)}px;height:${r(hole)}px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#27304A 0%,#05070C 60%);box-shadow:0 0 0 ${r(hole * 0.12)}px #000"></div>`;
-  const t = Math.max(1.2, W * 0.007);
-  const buttons = [button('right', H * 0.2, H * 0.07, t, f.button), button('right', H * 0.31, H * 0.12, t, f.button)].join('');
-  // Flat aluminium edge, a uniform thin bezel and a centred punch-hole camera (Material hardware cues).
-  return wrap(
-    o,
-    g,
-    `${buttons}<div style="position:absolute;inset:0;border-radius:${r(g.radius)}px;background:${f.band};box-shadow:inset 0 0 0 ${r(Math.max(0.6, W * 0.002))}px ${f.edge}"></div>
-  <div style="position:absolute;inset:${r(band)}px;border-radius:${r(g.radius - band)}px;background:#060607"></div>
-  ${screenImg(o, g, camera)}`,
-  );
-}
-
-function tablet(o: DeviceOptions, g: FrameGeometry, android: boolean): string {
-  const f = FINISH[o.finish ?? (android ? 'black' : 'graphite')];
+function ipad(o: DeviceOptions, g: FrameGeometry): string {
+  const f = FINISH[o.finish ?? 'graphite'];
   const W = g.width;
   const H = g.height;
   const band = W * 0.006;
   const cam = W * 0.008;
-  // iPad Pro puts the front camera on the landscape edge (right bezel in portrait); Android tablets centre it on top.
-  const camera = android
-    ? `<div style="position:absolute;left:50%;top:${r(g.screen.y / 2 - cam / 2)}px;transform:translateX(-50%);width:${r(cam)}px;height:${r(cam)}px;border-radius:50%;background:#1A1E2A"></div>`
-    : `<div style="position:absolute;right:${r(g.screen.x / 2 - cam / 2)}px;top:${r(H / 2 - cam / 2)}px;width:${r(cam)}px;height:${r(cam)}px;border-radius:50%;background:#1A1E2A;box-shadow:0 0 0 ${r(cam * 0.25)}px #0B0C10"></div>`;
+  // iPad Pro puts the front camera on the landscape edge (right bezel in portrait).
+  const camera = `<div style="position:absolute;right:${r(g.screen.x / 2 - cam / 2)}px;top:${r(H / 2 - cam / 2)}px;width:${r(cam)}px;height:${r(cam)}px;border-radius:50%;background:#1A1E2A;box-shadow:0 0 0 ${r(cam * 0.25)}px #0B0C10"></div>`;
   const t = Math.max(1.2, W * 0.004);
-  const buttons = android ? button('right', H * 0.12, H * 0.05, t, f.button) + button('right', H * 0.19, H * 0.09, t, f.button) : button('top', W * 0.78, W * 0.07, t, f.button) + button('right', H * 0.06, H * 0.045, t, f.button) + button('right', H * 0.115, H * 0.045, t, f.button);
+  const buttons = button('top', W * 0.78, W * 0.07, t, f.button) + button('right', H * 0.06, H * 0.045, t, f.button) + button('right', H * 0.115, H * 0.045, t, f.button);
   return wrap(
     o,
     g,
@@ -356,12 +327,8 @@ export function DeviceFrame(o: DeviceOptions): string {
   switch (o.family) {
     case 'iphone':
       return iphone(o, g);
-    case 'android-phone':
-      return androidPhone(o, g);
     case 'ipad':
-      return tablet(o, g, false);
-    case 'android-tablet':
-      return tablet(o, g, true);
+      return ipad(o, g);
     case 'duo':
       return duo(o, g);
     case 'watch':

@@ -1,6 +1,6 @@
 import { generateKeyPairSync } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { AscApiError, AscClient, AscNetworkError, backoffMs, errorsFromBody, parseRetryAfterMs, parseServiceAccount, performUploadOperations, PlayApiError, PlayClient, playErrorDetail, retryDelayMs, retryPolicy } from '../src/index.js';
+import { AscApiError, AscClient, AscNetworkError, backoffMs, errorsFromBody, parseRetryAfterMs, performUploadOperations, retryDelayMs, retryPolicy } from '../src/index.js';
 
 // ---- retry policy (pure) ------------------------------------------------------------------------------------------
 
@@ -35,8 +35,6 @@ describe('retry policy', () => {
     expect(errorsFromBody('{"message":"no errors key"}')).toEqual([{ detail: '{"message":"no errors key"}' }]);
     expect(errorsFromBody('')).toEqual([{ detail: '(empty body)' }]);
     expect(errorsFromBody('x'.repeat(1000))[0]!.detail).toHaveLength(300);
-    expect(playErrorDetail('{"error":{"message":"Track not found"}}')).toBe('Track not found');
-    expect(playErrorDetail('<html>503</html>')).toBe('<html>503</html>');
   });
 });
 
@@ -184,20 +182,5 @@ describe('performUploadOperations', () => {
     await expect(performUploadOperations(ops, bytes, 'a.png', down.fetchImpl, { sleep: down.sleep, maxAttempts: 3 })).rejects.toThrow(/\(503\) after 3 attempts/);
     expect(down.calls).toHaveLength(3);
     expect(down.sleeps).toEqual([2000, 2000]);
-  });
-});
-
-// ---- PlayClient -------------------------------------------------------------------------------------------------------
-
-describe('PlayClient errors', () => {
-  const { privateKey: rsa } = generateKeyPairSync('rsa', { modulusLength: 2048 });
-  const account = parseServiceAccount(JSON.stringify({ type: 'service_account', private_key: rsa.export({ type: 'pkcs8', format: 'pem' }).toString(), client_email: 'v@p.iam.gserviceaccount.com', token_uri: 'https://oauth2.googleapis.com/token' })).account!;
-
-  it('keeps the status, path and body of a non-JSON error response', async () => {
-    const fetchImpl = (async (url: string) => (String(url).startsWith('https://oauth2.googleapis.com/') ? json({ access_token: 'ya29.x', expires_in: 3600 }) : html(503))) as typeof fetch;
-    const err = await new PlayClient(account, fetchImpl).request('POST', 'com.x/edits').catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(PlayApiError);
-    expect(err as PlayApiError).toMatchObject({ status: 503, path: 'com.x/edits' });
-    expect((err as Error).message).toBe('Google Play API 503 com.x/edits: <html><body>503 from the gateway</body></html>');
   });
 });

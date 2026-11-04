@@ -100,7 +100,8 @@ import Observation
         await locateCLI()
         // The team's apps load beside the project, not after it.
         Task { await refreshApps() }
-        await updates.checkIfDue()
+        Task { await updates.checkPeriodically() }
+        Task { await updateCLIIfBehind() }
         if let p = selectedProject { await open(p) }
     }
 
@@ -110,6 +111,13 @@ import Observation
         let args = CommandLine.arguments
         if let i = args.firstIndex(of: "--project"), i + 1 < args.count { return args[i + 1] }
         return ProcessInfo.processInfo.environment["VITRIN_PROJECT"]
+    }
+
+    /// After the app updated itself: the CLI it installed follows. A CLI from Settings, PATH or a checkout is the
+    /// user's own, and stays.
+    private func updateCLIIfBehind() async {
+        guard let cli, cli.kind == .plugin, let version = cli.version, UpdateChecker.compare(updates.appVersion, version) > 0 else { return }
+        await install([.vitrin])
     }
 
     /// Installs tools, then reads again everything that depends on them.

@@ -2,22 +2,37 @@
 // prefers-reduced-motion.
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+const { copied = 'Copied', copyFallback = 'Press ⌘C' } = document.documentElement.dataset;
 
 // Copy buttons
 $$('.copy').forEach((button) => {
   button.addEventListener('click', async () => {
+    const label = button.dataset.label ?? (button.dataset.label = button.textContent);
     try {
       await navigator.clipboard.writeText(button.dataset.copy);
-      button.textContent = 'Copied';
+      button.textContent = copied;
       button.classList.add('done');
       setTimeout(() => {
-        button.textContent = 'Copy';
+        button.textContent = label;
         button.classList.remove('done');
       }, 1600);
     } catch {
-      button.textContent = 'Press ⌘C';
+      button.textContent = copyFallback;
     }
   });
+});
+
+// The language menu remembers a choice, and closes when the click lands elsewhere.
+const languages = document.querySelector('.lang');
+languages?.addEventListener('click', (event) => {
+  const link = event.target.closest('a');
+  if (!link) return;
+  try {
+    localStorage.setItem('vitrin-language', link.hreflang);
+  } catch {}
+});
+document.addEventListener('click', (event) => {
+  if (languages && !languages.contains(event.target)) languages.open = false;
 });
 
 // Mobile menu
@@ -53,7 +68,7 @@ addEventListener('scroll', () => {
 // Count up, once on screen
 const countUp = (el) => {
   const target = Number(el.dataset.count);
-  const format = (n) => (el.hasAttribute('data-sep') ? n.toLocaleString('en-US') : String(n));
+  const format = (n) => (el.hasAttribute('data-sep') ? n.toLocaleString(document.documentElement.lang) : String(n));
   if (reduceMotion || target < 3) return;
   const started = performance.now();
   const frame = (now) => {
@@ -186,7 +201,8 @@ const pickStyle = (tab, focus) => {
   fan.classList.add('swap');
   setTimeout(() => {
     fanImages.forEach((img) => {
-      img.src = `assets/${tab.dataset.style}-shot-${img.dataset.n}.webp`;
+      // Relative to the page, which may sit in a language folder.
+      img.src = img.getAttribute('src').replace(/[a-z]+-shot-/, `${tab.dataset.style}-shot-`);
     });
     fan.classList.remove('swap');
   }, reduceMotion ? 0 : 280);

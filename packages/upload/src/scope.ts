@@ -25,21 +25,10 @@ export interface PlatformScope {
   untouched: string[];
 }
 
-export interface PlayScope {
-  selected: boolean;
-  metadata: boolean;
-  /** Phone/tablet screenshots. supply replaces only the image types that have local files. */
-  screenshots: boolean;
-  /** Feature graphic and icon. */
-  creatives: boolean;
-  untouched: string[];
-}
-
 export interface StoreScope {
   /** Asset kinds selected for this run (config.selection.assets, default all). */
   assets: AssetKind[];
   apple: PlatformScope[];
-  play?: PlayScope;
 }
 
 export const ALL_ASSET_KINDS: AssetKind[] = ['metadata', 'screenshots', 'previews', 'creatives', 'events'];
@@ -86,10 +75,10 @@ export function resolveScope(opts: {
         ps.untouched.push(`${assetKind} not selected: stay untouched`);
         continue;
       }
-      const files = opts.assets.filter((a) => a.kind === kind && a.target.store === 'app-store' && appStorePlatformFor(a.target.platform) === p && selCovers.includes(a.target.platform) && locales.has(a.locale) && (!formats || formats.has(a.target.id)));
+      const files = opts.assets.filter((a) => a.kind === kind && appStorePlatformFor(a.target.platform) === p && selCovers.includes(a.target.platform) && locales.has(a.locale) && (!formats || formats.has(a.target.id)));
       if (!files.length) continue;
       const ids = [...new Set(files.map((a) => a.target.id))].sort();
-      const expected = opts.enabledTargets.filter((t) => t.kind === kind && t.store === 'app-store' && covers.includes(t.platform)).map((t) => t.id);
+      const expected = opts.enabledTargets.filter((t) => t.kind === kind && covers.includes(t.platform)).map((t) => t.id);
       ps[field] = 'per-display-type';
       if (field === 'screenshots') ps.screenshotTargets = ids;
       else ps.previewTargets = ids;
@@ -98,18 +87,6 @@ export function resolveScope(opts: {
     }
   }
 
-  if (opts.shipping.includes('android')) {
-    const on = selected.includes('android');
-    const play: PlayScope = { selected: on, metadata: on && kinds.includes('metadata'), screenshots: on && kinds.includes('screenshots'), creatives: on && kinds.includes('creatives'), untouched: [] };
-    if (!on) play.untouched.push('android not selected: the Google Play listing stays untouched');
-    else {
-      if (!play.metadata) play.untouched.push('text and release notes not selected: stay untouched');
-      if (!play.screenshots) play.untouched.push('screenshots not selected: stay untouched');
-      if (!play.creatives) play.untouched.push('feature graphic and icon not selected: stay untouched');
-      play.untouched.push('supply replaces only the image types that have files in this run; other types stay');
-    }
-    scope.play = play;
-  }
   return scope;
 }
 
@@ -117,7 +94,6 @@ export function resolveScope(opts: {
 export function perDisplayTypeAssetsFor(scope: PlatformScope, assets: RenderedAsset[]): RenderedAsset[] {
   return assets.filter(
     (a) =>
-      a.target.store === 'app-store' &&
       appStorePlatformFor(a.target.platform) === scope.platform &&
       ((a.kind === 'screenshot' && scope.screenshots === 'per-display-type' && scope.screenshotTargets.includes(a.target.id)) ||
         (a.kind === 'preview' && scope.previews === 'per-display-type' && scope.previewTargets.includes(a.target.id))),

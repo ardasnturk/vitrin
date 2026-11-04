@@ -11,7 +11,7 @@ Thanks for helping! Vitrin automates App Store Connect metadata, screenshots, cr
 
 ## Development setup
 
-Requirements: macOS (for simulator capture and Vision OCR; everything else also runs on Linux), Node.js ≥ 22, pnpm (via `corepack enable`), Xcode, Ruby + Bundler, ffmpeg.
+Requirements: macOS (for simulator capture and Vision OCR; everything else also runs on Linux), Node.js ≥ 22, pnpm (via `corepack enable`), Xcode, ffmpeg.
 
 ```bash
 corepack enable
@@ -40,12 +40,12 @@ Playwright's Chromium is needed for `design` (`pnpm --filter @vitrin/render exec
 | `packages/cli` | Commands, pipeline stages, Claude briefs, simulator capture, HTML review report |
 | `packages/schemas` | zod schemas for every JSON file exchanged with Claude |
 | `packages/core` | Masking logger, exec, state store, config/.env loading, data files |
-| `packages/analyzer` | Project kind (native, Flutter, React Native, Expo, Android) and platform detection; Xcode/Gradle parsing, catalogs, StoreKit, code signals |
+| `packages/analyzer` | Project kind (native, Flutter, React Native, Expo) and platform detection; Xcode parsing, catalogs, StoreKit, code signals |
 | `packages/research` | iTunes Search/Lookup, RSS, reviews, Vision OCR, palettes, keyword scoring |
 | `packages/validate` | Text, image, video and claim ↔ evidence rules |
 | `packages/render` | HTML screenshot templates rendered with Playwright + sharp |
 | `packages/video` | Remotion compositions and the plan → scene builder |
-| `packages/upload` | asc CLI (App Store) and fastlane supply (Google Play) bridges, ASC and Google Play clients, partial-upload plan and read-back |
+| `packages/upload` | asc CLI bridge, ASC client, partial-upload plan and read-back |
 | `plugins/vitrin/` | The Claude Code plugin: `skills/vitrin/` (the `/vitrin` skill, its references and style presets, the contributor `scripts/install.sh`), `bin/vitrin` (the launcher that installs the released CLI on first use) and `.claude-plugin/plugin.json` |
 | `.claude-plugin/marketplace.json` | Makes this repository the `vitrin` plugin marketplace |
 | `scripts/pack.mjs` | `pnpm pack:release`: bundles the CLI into the publishable `@ardasnturk/vitrin` tarball with data, templates and Remotion sources |

@@ -14,6 +14,7 @@ import { platformsCommand, selectCommand, uploaderCommand, type SelectOptions } 
 import { submitCommand, uploadCommand } from './commands/upload.js';
 import { finalizeCommand } from './finalize.js';
 import { reviewCommand } from './review-server.js';
+import { hubCommand } from './hub/server.js';
 import { studioCommand } from './studio/server.js';
 
 const program = new Command();
@@ -73,10 +74,9 @@ program
   .description('checks tools, keys, ASC access, the app version, URLs and refData')
   .option('--create-version <version>', 'if there is no editable version, try to create one with asc versions create')
   .option('--offline', 'make no network requests')
-  .option('--play-live', 'read-only Google Play API test (opens and deletes an edit)')
   .option('--tools', 'only the local tools (the early check): no keys, no network, writes nothing')
   .action(
-    action(async (o: { createVersion?: string; offline?: boolean; playLive?: boolean; tools?: boolean }) => {
+    action(async (o: { createVersion?: string; offline?: boolean; tools?: boolean }) => {
       const ctx = await createContext(globals());
       const res = await runDoctor(ctx, o);
       log.result(res);
@@ -115,7 +115,7 @@ program
 program
   .command('select')
   .description('stores the user\'s choices in vitrin.config.yaml: platforms, content, formats, store locales, language, capture mode')
-  .option('--platforms <platforms>', 'ios,macos,watchos,tvos,visionos,android or "all"')
+  .option('--platforms <platforms>', 'ios,macos,watchos,tvos,visionos or "all"')
   .option('--assets <assets>', 'metadata,screenshots,previews,creatives,events or "all"')
   .option('--targets <formats>', 'formats (target ids: iphone-6.9,ipad-13,…) or "all"; see vitrin platforms')
   .option('--locales <locales>', 'store locales of this run (app.locales), e.g. en-US,tr,de-DE')
@@ -136,14 +136,14 @@ program
 
 program
   .command('capture')
-  .description('raw screens → metadata/raw: HTML screens from metadata/screens (capture.mode html, no build) or simulators / Mac window / Android emulator')
-  .option('--family <families>', 'iphone,ipad,duo,mac,watch,tv,vision,android-phone,android-tablet')
+  .description('raw screens → metadata/raw: HTML screens from metadata/screens (capture.mode html, no build) or simulators / Mac window')
+  .option('--family <families>', 'iphone,ipad,duo,mac,watch,tv,vision')
   .option('--locale <locales>', 'comma-separated locales')
   .action(action(async (o: { family?: string; locale?: string }) => captureCommand(await createContext(globals()), { families: o.family?.split(','), locales: o.locale?.split(',') })));
 
 program
   .command('mockups')
-  .description('ready-made device mockups → metadata/mockups: iPhone, iPad, iPhone Duo open/closed, Watch, Mac, TV, Vision Pro, Android (--screens places the rendered screens in them)')
+  .description('ready-made device mockups → metadata/mockups: iPhone, iPad, iPhone Duo open/closed, Watch, Mac, TV, Vision Pro (--screens places the rendered screens in them)')
   .option('--screens', 'also place every rendered screen (metadata/raw) into the mockups of its device family')
   .option('--locale <locales>', 'comma-separated locales for --screens')
   .option('--only <ids>', 'only these mockups (see --list)')
@@ -201,6 +201,13 @@ program
   .action(action(async (o: { port: string; open: boolean; tokenFile?: string }) => studioCommand({ cwd: globals().cwd, port: Number(o.port), open: o.open, tokenFile: o.tokenFile })));
 
 program
+  .command('hub')
+  .description('the local control API for programs that run Vitrin for you, such as Remote Code on your phone: projects, Studios and asc, on 127.0.0.1')
+  .option('--port <port>', 'port (0 = any free port)', '0')
+  .option('--attached', 'stop when the program that started the hub is gone')
+  .action(action(async (o: { port: string; attached?: boolean }) => hubCommand({ port: Number(o.port), attached: o.attached })));
+
+program
   .command('approve')
   .description('records the user\'s approval of exactly the reviewed content → metadata/approval.json (only after an explicit "yes")')
   .option('--expect-hash <hash>', 'overall hash (or its prefix) the user reviewed; refuses if the content differs')
@@ -214,7 +221,7 @@ program
 
 program
   .command('upload')
-  .description('uploads with the asc CLI (App Store) and fastlane supply (Google Play); plan first, --dry-run shows the plan only')
+  .description('uploads with the asc CLI; plan first, --dry-run shows the plan only')
   .option('--dry-run', 'show the plan only')
   .option('--yes', 'skip the terminal prompt (only if the user explicitly said yes); never skips the approval gate')
   .addOption(new Option('--uploader <name>', 'removed: App Store uploads always use the asc CLI').hideHelp())

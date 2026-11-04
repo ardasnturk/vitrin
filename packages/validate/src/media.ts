@@ -10,11 +10,6 @@ export const SCREENSHOT_RE = /^(\d{2})_([a-z0-9-]+)_([a-z0-9.-]+)\.(png|jpe?g)$/
 /** Preview file pattern: `NN_<PREVIEW_DEVICE>.mp4`. */
 export const PREVIEW_RE = /^(\d{2})_([A-Z0-9_]+)\.(mp4|mov|m4v)$/;
 
-/** Store name for messages. */
-export function storeName(t: Pick<RenderTarget, 'store'>): string {
-  return t.store === 'google-play' ? 'Google Play' : 'the App Store';
-}
-
 /** Device family of an App Preview file from its device token (`NN_<DEVICE>.mp4`). */
 export function previewFamily(device: string): 'iphone' | 'ipad' | 'mac' | 'tv' | 'vision' {
   if (device.startsWith('IPAD')) return 'ipad';
@@ -22,16 +17,6 @@ export function previewFamily(device: string): 'iphone' | 'ipad' | 'mac' | 'tv' 
   if (device.startsWith('APPLE_TV')) return 'tv';
   if (device === 'APPLE_VISION_PRO') return 'vision';
   return 'iphone';
-}
-
-/** Screenshots per set: 10 on the App Store, 8 on Google Play. */
-export function maxScreenshots(t: Pick<RenderTarget, 'store'>): number {
-  return t.store === 'google-play' ? 8 : MAX_SCREENSHOTS;
-}
-
-/** Targets whose images may keep an alpha channel (Google Play hi-res icon). */
-export function alphaAllowed(t: Pick<RenderTarget, 'id'>): boolean {
-  return t.id === 'play-icon';
 }
 
 export function sizeAccepted(t: RenderTarget, w: number, h: number): boolean {
@@ -53,6 +38,7 @@ export async function validateScreenshots(opts: {
 }): Promise<IssueList> {
   const issues = new IssueList();
   const counts = new Map<string, Map<string, number>>(); // target → locale → n
+  let oldPlayFiles = 0;
   for (const extra of await strayLocaleDirs(opts.screenshotsDir, opts.locales)) {
     issues.error('image.stray-locale', `metadata/store/screenshots/${extra} is a locale not in the config; it would be reviewed and uploaded too. Remove the folder or add the locale.`);
   }
@@ -70,6 +56,11 @@ export async function validateScreenshots(opts: {
         issues.error('image.unknown-file', `Unexpected file: ${locale}/${f} (expected NN_slug_target.png). Every image in the folder is uploaded; remove the file.`, { locale, file });
         continue;
       }
+      // Renders of the Google Play targets a Vitrin before 2.1 left here: never uploaded.
+      if (m[3]!.startsWith('play-')) {
+        oldPlayFiles++;
+        continue;
+      }
       const target = opts.targets.find((t) => t.id === m[3]);
       if (!target) {
         issues.error('image.unknown-target', `${locale}/${f}: unknown target “${m[3]}”.`, { locale, file });
@@ -79,9 +70,8 @@ export async function validateScreenshots(opts: {
       if (!sizeAccepted(target, meta.width ?? 0, meta.height ?? 0)) {
         issues.error('image.size', `${locale}/${f}: ${meta.width}×${meta.height} px; ${target.label} expects ${target.width}×${target.height}.`, { locale, file });
       }
-      // Google Play's hi-res icon may carry alpha; every other store image must be opaque.
-      if ((meta.hasAlpha || meta.channels === 4) && !alphaAllowed(target)) {
-        issues.error('image.alpha', `${locale}/${f}: has an alpha channel; ${storeName(target)} does not accept transparency.`, { locale, file, fix: 'Apply flatten + removeAlpha with sharp (vitrin design does this).' });
+      if (meta.hasAlpha || meta.channels === 4) {
+        issues.error('image.alpha', `${locale}/${f}: has an alpha channel; the App Store does not accept transparency.`, { locale, file, fix: 'Apply flatten + removeAlpha with sharp (vitrin design does this).' });
       }
       if (!['png', 'jpeg'].includes(meta.format ?? '')) issues.error('image.format', `${locale}/${f}: format is ${meta.format}; must be PNG or JPEG.`, { locale, file });
       const byLocale = counts.get(target.id) ?? new Map<string, number>();
@@ -90,6 +80,8 @@ export async function validateScreenshots(opts: {
     }
   }
 
+  if (oldPlayFiles) issues.warn('image.old-play-files', `${oldPlayFiles} Google Play image(s) left by an older Vitrin in metadata/store/screenshots are ignored and never uploaded; delete them.`);
+
   for (const t of opts.targets.filter((x) => x.kind === 'screenshot')) {
     const byLocale = counts.get(t.id);
     for (const locale of opts.locales) {
@@ -97,10 +89,8 @@ export async function validateScreenshots(opts: {
       if (n === 0) {
         const sev = t.requirement === 'always' || t.requirement === 'if-ipad' ? 'error' : 'warning';
         issues[sev === 'error' ? 'error' : 'warn']('image.missing-target', `${locale}: no screenshots for ${t.label}.`, { locale });
-      } else if (n > maxScreenshots(t)) {
-        issues.error('image.too-many', `${locale}: ${n} screenshots for ${t.label}; ${storeName(t)} allows at most ${maxScreenshots(t)}.`, { locale });
-      } else if (t.store === 'google-play' && n < 2) {
-        issues.error('image.too-few', `${locale}: ${n} screenshot for ${t.label}; Google Play needs at least 2.`, { locale });
+      } else if (n > MAX_SCREENSHOTS) {
+        issues.error('image.too-many', `${locale}: ${n} screenshots for ${t.label}; the App Store allows at most ${MAX_SCREENSHOTS}.`, { locale });
       }
     }
     const values = [...(byLocale?.values() ?? [])];
@@ -112,11 +102,7 @@ export async function validateScreenshots(opts: {
   // Render-time quality measurements
   for (const img of opts.manifest?.images ?? []) {
     const where = `${img.locale}/${basename(img.file)}`;
-    // Screens borrowed from another device family or language: iOS UI on Google Play, or the wrong language.
-    const target = opts.targets.find((t) => t.id === img.target);
-    if (img.capture && target?.store === 'google-play' && img.capture.families.some((f) => !f.startsWith('android'))) {
-      issues.error('image.ios-ui-on-play', `${where}: shows the ${img.capture.families.join('/')} capture on a Google Play screenshot.`, { locale: img.locale, file: img.file, fix: 'Capture or write the Android screens (metadata/screens/<id>.android-phone.html, or an Android emulator capture).' });
-    }
+    // Screens borrowed from another language.
     if (img.capture?.locales.some((l) => l !== img.locale)) {
       const early = Number(img.shot) <= 3;
       issues[early ? 'error' : 'warn']('image.language-mismatch', `${where}: shows the ${img.capture.locales.filter((l) => l !== img.locale).join('/')} UI in a ${img.locale} screenshot.`, { locale: img.locale, file: img.file, fix: `Add ${img.locale} strings for the screen and run vitrin capture again.` });

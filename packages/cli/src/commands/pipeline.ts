@@ -15,7 +15,6 @@ import { exportProjectMetadata } from '../finalize.js';
 import { refreshLiveListing } from '../live-listing.js';
 import { loadUiText } from '../i18n.js';
 import { EXIT, loadProfile, NeedsInput, stage, type Ctx } from '../context.js';
-import { AndroidDevice, androidLocaleTag, androidTools, ensureAvd, launchArgsToExtras, serialFor, startEmulator } from '../android.js';
 import { appIdentity, buildApp } from '../build.js';
 import { bootAndPrepare, ensureSimulator, isBlankCapture, languageArgs, launch, MacApp, macLaunchArgs, record, screenshot, setSystemLocale, shutdown, sleep, type SimPlatform } from '../simulator.js';
 import { rm } from 'node:fs/promises';
@@ -44,7 +43,7 @@ export async function analyzeCommand(ctx: Ctx): Promise<number> {
     await writeJson(ctx.paths.profile, { ...merged, project: { ...merged.project, root: '.' } });
     const yn = (b: boolean) => (b ? 'yes' : 'no');
     log.ok(
-      `${merged.app.displayName} (${merged.project.kind}): ${merged.app.platforms.join(', ')} · iPad ${yn(merged.app.supportsIPad)} · iPhone Duo ${yn(merged.app.supportsDuo)}${merged.app.platforms.includes('android') ? ` · Android tablet ${yn(merged.app.supportsAndroidTablet)}` : ''} · ${merged.features.length} features, ${merged.app.locales.length} locales`,
+      `${merged.app.displayName} (${merged.project.kind}): ${merged.app.platforms.join(', ')} · iPad ${yn(merged.app.supportsIPad)} · iPhone Duo ${yn(merged.app.supportsDuo)} · ${merged.features.length} features, ${merged.app.locales.length} locales`,
     );
     return [ctx.paths.profile];
   });
@@ -149,10 +148,10 @@ export async function writeCommand(ctx: Ctx): Promise<number> {
   await ctx.state.mark('write', hashValue({ metadata, app, urls: ctx.config.urls }), written.map((w) => relative(ctx.root, w)));
   await closeBrief(ctx, 'write');
   log.ok(`Wrote metadata/store/metadata (${written.length} files)`);
-  // The finished text, readable in the project: metadata/app-store/<platform>/<locale>/*.txt (+ google-play).
+  // The finished text, readable in the project: metadata/app-store/<platform>/<locale>/*.txt.
   const project = await exportProjectMetadata(ctx);
   if (project.skipped) log.warn(`${project.skipped}; the metadata text stays in metadata/store/metadata.`);
-  else log.ok(`Store text, readable: metadata/app-store/ and metadata/google-play/ (${project.files.length} files)`);
+  else log.ok(`Store text, readable: metadata/app-store/ (${project.files.length} files)`);
   for (const m of metadata) {
     const kw = Buffer.byteLength(m.keywords, 'utf8');
     log.dim(`  ${m.locale}: name “${m.name}”, subtitle “${m.subtitle}”, keywords ${kw}/100 bytes`);
@@ -174,8 +173,6 @@ export const FAMILY_PLATFORM: Record<CaptureFamilyName, Platform> = {
   watch: 'watchos',
   tv: 'tvos',
   vision: 'visionos',
-  'android-phone': 'android',
-  'android-tablet': 'android',
 };
 export type CaptureFamilyName = Exclude<TargetFamily, 'any'>;
 
@@ -188,17 +185,13 @@ const FALLBACK_DEVICE: Record<CaptureFamilyName, string> = {
   watch: 'Apple Watch Ultra 3 (49mm)',
   tv: 'Apple TV 4K (3rd generation)',
   vision: 'Apple Vision Pro',
-  'android-phone': 'pixel_9',
-  'android-tablet': 'pixel_tablet',
 };
 
 export interface CaptureFamily {
   family: CaptureFamilyName;
   platform: Platform;
-  /** simctl device type (Apple), AVD name or avdmanager device profile (Android), "Mac" for macOS. */
+  /** simctl device type, or "Mac" for macOS. */
   device: string;
-  /** True when `device` is a configured AVD name rather than a device profile. */
-  avd?: boolean;
 }
 
 /** Families with no App Preview class: their recordings are never used. */
@@ -222,10 +215,8 @@ export function familiesToCapture(ctx: Ctx, profile: AppProfile): CaptureFamily[
   const has = (family: CaptureFamilyName) =>
     targets.some((t) => t.family === family && ((kinds.screens && t.kind === 'screenshot') || (kinds.recordings && t.kind === 'preview')));
   const pick = (family: CaptureFamilyName): CaptureFamily => {
-    const platform = FAMILY_PLATFORM[family];
-    const avd = platform === 'android' ? cap.android.avds[family] : undefined;
-    const device = avd ?? cap.simulators[family] ?? targets.find((t) => t.family === family && t.simulator)?.simulator ?? FALLBACK_DEVICE[family];
-    return { family, platform, device, ...(avd ? { avd: true } : {}) };
+    const device = cap.simulators[family] ?? targets.find((t) => t.family === family && t.simulator)?.simulator ?? FALLBACK_DEVICE[family];
+    return { family, platform: FAMILY_PLATFORM[family], device };
   };
   const out: CaptureFamily[] = [];
   // Duo targets fall back to the iPhone capture, so iPhone is captured whenever either is enabled.
@@ -234,19 +225,13 @@ export function familiesToCapture(ctx: Ctx, profile: AppProfile): CaptureFamily[
   // iPhone Duo's fold position cannot be automated and a folded device captures black, so Duo is opt-in
   // (`--family duo` or capture.simulators.duo); otherwise Duo targets are rendered from the iPhone capture.
   if (has('duo') && cap.simulators.duo) out.push(pick('duo'));
-  for (const f of ['mac', 'watch', 'tv', 'vision', 'android-phone', 'android-tablet'] as const) if (has(f)) out.push(pick(f));
+  for (const f of ['mac', 'watch', 'tv', 'vision'] as const) if (has(f)) out.push(pick(f));
   return out;
 }
 
 /** Tools each platform needs on this machine; checked before any build starts. */
 export function requiredTools(platforms: Platform[]): string[] {
-  const tools = new Set<string>();
-  for (const p of platforms) {
-    if (p === 'android') tools.add('adb').add('emulator');
-    else tools.add('xcrun');
-    if (p === 'macos') tools.add('screencapture');
-  }
-  return [...tools];
+  return platforms.length ? ['xcrun', ...(platforms.includes('macos') ? ['screencapture'] : [])] : [];
 }
 
 export async function captureCommand(ctx: Ctx, opts: { families?: string[]; locales?: string[] } = {}): Promise<number> {
@@ -273,19 +258,16 @@ export async function captureCommand(ctx: Ctx, opts: { families?: string[]; loca
   }
   if (cap.mode === 'html') return captureHtml(ctx, profile, families, locales, kinds);
   if (cap.mode === 'xcuitest') {
-    throw new NeedsInput('xcuitest mode: capture with `fastlane snapshot`, place the output at metadata/raw/<locale>/<family>/<id>.png, then use capture.mode: manual.');
+    throw new NeedsInput('xcuitest mode: capture with your own UI tests, place the output at metadata/raw/<locale>/<family>/<id>.png, then use capture.mode: manual.');
   }
   if (!profile.signals['vitrin.demo-mode']) {
     log.warn('No trace of -VitrinDemo in the app: captures may show real user data. See the /vitrin skill’s references/troubleshooting.md “Demo mode”.');
   }
   const platforms = [...new Set(families.map((f) => f.platform))];
   const missingTools: string[] = [];
-  for (const t of requiredTools(platforms)) {
-    const local = t === 'adb' || t === 'emulator' ? androidTools()[t] : t;
-    if (!(local.includes('/') ? existsSync(local) : await which(local))) missingTools.push(t);
-  }
+  for (const t of requiredTools(platforms)) if (!(await which(t))) missingTools.push(t);
   if (missingTools.length) {
-    throw new Error(`Capture for ${platforms.join(', ')} needs ${missingTools.join(', ')} (${missingTools.some((t) => t === 'adb' || t === 'emulator') ? 'Android SDK: set ANDROID_HOME; ' : ''}${missingTools.includes('xcrun') ? 'Xcode on macOS; ' : ''}or use capture.mode: manual).`);
+    throw new Error(`Capture for ${platforms.join(', ')} needs ${missingTools.join(', ')} (${missingTools.includes('xcrun') ? 'Xcode on macOS; ' : ''}or use capture.mode: manual).`);
   }
   if (!families.length) {
     log.warn('Nothing to capture for the selected platforms and assets.');
@@ -297,11 +279,10 @@ export async function captureCommand(ctx: Ctx, opts: { families?: string[]; loca
     for (const platform of platforms) {
       const artifact = await buildFor(ctx, profile, platform);
       log.ok(`Built (${platform}): ${relative(ctx.root, artifact)}`);
-      const identity = appIdentity(profile, platform, { bundleId: ctx.config.app.bundleId || ctx.env.APP_BUNDLE_ID, scheme: ctx.config.app.scheme, androidApplicationId: cap.android.applicationId });
-      if (!identity.appId && platform !== 'macos') throw new NeedsInput(`No app id for ${platform}: set ${platform === 'android' ? 'capture.android.applicationId' : 'app.bundleId'} in vitrin.config.yaml.`);
+      const identity = appIdentity(profile, platform, { bundleId: ctx.config.app.bundleId || ctx.env.APP_BUNDLE_ID, scheme: ctx.config.app.scheme });
+      if (!identity.appId && platform !== 'macos') throw new NeedsInput(`No app id for ${platform}: set app.bundleId in vitrin.config.yaml.`);
       for (const f of families.filter((x) => x.platform === platform)) {
-        if (platform === 'android') outputs.push(...(await captureAndroid(ctx, f, artifact, identity.appId!, locales)));
-        else if (platform === 'macos') outputs.push(...(await captureMac(ctx, profile, f, artifact, locales)));
+        if (platform === 'macos') outputs.push(...(await captureMac(ctx, profile, f, artifact, locales)));
         else outputs.push(...(await captureSimulator(ctx, f, platform as SimPlatform, artifact, identity.appId!, locales)));
       }
     }
@@ -329,7 +310,6 @@ async function buildFor(ctx: Ctx, profile: AppProfile, platform: Platform): Prom
     platform,
     iosDir: p.iosDir,
     macosDir: p.macosDir,
-    androidDir: p.androidDir,
     xcodeproj: p.xcodeproj,
     workspace: p.workspace,
     // Framework workspaces are named after the app; a native project's scheme follows the platform target.
@@ -340,7 +320,6 @@ async function buildFor(ctx: Ctx, profile: AppProfile, platform: Platform): Prom
     metro: cap.reactNative.metro,
     podInstall: cap.reactNative.podInstall,
     prebuild: cap.reactNative.prebuild,
-    gradleTask: cap.android.gradleTask,
   });
 }
 
@@ -465,53 +444,6 @@ async function captureMac(ctx: Ctx, profile: AppProfile, f: CaptureFamily, appPa
   return outputs;
 }
 
-/** Android phone/tablet: dedicated AVD, System UI demo mode, per-app language, intent extras, screencap/screenrecord. */
-async function captureAndroid(ctx: Ctx, f: CaptureFamily, apk: string, appId: string, locales: string[]): Promise<string[]> {
-  const cap = ctx.config.capture;
-  const kinds = captureKinds(ctx.config);
-  const tools = androidTools();
-  const avd = await ensureAvd(tools, f.avd ? { configured: f.device, deviceProfile: FALLBACK_DEVICE[f.family] } : { deviceProfile: f.device });
-  // Fixed ports per family keep serials predictable and away from the user's emulators (5554+).
-  const port = f.family === 'android-tablet' ? 5682 : 5680;
-  log.step(`${f.family}: ${avd} (${serialFor(port)})`);
-  startEmulator(tools, avd, port, cap.android.headless);
-  const device = new AndroidDevice(tools, serialFor(port));
-  const outputs: string[] = [];
-  try {
-    await device.waitForBoot(cap.android.bootTimeoutSec);
-    await device.install(apk);
-    await device.prepare(cap.appearance, f.family === 'android-tablet');
-    const component = await device.resolveActivity(appId, cap.android.activity);
-    for (const locale of locales) {
-      await device.setAppLocale(appId, androidLocaleTag(locale, storefrontForLocale(locale)));
-      for (const s of kinds.screens ? cap.screens : []) {
-        await device.launch(component, launchArgsToExtras(['-VitrinDemo', ...s.launchArgs]), s.url);
-        await sleep(s.waitMs);
-        const out = ctx.paths.rawShot(locale, f.family, s.id);
-        await device.screencap(out);
-        if (await isBlankCapture(out)) {
-          await rm(out);
-          log.warn(`  ${locale}/${f.family}/${s.id}: screen is blank — deleted.`);
-          continue;
-        }
-        outputs.push(out);
-        log.dim(`  ${locale}/${f.family}/${s.id}.png`);
-      }
-      if (kinds.recordings && !NO_RECORDING.has(f.family)) {
-        for (const r of cap.recordings) {
-          const out = ctx.paths.rawVideo(locale, f.family, r.id);
-          await device.record(out, r.durationSec, () => device.launch(component, launchArgsToExtras(['-VitrinDemo', ...r.launchArgs])));
-          outputs.push(out);
-          log.dim(`  ${locale}/${f.family}/${r.id}.mp4 (${r.durationSec} s)`);
-        }
-      }
-    }
-  } finally {
-    await device.shutdown();
-  }
-  return outputs;
-}
-
 // ---------------------------------------------------------------- design
 export interface DesignOptions {
   only?: string[];
@@ -559,7 +491,7 @@ export async function designCommand(ctx: Ctx, opts: DesignOptions = {}): Promise
     log.ok(`Rendered ${res.manifest.images.length} images → metadata/store/screenshots, metadata/creative`);
     const files = res.manifest.images.map((i) => i.file);
     // Custom Product Pages get their own set (their shots, in their order, with their copy) for --cpp to place.
-    const cppTargets = targets.filter((t) => t.kind === 'screenshot' && t.store === 'app-store');
+    const cppTargets = targets.filter((t) => t.kind === 'screenshot');
     if (!opts.only && cppTargets.length) {
       await rm(ctx.paths.cppScreenshots, { recursive: true, force: true });
       for (const page of cppPages) {
@@ -634,9 +566,9 @@ async function designSamples(ctx: Ctx, profile: AppProfile, opts: DesignOptions)
   // One locale (English when the app has it) and the main iPhone format: the user picks a design before Vitrin
   // spends time on every language and size.
   const target = sampleTarget(ctx.config, profile);
-  // The store preview can switch to the other stores and devices the user ships on (same shots, same designs).
+  // The store preview can switch to the other devices the user ships on (same shots, same designs).
   const enabled = enabledTargets(ctx.config, profile, { quiet: true }).filter((t) => t.kind === 'screenshot');
-  const extraTargets = ['play-phone', 'ipad-13'].map((id) => enabled.find((t) => t.id === id)).filter((t): t is NonNullable<typeof t> => Boolean(t) && t!.id !== target.id);
+  const extraTargets = enabled.filter((t) => t.id === 'ipad-13' && t.id !== target.id);
   const locale = opts.locale ?? sampleLocale(ctx.config);
   const missingCopy = shots.shots.slice(0, 2).filter((s) => !s.copy[locale]);
   if (missingCopy.length) log.warn(`shots ${missingCopy.map((s) => s.id).join(', ')} have no ${locale} copy; the samples use another locale's text.`);
@@ -645,7 +577,7 @@ async function designSamples(ctx: Ctx, profile: AppProfile, opts: DesignOptions)
   const meta = existsSync(ctx.paths.metadataFile(locale)) ? await readJson(ctx.paths.metadataFile(locale), LocaleMetadata).catch(() => undefined) : undefined;
   const res = await renderDesignSamples({
     subtitle: meta?.subtitle,
-    labels: { title: ui.samplesTitle, intro: ui.samplesIntro, option: ui.samplesOption, searchResult: ui.searchResult, productPage: ui.productPage, get: ui.get, store: ui.previewStore, theme: ui.previewTheme, appearance: ui.previewAppearance, allThemes: ui.previewAllThemes, light: ui.previewLight, dark: ui.previewDark, install: ui.install, choose: ui.previewChoose },
+    labels: { title: ui.samplesTitle, intro: ui.samplesIntro, option: ui.samplesOption, searchResult: ui.searchResult, productPage: ui.productPage, get: ui.get, store: ui.previewStore, theme: ui.previewTheme, appearance: ui.previewAppearance, allThemes: ui.previewAllThemes, light: ui.previewLight, dark: ui.previewDark, choose: ui.previewChoose },
     extraTargets,
     paths: ctx.paths,
     primaryLocale: locale,

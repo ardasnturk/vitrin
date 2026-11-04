@@ -1,0 +1,648 @@
+<!doctype html>
+<html data-copied="コピーしました" data-copy-fallback="⌘C を押してください" lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vitrin — コードから生まれる、あなたのストアページ</title>
+  <meta name="description" content="無料のオープンソースです。Vitrin は App のコードを読み取り、App Store 用のメタデータ、スクリーンショット、Appプレビュー を作成。さらに App Store Connect のすべてを、ひとつの Mac App で管理できます。">
+  <link rel="canonical" href="https://vitrin.ardasnturk.com/ja/">
+  <link rel="alternate" hreflang="en" href="https://vitrin.ardasnturk.com/">
+  <link rel="alternate" hreflang="tr" href="https://vitrin.ardasnturk.com/tr/">
+  <link rel="alternate" hreflang="de" href="https://vitrin.ardasnturk.com/de/">
+  <link rel="alternate" hreflang="es" href="https://vitrin.ardasnturk.com/es/">
+  <link rel="alternate" hreflang="fr" href="https://vitrin.ardasnturk.com/fr/">
+  <link rel="alternate" hreflang="it" href="https://vitrin.ardasnturk.com/it/">
+  <link rel="alternate" hreflang="ja" href="https://vitrin.ardasnturk.com/ja/">
+  <link rel="alternate" hreflang="ko" href="https://vitrin.ardasnturk.com/ko/">
+  <link rel="alternate" hreflang="pt-BR" href="https://vitrin.ardasnturk.com/pt-BR/">
+  <link rel="alternate" hreflang="zh-Hans" href="https://vitrin.ardasnturk.com/zh-Hans/">
+  <link rel="alternate" hreflang="x-default" href="https://vitrin.ardasnturk.com/">
+  <meta name="theme-color" content="#FFF8F3" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#140D11" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="../favicon.ico" sizes="32x32">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+  <link rel="manifest" href="../site.webmanifest">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Vitrin">
+  <meta property="og:title" content="Vitrin — コードから生まれる、あなたのストアページ">
+  <meta property="og:description" content="コードからメタデータ、スクリーンショット、Appプレビュー を作成。App Store のルールに照らして確認し、承認後にアップロードします。App Store Connect もひとつの Mac App で管理できます。">
+  <meta property="og:url" content="https://vitrin.ardasnturk.com/ja/">
+  <meta property="og:image" content="https://vitrin.ardasnturk.com/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preload" href="../assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../styles.css">
+  <script>document.documentElement.classList.add('js')</script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Vitrin",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "macOS",
+    "description": "App Store の掲載情報を作成、検証、アップロードし、App Store Connect も管理できる、オープンソースの Mac App と Claude Code プラグインです。",
+    "url": "https://vitrin.ardasnturk.com/",
+    "codeRepository": "https://github.com/ardasnturk/vitrin",
+    "license": "https://opensource.org/licenses/MIT",
+    "softwareVersion": "2.1.0",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">本文へ移動</a>
+
+  <svg width="0" height="0" class="sprite" aria-hidden="true">
+    <defs>
+      <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF9E33"/><stop offset=".55" stop-color="#FA6B61"/><stop offset="1" stop-color="#ED5C9E"/></linearGradient>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0 5-5m-5 5-5-5M4 20h16"/></symbol>
+      <symbol id="i-terminal" viewBox="0 0 24 24"><path d="m5 7 5 5-5 5M13 18h7"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.500L19 7.500"/></symbol>
+      <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 10v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9M3 9l2-5h14l2 5a3 3 0 0 1-6 .5 3 3 0 0 1-6 0A3 3 0 0 1 3 9ZM10 20v-5h4v5"/></symbol>
+      <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M12 3.500 13.800 9l5.700 2-5.700 2L12 18.500 10.200 13l-5.700-2 5.700-2zM19 16.500v4M17 18.500h4"/></symbol>
+      <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.700"/><path d="m4 18 5-4.500 3.500 3 3-2.500 4.500 4"/></symbol>
+      <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5zM3 13l9 5 9-5"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.500 3 7.500 7 9 4-1.500 7-4.500 7-9V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5M4 20h16"/></symbol>
+      <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4.500"/><path d="m11.500 11.500 8-8M16 7l3 3"/></symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 4v16h16M8 15l3.500-4 3 2.500L20 8"/></symbol>
+      <symbol id="i-megaphone" viewBox="0 0 24 24"><path d="M4 10v4l14 5V5zM8 15.500V19h3v-2.300M18 9.500a2.500 2.500 0 0 1 0 5"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3.500 15 0 18-3.500-3-3-15 0-18"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+      <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M15 6.500a4 4 0 0 1 5-1.200l-3 3 2 2 3-3M15 6.500A4.500 4.500 0 0 0 14.500 11L5 20l-2-2 9-9.500"/></symbol>
+      <symbol id="i-rocket" viewBox="0 0 24 24"><path d="M9 15c-2-2-2-8 7-12 2 0 3 1 3 3-4 9-8 11-10 9ZM9 15l-3 3M6 13l-3 1 2 2M11 18l-1 3-2-2"/><circle cx="14.500" cy="9.500" r="1.300"/></symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6.500A1.500 1.500 0 0 1 4.500 5H9l2 3h8.500A1.500 1.500 0 0 1 21 9.500v8a1.500 1.500 0 0 1-1.500 1.500h-15A1.500 1.500 0 0 1 3 17.500z"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14-4.500L4 9m0-5v5h5M4 13a8 8 0 0 0 14 4.500l2-2.500m0 5v-5h-5"/></symbol>
+      <symbol id="i-text" viewBox="0 0 24 24"><path d="M5 6h14M5 11h14M5 16h9"/></symbol>
+      <symbol id="i-window" viewBox="0 0 24 24"><rect x="3" y="4.500" width="18" height="15" rx="3"/><path d="M3 9h18M6.500 6.800h.1M9 6.800h.1"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.500 2.700 3.800 5.700 3.800 9s-1.300 6.300-3.800 9c-2.500-2.700-3.800-5.700-3.800-9s1.300-6.300 3.800-9z"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.500v13l10.500-6.500z"/></symbol>
+      <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 18a9.500 9.500 0 1 1 16 0M12 15l4-5.500"/><circle cx="12" cy="15.500" r="1.200"/></symbol>
+      <symbol id="i-devices" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2.500"/><path d="M11 18h2"/></symbol>
+      <symbol id="i-testflight" viewBox="0 0 24 24"><path d="M21 3 3 10.500l7 3 3 7z"/><path d="M10 13.500 21 3"/></symbol>
+      <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 4 2.500 5.200 5.500.8-4 4 1 5.700L12 17.200 7 19.700l1-5.700-4-4 5.500-.8z"/></symbol>
+      <symbol id="i-box" viewBox="0 0 24 24"><path d="m12 3 8 4.500v9L12 21l-8-4.500v-9zM4 7.500l8 4.500 8-4.500M12 12v9"/></symbol>
+      <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="5.500" width="18" height="13" rx="2.500"/><path d="M3 10h18M7 15h4"/></symbol>
+      <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2.500-6 4 12L16 12h5"/></symbol>
+      <symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-4.500 1.500-4.500-2.500-6-3m12 5v-3.500c0-1 .1-1.400-.5-2 2.800-.3 5.500-1.400 5.500-6a4.600 4.600 0 0 0-1.300-3.200 4.300 4.300 0 0 0-.1-3.200s-1.100-.3-3.500 1.300a12 12 0 0 0-6.300 0C6.400 2.800 5.300 3.100 5.300 3.100a4.300 4.300 0 0 0-.1 3.200A4.600 4.600 0 0 0 3.900 9.500c0 4.600 2.700 5.700 5.500 6-.6.600-.6 1.200-.5 2V21"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="progress" aria-hidden="true"></div>
+
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#top" aria-label="Vitrin ホーム">
+        <img src="../assets/logo.svg" alt="" width="30" height="30">
+        <span>Vitrin</span>
+      </a>
+      <nav class="nav-links" id="nav-links" aria-label="メイン">
+        <a href="#what">できること</a>
+        <a href="#how">仕組み</a>
+        <a href="#design">デザイン</a>
+        <a href="#mac">Mac App</a>
+        <a href="#trust">安全性</a>
+        <a href="#start">インストール</a>
+        <a href="#faq">よくある質問</a>
+      </nav>
+      <div class="nav-end">
+        <details class="lang" translate="no"><summary aria-label="言語"><svg class="ico"><use href="#i-globe"/></svg><span>日本語</span></summary><div class="lang-list"><a href="../" hreflang="en" lang="en" translate="no">English</a><a href="../tr/" hreflang="tr" lang="tr" translate="no">Türkçe</a><a href="../de/" hreflang="de" lang="de" translate="no">Deutsch</a><a href="../es/" hreflang="es" lang="es" translate="no">Español</a><a href="../fr/" hreflang="fr" lang="fr" translate="no">Français</a><a href="../it/" hreflang="it" lang="it" translate="no">Italiano</a><a href="../ja/" hreflang="ja" lang="ja" translate="no" aria-current="page">日本語</a><a href="../ko/" hreflang="ko" lang="ko" translate="no">한국어</a><a href="../pt-BR/" hreflang="pt-BR" lang="pt-BR" translate="no">Português (Brasil)</a><a href="../zh-Hans/" hreflang="zh-Hans" lang="zh-Hans" translate="no">简体中文</a></div></details>
+        <a class="icon-link" href="https://github.com/ardasnturk/vitrin" aria-label="GitHub の Vitrin"><svg class="ico"><use href="#i-github"/></svg></a>
+        <a class="btn btn-primary btn-sm" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg">ダウンロード</a>
+        <button class="menu" type="button" aria-label="メニュー" aria-expanded="false" aria-controls="nav-links"><svg class="ico"><use href="#i-menu"/></svg></button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero" id="top">
+      <div class="wrap hero-copy">
+        <p class="pill load" style="--d:0"><span class="dot"></span>Vitrin 2.1 · 無料のオープンソース</p>
+        <h1 class="load" style="--d:1">あなたのストアページを、<br><span class="shine">コードから。</span></h1>
+        <p class="lead load" style="--d:2">Vitrin は App を読み取り、テキスト、スクリーンショット、Appプレビュー を作成して、あなたが承認したものだけをアップロードします。さらに、App Store Connect のすべてをひとつの Mac App で管理できます。</p>
+        <div class="cta load" style="--d:3">
+          <a class="btn btn-primary" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg"><svg class="ico"><use href="#i-download"/></svg>Mac 版をダウンロード</a>
+          <a class="btn btn-ghost" href="#start"><svg class="ico"><use href="#i-terminal"/></svg>Claude Code で使う</a>
+        </div>
+        <p class="fine load" style="--d:4">macOS 15 以降 · 公証済み · MIT ライセンス · 追加の AI キーは不要</p>
+      </div>
+
+      <div class="wrap stage-wrap load" style="--d:5">
+        <div class="awning" aria-hidden="true"></div>
+        <div class="win" id="win" role="group" aria-label="サンプル App「Ritim」を表示した Vitrin for Mac の画面">
+          <div class="win-bar"><i></i><i></i><i></i><span>Ritim <em>com.jastech.ritim</em></span></div>
+          <div class="win-body">
+            <aside class="win-side" aria-hidden="true">
+              <b>App</b>
+              <span class="on"><i class="mini-icon"></i>Ritim</span>
+              <span><i class="mini-icon alt"></i>Atlas Notes</span>
+              <span><i class="mini-icon third"></i>Tempo</span>
+              <b>チーム</b>
+              <span><svg class="ico"><use href="#i-key"/></svg>ユーザ</span>
+              <span><svg class="ico"><use href="#i-devices"/></svg>デバイス</span>
+              <span><svg class="ico"><use href="#i-shield"/></svg>証明書</span>
+              <span><svg class="ico"><use href="#i-megaphone"/></svg>Apple Ads</span>
+            </aside>
+            <div class="win-main">
+              <div class="app-head">
+                <i class="app-icon" aria-hidden="true"></i>
+                <div><strong>Ritim</strong><small>com.jastech.ritim</small><span class="state"><i></i>iOS 1.2.0 · 配信準備完了</span></div>
+              </div>
+              <div class="tabs" role="tablist" aria-label="App のページ">
+                <button role="tab" aria-selected="true" aria-controls="p-status" id="t-status" style="--a:#FA6B61;--b:#ED5C9E"><svg class="ico"><use href="#i-pulse"/></svg>ステータス</button>
+                <button role="tab" aria-selected="false" aria-controls="p-text" id="t-text" tabindex="-1" style="--a:#9E52EB;--b:#ED5C9E"><svg class="ico"><use href="#i-text"/></svg>ストア用テキスト</button>
+                <button role="tab" aria-selected="false" aria-controls="p-shots" id="t-shots" tabindex="-1" style="--a:#FF9E33;--b:#FA6B61"><svg class="ico"><use href="#i-image"/></svg>スクリーンショット</button>
+                <button role="tab" aria-selected="false" aria-controls="p-builds" id="t-builds" tabindex="-1" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-box"/></svg>ビルド</button>
+                <button role="tab" aria-selected="false" aria-controls="p-tf" id="t-tf" tabindex="-1" style="--a:#0DA8AD;--b:#4D5CED"><svg class="ico"><use href="#i-testflight"/></svg>TestFlight</button>
+                <button role="tab" aria-selected="false" aria-controls="p-rev" id="t-rev" tabindex="-1" style="--a:#FF9E33;--b:#FA6B61"><svg class="ico"><use href="#i-star"/></svg>レビュー</button>
+                <button role="tab" aria-selected="false" aria-controls="p-an" id="t-an" tabindex="-1" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-chart"/></svg>分析</button>
+              </div>
+              <div class="panes">
+                <div class="pane" id="p-status" role="tabpanel" aria-labelledby="t-status">
+                  <div class="tiles">
+                    <div><small>ストアで公開中</small><strong>1.2.0</strong><span class="ok">配信準備完了</span></div>
+                    <div><small>次のバージョン</small><strong>1.3.0</strong><span class="warn">提出準備中</span></div>
+                    <div><small>段階的リリース</small><strong>7日中4日目</strong><span class="bar"><i style="--w:43%"></i></span></div>
+                  </div>
+                  <div class="list">
+                    <p><svg class="ico ok"><use href="#i-check"/></svg>ビルド 42 を追加済み</p>
+                    <p><svg class="ico ok"><use href="#i-check"/></svg>ストア用テキストは2言語で準備完了</p>
+                    <p><svg class="ico warn"><use href="#i-sparkles"/></svg>トルコ語の「新機能」がありません</p>
+                  </div>
+                </div>
+                <div class="pane" id="p-text" role="tabpanel" aria-labelledby="t-text" hidden>
+                  <div class="fields">
+                    <label>名前 <span>5 / 30</span><b>Ritim</b></label>
+                    <label>サブタイトル <span>27 / 30</span><b>続けられる習慣をつくろう</b></label>
+                    <label>キーワード <span>96 / 100</span><b>習慣,記録,連続,ルーティン,目標,毎日</b></label>
+                    <label>プロモーション用テキスト <span>62 / 170</span><b>1日1回タップするだけ。連続記録が伸びていきます。</b></label>
+                  </div>
+                </div>
+                <div class="pane" id="p-shots" role="tabpanel" aria-labelledby="t-shots" hidden>
+                  <div class="shots">
+                    <img src="../assets/midnight-shot-01.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-02.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-03.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-04.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-05.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-06.webp" alt="" loading="lazy" width="500" height="1087">
+                  </div>
+                </div>
+                <div class="pane" id="p-builds" role="tabpanel" aria-labelledby="t-builds" hidden>
+                  <div class="rows">
+                    <p><b>ビルド 42</b><span>1.3.0</span><span class="ok">有効</span><em>今日</em></p>
+                    <p><b>ビルド 41</b><span>1.3.0</span><span class="ok">有効</span><em>昨日</em></p>
+                    <p><b>ビルド 40</b><span>1.2.0</span><span class="warn">あと12日で期限切れ</span><em>10月22日</em></p>
+                    <p><b>ビルド 39</b><span>1.2.0</span><span class="dim">期限切れ</span><em>9月30日</em></p>
+                  </div>
+                </div>
+                <div class="pane" id="p-tf" role="tabpanel" aria-labelledby="t-tf" hidden>
+                  <div class="rows">
+                    <p><b>内部テスター</b><span>6人</span><span class="ok">ビルド 42</span><em>内部</em></p>
+                    <p><b>ベータクラブ</b><span>148人</span><span class="ok">ビルド 41</span><em>外部</em></p>
+                    <p><b>プレス</b><span>12人</span><span class="warn">ベータ版審査中</span><em>外部</em></p>
+                  </div>
+                </div>
+                <div class="pane" id="p-rev" role="tabpanel" aria-labelledby="t-rev" hidden>
+                  <div class="reviews">
+                    <div><span class="stars" aria-label="星5つ">★★★★★</span><b>やっと続けられました</b><p>連続記録のグラフが励みになっています。</p><span class="reply">返信</span></div>
+                    <div><span class="stars" aria-label="星4つ">★★★★<i>★</i></span><b>ほぼ完璧です</b><p>ロック画面のウィジェットがあれば最高です。</p><span class="reply">返信</span></div>
+                  </div>
+                </div>
+                <div class="pane" id="p-an" role="tabpanel" aria-labelledby="t-an" hidden>
+                  <div class="tiles"><div><small>インプレッション数</small><strong>41.2K</strong></div><div><small>ダウンロード数</small><strong>3,180</strong></div><div><small>コンバージョン率</small><strong>7.7%</strong></div></div>
+                  <div class="chart" aria-hidden="true"><i style="--h:32%"></i><i style="--h:44%"></i><i style="--h:38%"></i><i style="--h:58%"></i><i style="--h:50%"></i><i style="--h:66%"></i><i style="--h:60%"></i><i style="--h:78%"></i><i style="--h:72%"></i><i style="--h:92%"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="note">リポジトリに含まれるサンプル App「Ritim」を使ったイメージです。</p>
+      </div>
+    </section>
+
+    <!-- Numbers -->
+    <section class="numbers" aria-label="ひと目でわかる数字">
+      <div class="wrap numbers-row reveal">
+        <p><strong data-count="6">6</strong>Apple プラットフォーム</p>
+        <p><strong data-count="16">16</strong>スタイルプリセット</p>
+        <p><strong data-count="50">50</strong>App Store の言語</p>
+        <p><strong data-count="1300" data-sep>1,300</strong>App Store Connect コマンド</p>
+        <p><strong data-count="10">10</strong>App の表示言語</p>
+      </div>
+    </section>
+
+    <!-- What it does -->
+    <section id="what" aria-labelledby="what-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">できること</p>
+          <h2 id="what-title">仕事はふたつ。ツールはひとつ。</h2>
+          <p class="sub">どの App にも、魅力的なストアページと、それを見守る人が必要です。Vitrin はその両方を引き受けます。</p>
+        </div>
+        <div class="jobs">
+          <article class="job reveal">
+            <span class="badge" style="--a:#FF9E33;--b:#ED5C9E"><svg class="ico"><use href="#i-sparkles"/></svg></span>
+            <h3>ストアページをつくる</h3>
+            <p>Claude があなたのコードと競合 App を読み解き、ストアページに必要なものをすべて書いて、デザインします。</p>
+            <ul class="ticks">
+              <li>名前、サブタイトル、キーワード、説明、新機能</li>
+              <li>すべてのデバイス、すべての言語のスクリーンショット</li>
+              <li>Appプレビュー、クリエイティブ、Appイベント カード</li>
+              <li>App Store のルールに照らして確認してからアップロード</li>
+            </ul>
+          </article>
+          <article class="job reveal" style="--stagger:1">
+            <span class="badge" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-store"/></svg></span>
+            <h3>ストアを運営する</h3>
+            <p>チームのすべての App を、ひとつのネイティブウインドウに。App Store Connect でできることのすべてを、ブラウザのタブなしで。</p>
+            <ul class="ticks">
+              <li>バージョン、ビルド、TestFlight、レビュー</li>
+              <li>価格、購入、売上、分析</li>
+              <li>ユーザ、デバイス、証明書、Apple Ads</li>
+              <li>バージョンの提出もリリースも段階的リリースも、手元から</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="ways">
+          <h3 class="reveal">あなたの働き方に合わせて</h3>
+          <div class="ways-row">
+            <article class="way reveal">
+              <svg class="ico"><use href="#i-window"/></svg>
+              <h4>Vitrin for Mac</h4>
+              <p>ネイティブ App です。ふたつの仕事をこれひとつで。ターミナルは不要で、必要なツールもクリックひとつでインストールできます。</p>
+            </article>
+            <article class="way reveal" style="--stagger:1">
+              <svg class="ico"><use href="#i-sparkles"/></svg>
+              <h4>Claude Code プラグイン</h4>
+              <p>リポジトリで <code>/vitrin</code> と入力してください。Claude が希望を聞きながら、すべてのステージを進めます。</p>
+            </article>
+            <article class="way reveal" style="--stagger:2">
+              <svg class="ico"><use href="#i-terminal"/></svg>
+              <h4>CLI と Studio</h4>
+              <p>すべてのステージがコマンドになっています。<code>vitrin studio</code> を実行すると、同じ流れをローカルの Web ページで開けます。</p>
+            </article>
+          </div>
+          <p class="also reveal center">外出先でも使えます。<a href="https://github.com/ardasnturk/remote-code">Remote Code</a> があれば、Vitrin は iPhone のネイティブタブになり、プロジェクト、すべてのステージ、App Store Connect を扱えます。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section id="how" aria-labelledby="how-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">仕組み</p>
+          <h2 id="how-title">コードからストアまで、4つのステップで</h2>
+          <p class="sub">クリエイティブな作業は Claude が担当し、選ぶのはあなたです。それ以外はすべて、中身を読めるテスト済みのコマンドです。</p>
+        </div>
+        <div class="how">
+          <ol class="steps">
+            <li class="step" data-step="0">
+              <span class="num">1</span>
+              <h3>分析</h3>
+              <p>Vitrin はコードから、プラットフォーム、言語、機能を見つけ出します。機能ごとに根拠となるファイルを示すので、ストアページには App が本当にできることだけが載ります。</p>
+              <p class="also">Swift、Flutter、React Native、Expo を自動で検出します。</p>
+            </li>
+            <li class="step" data-step="1">
+              <span class="num">2</span>
+              <h3>調査</h3>
+              <p>国ごとに App Store を検索し、競合のスクリーンショットをデバイス上の OCR で読み取り、関連性、人気、競争の激しさからキーワードを評価します。</p>
+              <p class="also">プラットフォームと言語はあなたが選びます。勝手に決めることはありません。</p>
+            </li>
+            <li class="step" data-step="2">
+              <span class="num">3</span>
+              <h3>作成</h3>
+              <p>Claude がコードから画面を再現します。ビルドもシミュレータも不要です。そのあと Vitrin がスクリーンショットとビデオをレンダリングするので、あなたの App の実際のサンプルを見ながら選べます。</p>
+              <p class="also">実際の画面キャプチャが必要なら、シミュレータで App をビルドして撮影することもできます。</p>
+            </li>
+            <li class="step" data-step="3">
+              <span class="num">4</span>
+              <h3>確認してアップロード</h3>
+              <p>すべてをひとつのギャラリーで確認して承認できます。コメントを添えて1点だけ却下することも可能です。Vitrin は承認した内容だけをアップロードし、ストアに保存された内容を読み戻して確認します。</p>
+              <p class="also">アップロードは asc CLI が行うので、Ruby のインストールは不要です。</p>
+            </li>
+          </ol>
+          <div class="scene" aria-hidden="true">
+            <div class="scene-box">
+              <div class="panel" data-panel="0">
+                <p class="panel-title"><svg class="ico"><use href="#i-folder"/></svg>Ritim · App プロフィール</p>
+                <div class="scan">
+                  <p><b>毎日の連続記録</b><code>Streaks/StreakView.swift</code></p>
+                  <p><b>リマインダー</b><code>Reminders/Schedule.swift</code></p>
+                  <p><b>グラフ</b><code>Stats/ChartsView.swift</code></p>
+                  <p><b>iPhone, iPad</b><code>project.pbxproj</code></p>
+                  <p><b>英語、トルコ語</b><code>Localizable.xcstrings</code></p>
+                </div>
+              </div>
+              <div class="panel" data-panel="1">
+                <p class="panel-title"><svg class="ico"><use href="#i-chart"/></svg>キーワード候補 · 日本</p>
+                <div class="kw">
+                  <p>習慣トラッカー<i style="--w:92%"></i></p>
+                  <p>毎日のルーティン<i style="--w:78%"></i></p>
+                  <p>連続記録<i style="--w:64%"></i></p>
+                  <p>目標プランナー<i style="--w:55%"></i></p>
+                  <p>セルフケア<i style="--w:41%"></i></p>
+                </div>
+              </div>
+              <div class="panel" data-panel="2">
+                <div class="mini-fan">
+                  <img src="../assets/glass-shot-02.webp" alt="" loading="lazy" width="500" height="1087">
+                  <img src="../assets/midnight-shot-01.webp" alt="" loading="lazy" width="500" height="1087">
+                  <img src="../assets/candy-shot-03.webp" alt="" loading="lazy" width="500" height="1087">
+                </div>
+              </div>
+              <div class="panel" data-panel="3">
+                <p class="panel-title"><svg class="ico"><use href="#i-upload"/></svg>アップロード計画</p>
+                <div class="plan">
+                  <p><svg class="ico ok"><use href="#i-check"/></svg>テキスト · en-US, tr</p>
+                  <p><svg class="ico ok"><use href="#i-check"/></svg>スクリーンショット · iPhone 6.9"</p>
+                  <p><svg class="ico ok"><use href="#i-check"/></svg>Appプレビュー · en-US</p>
+                  <p class="keep">iPad のスクリーンショットはそのままです</p>
+                </div>
+                <span class="go">承認済み · アップロード中</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Design -->
+    <section id="design" aria-labelledby="design-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">デザイン</p>
+          <h2 id="design-title">ブランドらしさが伝わるスクリーンショット</h2>
+          <p class="sub">16種類のスタイルプリセットをブランドカラーに合わせて調整。さらに Claude があなたの App 専用のデザインも作ります。見出しを主役に、リアルなデバイスの中に実際の画面を表示します。</p>
+        </div>
+        <div class="switch reveal" role="tablist" aria-label="スタイルのサンプル">
+          <button role="tab" aria-selected="true" data-style="midnight">Midnight Glow</button>
+          <button role="tab" aria-selected="false" data-style="glass" tabindex="-1">Liquid Glass</button>
+          <button role="tab" aria-selected="false" data-style="candy" tabindex="-1">Candy Pop</button>
+        </div>
+        <div class="fan reveal" id="fan" role="img" aria-label="選択したスタイルで作成した、サンプル App「Ritim」のストアスクリーンショット5枚">
+          <img src="../assets/midnight-shot-02.webp" alt="" width="500" height="1087" loading="lazy" data-n="02">
+          <img src="../assets/midnight-shot-03.webp" alt="" width="500" height="1087" loading="lazy" data-n="03">
+          <img src="../assets/midnight-shot-01.webp" alt="" width="500" height="1087" loading="lazy" data-n="01">
+          <img src="../assets/midnight-shot-04.webp" alt="" width="500" height="1087" loading="lazy" data-n="04">
+          <img src="../assets/midnight-shot-05.webp" alt="" width="500" height="1087" loading="lazy" data-n="05">
+        </div>
+
+        <div class="split">
+          <div class="reveal">
+            <h3>公開するすべてのプラットフォームに対応</h3>
+            <p>正確なピクセルサイズと、リアルなデバイスフレーム。作成するのは選んだプラットフォームだけです。</p>
+            <ul class="chips">
+              <li>iPhone</li><li>iPad</li><li>Mac</li><li>Apple Watch</li><li>Apple TV</li><li>Vision Pro</li><li>iPhone Duo</li>
+            </ul>
+            <p class="also">21:9 のプロダクトページヘッダーと、3:2 の検索用クリエイティブも作成できます。</p>
+          </div>
+          <div class="reveal" style="--stagger:1">
+            <h3>感覚ではなく、数値で判断</h3>
+            <p>すべての画像は、お見せする前に品質チェックを通過します。デバイスの大きさ、余白、見出しの幅とコントラスト、ビジュアルのレイヤー、サムネイルでの見え方まで確認します。</p>
+            <h3 class="gap">すべての市場に向けて</h3>
+            <p>テキストはストアと同じ方法で、文字数とバイト数の両方を数えます。「習慣」は2文字ですが6バイトです。右から左に書く言語にも対応しています。</p>
+          </div>
+        </div>
+
+        <div class="previews">
+          <div class="preview-head reveal">
+            <h3>4つの動きで見せる Appプレビュー</h3>
+            <p>実際の画面を使ってコードでレンダリングし、App Store Connect が受け付ける形式に整えます。</p>
+          </div>
+          <div class="videos">
+            <figure class="reveal"><video data-autoplay muted loop playsinline preload="none" poster="../assets/style-showcase.jpg" src="../assets/style-showcase.mp4" aria-label="Showcase スタイルのサンプル"></video><figcaption><b>Showcase</b>3D の登場とプッシュイン</figcaption></figure>
+            <figure class="reveal" style="--stagger:1"><video data-autoplay muted loop playsinline preload="none" poster="../assets/style-kinetic.jpg" src="../assets/style-kinetic.mp4" aria-label="Kinetic スタイルのサンプル"></video><figcaption><b>Kinetic</b>単語ごとの表示とキレのあるカット</figcaption></figure>
+            <figure class="reveal" style="--stagger:2"><video data-autoplay muted loop playsinline preload="none" poster="../assets/style-energetic.jpg" src="../assets/style-energetic.mp4" aria-label="Energetic スタイルのサンプル"></video><figcaption><b>Energetic</b>傾いたデバイスと素早いワイプ</figcaption></figure>
+            <figure class="reveal" style="--stagger:3"><video data-autoplay muted loop playsinline preload="none" poster="../assets/style-classic.jpg" src="../assets/style-classic.mp4" aria-label="Classic スタイルのサンプル"></video><figcaption><b>Classic</b>穏やかな登場とフェード</figcaption></figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mac app -->
+    <section id="mac" aria-labelledby="mac-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">Vitrin for Mac</p>
+          <h2 id="mac-title">タブのいらない App Store Connect</h2>
+          <p class="sub">一度接続すれば、チームのすべての App がライブデータとともに開きます。プロジェクトフォルダもすぐ隣に並びます。</p>
+        </div>
+        <div class="bento">
+          <article class="tile wide reveal">
+            <span class="badge" style="--a:#FF9E33;--b:#FA6B61"><svg class="ico"><use href="#i-layers"/></svg></span>
+            <h3>コマンドが機能になる</h3>
+            <p>asc CLI の1,300のコマンドが、それぞれふさわしいタブに収まっています。読み取るものは一覧やカードとして自動で表示。何かを変更するものは、短いフォーム付きのボタンに。言語コード、カテゴリ、状態もわかりやすい言葉で表示します。</p>
+            <div class="chips-move" aria-hidden="true">
+              <div><span>ステータス</span><span>ストア用テキスト</span><span>スクリーンショット</span><span>ビルド</span><span>TestFlight</span><span>レビュー</span><span>購入</span><span>分析</span><span>ユーザ</span><span>デバイス</span><span>証明書</span><span>プロファイル</span><span>バンドル ID</span><span>ステータス</span><span>ストア用テキスト</span><span>スクリーンショット</span><span>ビルド</span><span>TestFlight</span><span>レビュー</span><span>購入</span><span>分析</span><span>ユーザ</span><span>デバイス</span><span>証明書</span><span>プロファイル</span><span>バンドル ID</span></div>
+            </div>
+          </article>
+          <article class="tile reveal" style="--stagger:1">
+            <span class="badge" style="--a:#4ADE80;--b:#0DA8AD"><svg class="ico"><use href="#i-wrench"/></svg></span>
+            <h3>セットアップは自動で</h3>
+            <p>ツールが足りなくても、クリックひとつでインストール。ターミナルも Homebrew も必要ありません。</p>
+            <ul class="install" aria-hidden="true">
+              <li>Node.js</li><li>Vitrin CLI</li><li>Claude Code</li><li>asc CLI</li><li>ffmpeg</li>
+            </ul>
+          </article>
+          <article class="tile reveal">
+            <span class="badge" style="--a:#FA6B61;--b:#ED5C9E"><svg class="ico"><use href="#i-rocket"/></svg></span>
+            <h3>手元からリリース</h3>
+            <p>バージョンを提出できない理由や、App審査で確認される内容を見られます。そのまま提出、リリース、段階的リリースまで行えます。</p>
+          </article>
+          <article class="tile reveal" style="--stagger:1">
+            <span class="badge" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-key"/></svg></span>
+            <h3>新しい App とキー</h3>
+            <p>Apple アカウントでサインインすれば、App や管理者 API キーを1ステップで作成できます。パスワードはキーチェーンに保管されます。</p>
+          </article>
+          <article class="tile reveal" style="--stagger:2">
+            <span class="badge" style="--a:#0DA8AD;--b:#4D5CED"><svg class="ico"><use href="#i-chart"/></svg></span>
+            <h3>分析と Apple Ads</h3>
+            <p>App Store Connect のダッシュボード、売上、Apple Ads のキャンペーンを App の中で確認できます。対応が必要な App はメニューバーでわかります。</p>
+          </article>
+          <article class="tile wide lang reveal">
+            <span class="badge" style="--a:#9E52EB;--b:#ED5C9E"><svg class="ico"><use href="#i-globe"/></svg></span>
+            <div>
+              <h3>話せる言語は <span class="ticker" aria-hidden="true"><span>Türkçe</span><span>Deutsch</span><span>日本語</span><span>Español</span><span>한국어</span><span>Français</span><span>简体中文</span><span>Italiano</span><span>Português</span><span>English</span><span>Türkçe</span></span><span class="sr">10種類</span></h3>
+              <p>システムの言語に合わせて、10言語で表示します。どのセクションにも、情報ボタンで説明が用意されています。</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Safety -->
+    <section id="trust" aria-labelledby="trust-title">
+      <div class="wrap trust">
+        <div class="reveal">
+          <p class="kicker">安全性</p>
+          <h2 id="trust-title">あなたの「はい」がなければ、何もストアに届きません</h2>
+          <p class="sub">Vitrin は、公開中のストアページを安心して任せられるように作られています。</p>
+          <ul class="points">
+            <li><svg class="ico"><use href="#i-shield"/></svg><div><b>設計から正直に</b><span>見出しや主張は、すべてコード内の機能に紐づいている必要があります。評価は公開中の App Store から、お客様の声はあなた自身のレビューからのみ引用します。</span></div></li>
+            <li><svg class="ico"><use href="#i-gauge"/></svg><div><b>Apple より先に発見</b><span>ひとつのコマンドで、テキスト、画像、ビデオを App Store のルールに照らして確認し、直すべき点を Claude に正確に伝えます。</span></div></li>
+            <li><svg class="ico"><use href="#i-image"/></svg><div><b>承認はファイルに紐づく</b><span>承認時に、すべてのファイルのハッシュを記録します。その後に変更があれば、たとえ Claude による変更でも、再度承認が必要です。</span></div></li>
+            <li><svg class="ico"><use href="#i-upload"/></svg><div><b>部分アップロードは、部分のまま</b><span>まずドライランの計画を確認します。選ばなかったものが削除や上書きされることはなく、アップロードした内容はすべて読み戻して確認します。</span></div></li>
+          </ul>
+        </div>
+        <div class="term reveal" style="--stagger:1" role="img" aria-label="vitrin validate が、仮のテキストやスクリーンショット内の価格など、サンプルのストアページのエラーを修正案とともに一覧表示します">
+          <div class="term-bar"><i></i><i></i><i></i><span>vitrin validate</span></div>
+          <pre><code><span class="ln"><span class="pr">$</span> vitrin validate</span><span class="ln"><span class="er">ERROR</span> promotionalText に "TODO" が含まれています</span><span class="ln"><span class="er">ERROR</span> スクリーンショット 04: 価格の表現 "50%オフ"</span><span class="ln"><span class="er">ERROR</span> スクリーンショット 06: Web サイトのアドレス</span><span class="ln"><span class="er">ERROR</span> "習慣" はすでに名前に含まれています</span><span class="ln">      <span class="fx">→ "習慣" を削除してください。</span></span><span class="ln"><span class="wa">WARN</span>  新機能の内容が一般的すぎます</span><span class="ln"><span class="wa">WARN</span>  supportUrl が仮の値です</span><span class="ln"><span class="fi">エラー 4件、警告 2件</span></span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- The rest -->
+    <section id="more" aria-labelledby="more-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">細かなところまで</p>
+          <h2 id="more-title">ほかにも、うれしい機能をひと通り</h2>
+        </div>
+        <div class="facts">
+          <article class="reveal"><svg class="ico"><use href="#i-window"/></svg><h3>Vitrin Studio</h3><p>すべての流れをローカルの Web ページで。ライブログ、エディタ、デザインサンプル、確認用ギャラリー、そしてサイドパネルにはあなたの Claude Code。</p></article>
+          <article class="reveal" style="--stagger:1"><svg class="ico"><use href="#i-key"/></svg><h3>追加の AI キーは不要</h3><p>クリエイティブな作業は、あなた自身の Claude Code セッションで実行されます。CLI 自体は AI を呼び出しません。</p></article>
+          <article class="reveal" style="--stagger:2"><svg class="ico"><use href="#i-refresh"/></svg><h3>途中から再開</h3><p>変更のないステージはスキップします。キーがなくても作業は止まらず、待つのはアップロードだけです。</p></article>
+          <article class="reveal"><svg class="ico"><use href="#i-folder"/></svg><h3>すっきりしたリポジトリ</h3><p>すべてはひとつの <code>metadata/</code> フォルダにまとまり、git には含まれません。キーは <code>.env</code> に保管され、どのログでもマスクされます。</p></article>
+          <article class="reveal" style="--stagger:1"><svg class="ico"><use href="#i-store"/></svg><h3>カスタムプロダクトページ</h3><p>カスタムプロダクトページ、Appイベント、Appアセットライブラリもストアページと一緒にアップロードできます。</p></article>
+          <article class="reveal" style="--stagger:2"><svg class="ico"><use href="#i-text"/></svg><h3>ストアのルールを内蔵</h3><p>文字数制限、キーワードのルール、App審査のポリシーを、結果をお見せする前に言語ごとに確認します。</p></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Install -->
+    <section id="start" aria-labelledby="start-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">インストール</p>
+          <h2 id="start-title">1分で始められます</h2>
+        </div>
+        <div class="starts">
+          <article class="start reveal">
+            <span class="badge" style="--a:#FF9E33;--b:#ED5C9E"><svg class="ico"><use href="#i-window"/></svg></span>
+            <h3>Vitrin for Mac</h3>
+            <p>ダウンロードして「アプリケーション」フォルダにドラッグし、ウェルカムツアーに沿って進めるだけ。Mac をチェックして、足りないものをクリックひとつでインストールします。</p>
+            <a class="btn btn-primary" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg"><svg class="ico"><use href="#i-download"/></svg>Mac 版をダウンロード</a>
+            <p class="fine">Homebrew の場合:</p>
+            <div class="code"><code>brew tap ardasnturk/vitrin https://github.com/ardasnturk/vitrin
+brew install --cask vitrin</code><button class="copy" type="button" data-copy="brew tap ardasnturk/vitrin https://github.com/ardasnturk/vitrin && brew install --cask vitrin">コピー</button></div>
+          </article>
+          <article class="start reveal" style="--stagger:1">
+            <span class="badge" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-sparkles"/></svg></span>
+            <h3>Claude Code プラグイン</h3>
+            <p>一度インストールしたら、<a href="https://claude.com/claude-code">Claude Code</a> で App のリポジトリを開いて <code>/vitrin</code> と入力するだけです。クローンは必要ありません。</p>
+            <div class="code"><code>claude plugin install vitrin --marketplace ardasnturk/vitrin</code><button class="copy" type="button" data-copy="claude plugin install vitrin --marketplace ardasnturk/vitrin">コピー</button></div>
+            <p class="fine">初回の実行時に CLI を一度だけセットアップします。Chromium を含めて約 450 MB で、sudo は不要です。Node.js 22 以降が必要です。そのほかの項目は <code>vitrin doctor</code> で確認できます。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" aria-labelledby="faq-title">
+      <div class="wrap narrow">
+        <div class="head reveal">
+          <p class="kicker">よくある質問</p>
+          <h2 id="faq-title">気になること、お答えします</h2>
+        </div>
+        <div class="qa reveal">
+          <details>
+            <summary>Flutter や React Native の App でも使えますか？</summary>
+            <p>はい。Swift と SwiftUI を中心にしつつ、Flutter、React Native、Expo のプロジェクトも自動で検出します。画面はビルドせずにコードから再現できるほか、希望があればそれぞれのツールでビルドしてシミュレータでキャプチャすることもできます。Vitrin は App Store 向けのツールなので、対象は Apple プラットフォーム向けの App のみです。</p>
+          </details>
+          <details>
+            <summary>OpenAI や Anthropic の API キーは必要ですか？</summary>
+            <p>いいえ。クリエイティブな作業はあなたの Claude Code セッション内で行われ、CLI は AI を呼び出しません。Claude を使わずに、ブリーフに沿って手作業で進めることもできます。</p>
+          </details>
+          <details>
+            <summary>iPhone から使えますか？</summary>
+            <p>はい。Mac に <a href="https://github.com/ardasnturk/remote-code">Remote Code</a> 1.6 があれば、Vitrin は iPhone のタブになります。プロジェクトフォルダの追加、すべてのステージの実行、App Store Connect の管理をネイティブ画面で行え、Vitrin for Mac を開いておく必要もありません。プロジェクトは iPhone と Mac の間で同期されます。</p>
+          </details>
+          <details>
+            <summary>Mac App にターミナルは必要ですか？</summary>
+            <p>いいえ。ウェルカムツアーが Mac をチェックし、Node.js、Vitrin CLI、Claude Code、asc CLI、ffmpeg をクリックひとつでインストールします。Homebrew があれば利用しますが、なくても動作します。</p>
+          </details>
+          <details>
+            <summary>キーを手動で作成せずに App Store Connect に接続できますか？</summary>
+            <p>はい。Apple アカウントでサインインすれば、Vitrin が管理者 API キーを1ステップで作成します。自分でキーを追加したり、asc CLI のログインをそのまま使ったりすることもできます。プロジェクトは接続しなくても動作します。</p>
+          </details>
+          <details>
+            <summary>App Store Connect で新しい App を作成できますか？</summary>
+            <p>Apple アカウントでサインインすれば、Vitrin for Mac で作成できます。API キーでの作成は Apple が許可していないため、CLI とプラグインは App が見つからない場合に停止してお知らせします。</p>
+          </details>
+          <details>
+            <summary>確認なしに何かをアップロードすることはありますか？</summary>
+            <p>いいえ。すべての画像、ビデオ、テキストは最初にお見せします。アップロードはドライランの計画から始まり、あなたの「はい」が必要で、承認した内容と異なるものは拒否します。審査への提出には別途確認が必要です。プラグインでは、価格、リリース、年齢制限とプライバシーの質問票はあなたにお任せします。</p>
+          </details>
+          <details>
+            <summary>具体的に何がアップロードされますか？</summary>
+            <p>承認後に、選択したプラットフォームと内容だけがアップロードされます。選択したスクリーンショットセットはディスプレイの種類ごとに置き換えられ、それ以外はそのまま残ります。Vitrin がビルドをアップロードすることはありません。</p>
+          </details>
+          <details>
+            <summary>App をビルドする必要はありますか？</summary>
+            <p>いいえ。標準では Claude がソースコードから HTML で画面を再現するので、ビルドもシミュレータもデモモードも必要ありません。実際のキャプチャがよければ、App をビルドして専用のシミュレータで各画面を開くこともできます。</p>
+          </details>
+          <details>
+            <summary>生成されたファイルはどうなりますか？</summary>
+            <p>プロジェクトの <code>metadata/</code> フォルダに保存され、管理された <code>.gitignore</code> ブロックによって git から除外されます。アップロードの確認が済むと、Vitrin は調査データを削除するか尋ねます。それ以外は何も削除されません。</p>
+          </details>
+          <details>
+            <summary>ライセンスについて教えてください。</summary>
+            <p>Vitrin は MIT ライセンスです。OFL フォントと Lucide アイコンを同梱しており、スタイルプリセットは <a href="https://github.com/ParthJadhav/app-store-screenshots">ParthJadhav/app-store-screenshots</a>（MIT）をもとにしています。Appプレビュー のレンダリングには Remotion を使用しており、個人および従業員3人までの企業は無料で利用できます。それより大きなチームには <a href="https://www.remotion.dev/license">Remotion のカンパニーライセンス</a>が必要です。</p>
+          </details>
+          <details>
+            <summary>これは Apple の製品ですか？</summary>
+            <p>いいえ。Vitrin は独立したオープンソースプロジェクトで、Apple Inc. との提携関係はなく、Apple Inc. による承認や支援も受けていません。</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Closing -->
+    <section class="closing" aria-labelledby="closing-title">
+      <div class="wrap">
+        <div class="closing-card reveal">
+          <div class="awning small" aria-hidden="true"></div>
+          <h2 id="closing-title">さあ、ショーウインドウを開きましょう</h2>
+          <p>Vitrin は無料のオープンソース。コードはすべて公開しています。</p>
+          <div class="cta">
+            <a class="btn btn-light" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg"><svg class="ico"><use href="#i-download"/></svg>Mac 版をダウンロード</a>
+            <a class="btn btn-outline" href="https://github.com/ardasnturk/vitrin"><svg class="ico"><use href="#i-github"/></svg>GitHub で見る</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div class="footer-top">
+        <a class="brand" href="#top"><img src="../assets/logo.svg" alt="" width="26" height="26"><span>Vitrin</span></a>
+        <a class="version" href="https://github.com/ardasnturk/vitrin/blob/main/CHANGELOG.md">v2.1.0</a>
+        <nav aria-label="フッター">
+          <a href="https://github.com/ardasnturk/vitrin">GitHub</a>
+          <a href="https://github.com/ardasnturk/vitrin/releases">リリース</a>
+          <a href="https://github.com/ardasnturk/vitrin/blob/main/CHANGELOG.md">変更履歴</a>
+          <a href="https://github.com/ardasnturk/vitrin/blob/main/CONTRIBUTING.md">コントリビュート</a>
+          <a href="https://github.com/ardasnturk/vitrin/blob/main/SECURITY.md">セキュリティ</a>
+          <a href="https://github.com/ardasnturk/vitrin/blob/main/LICENSE">MIT ライセンス</a>
+        </nav>
+      </div>
+      <p class="legal">App Store、App Store Connect、iPhone、iPad、Mac、Apple Watch、Apple TV、Apple Vision Pro は Apple Inc. の商標です。Vitrin は Apple と提携していません。</p>
+    </div>
+  </footer>
+
+  <script src="../script.js" defer></script>
+</body>
+</html>

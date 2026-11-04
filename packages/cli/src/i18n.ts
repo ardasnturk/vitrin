@@ -91,7 +91,6 @@ export const UI_EN = {
   previewAllThemes: 'All designs (compare)',
   previewLight: 'Light',
   previewDark: 'Dark',
-  install: 'Install',
   previewChoose: 'Tell Claude “{letter}” to use this design.',
 };
 export type UiKey = keyof typeof UI_EN;
@@ -179,7 +178,6 @@ const UI_TR: UiText = {
   previewAllThemes: 'Tüm tasarımlar (karşılaştır)',
   previewLight: 'Açık',
   previewDark: 'Koyu',
-  install: 'Yükle',
   previewChoose: 'Bu tasarımı kullanmak için Claude’a “{letter}” deyin.',
 };
 

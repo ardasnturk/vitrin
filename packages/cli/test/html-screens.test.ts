@@ -95,7 +95,6 @@ describe('HTML screens (capture.mode: html)', () => {
     expect(at(1320 / 2, 2868 - 40)).toEqual([0xf2, 0xf2, 0xf7]); // --bg of ios.css
     expect(at((100 + 8) * 3, (500 + 60) * 3)).toEqual([0x34, 0xc7, 0x59]); // .toggle.on green
     // Nothing was built and nothing appeared outside metadata/.
-    expect(existsSync(join(root, 'fastlane'))).toBe(false);
     expect(existsSync(join(root, '.env.example'))).toBe(false);
   }, 120_000);
 });

@@ -1,7 +1,6 @@
 import { existsSync, loadTargets, log, readJsonIfExists, sha256, writeJson, writeText } from '@vitrin/core';
 import {
   AppMetadata,
-  AppProfile,
   ApprovalManifest,
   CppSuggestions,
   ExperimentPlan,
@@ -16,9 +15,8 @@ import {
   type ReviewItem,
   type ReviewItemKind,
   type ReviewRejection,
-  type Store,
 } from '@vitrin/schemas';
-import { exportStoreMetadata, exportPlayMetadata, prepareStores } from '@vitrin/upload';
+import { exportStoreMetadata } from '@vitrin/upload';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { readdir, readFile, rm, stat } from 'node:fs/promises';
@@ -60,14 +58,8 @@ const MEDIA_RE = /\.(png|jpe?g|webp|mp4|mov|m4v)$/i;
 const VIDEO_RE = /\.(mp4|mov|m4v)$/i;
 /** Non-locale directories inside the store metadata folder. */
 const APP_LEVEL_DIRS = new Set(['review_information', 'trade_representative_contact_information']);
-/** supply's image folders → kind / family. */
-const PLAY_IMAGE_DIRS: Record<string, { kind: ReviewItemKind; family?: string }> = {
-  phoneScreenshots: { kind: 'screenshot', family: 'android-phone' },
-  sevenInchScreenshots: { kind: 'screenshot', family: 'android-tablet' },
-  tenInchScreenshots: { kind: 'screenshot', family: 'android-tablet' },
-  tvScreenshots: { kind: 'screenshot', family: 'tv' },
-  wearScreenshots: { kind: 'screenshot', family: 'watch' },
-};
+/** What a Vitrin before 2.1 left for Google Play (its upload tree, listings and renders): never reviewed or uploaded. */
+const OLD_PLAY_FILE = /[\\/]store[\\/]metadata[\\/]android$|[\\/]listing[\\/]play$|_play-[a-z0-9-]+\.\w+$|[\\/]play-[a-z0-9-]+_[^\\/]+$/;
 const ASC_PLATFORM: Record<string, string> = { ios: 'ios', osx: 'macos', appletvos: 'tvos', xros: 'visionos' };
 
 const natural = (a: string, b: string) => a.localeCompare(b, 'en', { numeric: true });
@@ -81,6 +73,7 @@ async function walk(dir: string): Promise<string[]> {
   for (const e of entries) {
     if (e.name.startsWith('.')) continue;
     const full = join(dir, e.name);
+    if (OLD_PLAY_FILE.test(full)) continue;
     if (e.isDirectory()) out.push(...(await walk(full)));
     else if (e.isFile()) out.push(full);
   }
@@ -137,27 +130,11 @@ export async function syncStoreMetadata(ctx: Ctx): Promise<boolean> {
     const metadata = await loadLocaleMetadata(ctx);
     if (!app || metadata.length !== ctx.config.app.locales.length) return false;
     await exportStoreMetadata(ctx.paths, ctx.config, app, metadata);
-    await syncPlayMetadata(ctx);
     return true;
   } catch (err) {
     log.warn(`metadata/store/metadata was not refreshed: ${(err as Error).message}`);
     return false;
   }
-}
-
-/**
- * Writes the Google Play supply tree from the same listings and renders `vitrin upload` uses, so the Play text and
- * images the user approves are hashed before upload. The export is deterministic: re-running it at upload time
- * produces the same files, and a changed render or listing shows up as a change against the approval.
- */
-async function syncPlayMetadata(ctx: Ctx): Promise<void> {
-  const profile = await readJsonIfExists(ctx.paths.profile, AppProfile).catch(() => undefined);
-  if (!profile?.app.platforms.includes('android')) return;
-  const stores = await prepareStores({ paths: ctx.paths, config: ctx.config, profile, env: ctx.env, online: false });
-  if (!stores.play?.inputs.listings.length) return;
-  const kinds = ctx.config.selection.assets;
-  const scope = { screenshots: !kinds || kinds.includes('screenshots'), creatives: !kinds || kinds.includes('creatives') };
-  await exportPlayMetadata(ctx.paths, stores.play.inputs, stores.assets, undefined, scope);
 }
 
 function targetFromName(file: string, targets: RenderTarget[]): RenderTarget | undefined {
@@ -186,13 +163,12 @@ export async function buildInventory(ctx: Ctx): Promise<Inventory> {
   const sizeOf = new Map(files.map((f) => [f.path, f.bytes]));
   const items: InventoryItem[] = [];
 
-  const mediaItem = (abs: string, kind: ReviewItemKind, store: Store, locale: string | undefined, target: RenderTarget | undefined, fallbackPlatform: string): InventoryItem => {
+  const mediaItem = (abs: string, kind: ReviewItemKind, locale: string | undefined, target: RenderTarget | undefined, fallbackPlatform: string): InventoryItem => {
     const r = rel(abs);
     const video = manifestVideos.get(abs);
     return {
       id: r,
       kind,
-      store: target?.store ?? store,
       platform: target?.platform ?? fallbackPlatform,
       locale,
       target: target?.id,
@@ -212,7 +188,7 @@ export async function buildInventory(ctx: Ctx): Promise<Inventory> {
     const locale = under(p.screenshots, f)[0];
     const m = manifestImages.get(f);
     const target = (m && byId.get(m.target)) || targetFromName(f, targets);
-    items.push(mediaItem(f, 'screenshot', 'app-store', locale, target, ascPlatform));
+    items.push(mediaItem(f, 'screenshot', locale, target, ascPlatform));
   }
   // App Previews: metadata/store/app-previews/<locale>/NN_<DEVICE>.mp4
   for (const f of await walk(p.appPreviews)) {
@@ -220,7 +196,7 @@ export async function buildInventory(ctx: Ctx): Promise<Inventory> {
     const locale = under(p.appPreviews, f)[0];
     const m = manifestVideos.get(f);
     const target = (m && byId.get(m.target)) || byId.get(basename(f).includes('IPAD') ? 'preview-ipad' : 'preview-iphone');
-    items.push(mediaItem(f, 'preview', 'app-store', locale, target, ascPlatform));
+    items.push(mediaItem(f, 'preview', locale, target, ascPlatform));
   }
   // Creatives and event cards: metadata/creative/<locale>/<target>_<key>.(png|mp4)
   for (const f of await walk(p.creative)) {
@@ -228,42 +204,19 @@ export async function buildInventory(ctx: Ctx): Promise<Inventory> {
     const locale = under(p.creative, f)[0];
     const m = manifestImages.get(f) ?? manifestVideos.get(f);
     const target = (m && byId.get(m.target)) || targetFromName(f, targets);
-    items.push(mediaItem(f, target?.kind === 'event' ? 'event' : 'creative', 'app-store', locale, target, ascPlatform));
+    items.push(mediaItem(f, target?.kind === 'event' ? 'event' : 'creative', locale, target, ascPlatform));
   }
 
   // App Store text: metadata/store/metadata/<locale>/*.txt per locale, the rest is app level.
-  const ascMeta = (await walk(p.storeMetadata)).filter((f) => !f.startsWith(p.androidMetadata + sep));
   const ascGroups = new Map<string, string[]>();
-  for (const f of ascMeta) {
+  for (const f of await walk(p.storeMetadata)) {
     const parts = under(p.storeMetadata, f);
     const key = parts.length > 1 && !APP_LEVEL_DIRS.has(parts[0]!) ? parts[0]! : '';
     ascGroups.set(key, [...(ascGroups.get(key) ?? []), f]);
   }
   for (const [locale, list] of [...ascGroups].sort(([a], [b]) => natural(a, b))) {
     const source = locale ? p.metadataFile(locale) : p.appMetadata;
-    items.push(await textItem(root, locale ? `metadata/app-store/${locale}` : 'metadata/app-store/app', 'app-store', ascPlatform, locale || undefined, list, join(p.storeMetadata, locale), source));
-  }
-
-  // Google Play (supply layout): metadata/store/metadata/android/<locale>/{*.txt,changelogs/*.txt,images/**}
-  const playFiles = await walk(p.androidMetadata);
-  const playText = new Map<string, string[]>();
-  for (const f of playFiles) {
-    const parts = under(p.androidMetadata, f);
-    const locale = parts.length > 1 ? parts[0]! : undefined;
-    if (MEDIA_RE.test(f)) {
-      const m = manifestImages.get(f) ?? manifestVideos.get(f);
-      const dirName = parts.length > 3 && parts[1] === 'images' ? parts[2]! : '';
-      const folder = PLAY_IMAGE_DIRS[dirName];
-      const target = (m && byId.get(m.target)) || targetFromName(f, targets) || targets.find((t) => t.store === 'google-play' && folder?.family && t.family === folder.family);
-      const kind: ReviewItemKind = folder?.kind ?? (target?.kind === 'screenshot' ? 'screenshot' : 'creative');
-      items.push(mediaItem(f, kind, 'google-play', locale, target, 'android'));
-    } else {
-      const key = locale ?? '';
-      playText.set(key, [...(playText.get(key) ?? []), f]);
-    }
-  }
-  for (const [locale, list] of [...playText].sort(([a], [b]) => natural(a, b))) {
-    items.push(await textItem(root, locale ? `metadata/google-play/${locale}` : 'metadata/google-play/app', 'google-play', 'android', locale || undefined, list, join(p.androidMetadata, locale), undefined));
+    items.push(await textItem(root, locale ? `metadata/app-store/${locale}` : 'metadata/app-store/app', ascPlatform, locale || undefined, list, join(p.storeMetadata, locale), source));
   }
 
   // Custom Product Pages and In-App Events (text from JSON, uploaded with --cpp / --events); each page's own
@@ -273,13 +226,13 @@ export async function buildInventory(ctx: Ctx): Promise<Inventory> {
   for (const f of await walk(p.cppScreenshots)) {
     if (!/\.(png|jpe?g)$/i.test(f)) continue;
     const [pageId, locale] = under(p.cppScreenshots, f);
-    const item = mediaItem(f, 'cpp', 'app-store', locale, targetFromName(f, targets), ascPlatform);
+    const item = mediaItem(f, 'cpp', locale, targetFromName(f, targets), ascPlatform);
     item.label = `Custom Product Page ${pageId} · ${item.label}`;
     items.push(item);
     cppImages.set(pageId!, [...(cppImages.get(pageId!) ?? []), item.id]);
   }
   for (const page of cpp?.pages ?? []) {
-    items.push({ id: `cpp/${page.id}`, kind: 'cpp', store: 'app-store', platform: ascPlatform, label: `Custom Product Page · ${page.name}`, files: [rel(p.cpp), ...(cppImages.get(page.id) ?? [])], data: page });
+    items.push({ id: `cpp/${page.id}`, kind: 'cpp', platform: ascPlatform, label: `Custom Product Page · ${page.name}`, files: [rel(p.cpp), ...(cppImages.get(page.id) ?? [])], data: page });
   }
   // Product Page Optimization tests: each treatment's own set, experiments/<test>/<treatment>/<locale>/…
   const tests = await readJsonIfExists(p.experiments, ExperimentPlan).catch(() => undefined);
@@ -287,18 +240,18 @@ export async function buildInventory(ctx: Ctx): Promise<Inventory> {
   for (const f of await walk(p.experimentScreenshots)) {
     if (!/\.(png|jpe?g)$/i.test(f)) continue;
     const [testId, treatmentId, locale] = under(p.experimentScreenshots, f);
-    const item = mediaItem(f, 'experiment', 'app-store', locale, targetFromName(f, targets), ascPlatform);
+    const item = mediaItem(f, 'experiment', locale, targetFromName(f, targets), ascPlatform);
     item.label = `Test ${testId} · ${treatmentId} · ${item.label}`;
     items.push(item);
     testImages.set(testId!, [...(testImages.get(testId!) ?? []), item.id]);
   }
   for (const e of (tests?.experiments ?? []).filter((x) => !x.result)) {
-    items.push({ id: `experiment/${e.id}`, kind: 'experiment', store: 'app-store', platform: ascPlatform, label: `Product Page Optimization · ${e.name}`, files: [rel(p.experiments), ...(testImages.get(e.id) ?? [])], data: e });
+    items.push({ id: `experiment/${e.id}`, kind: 'experiment', platform: ascPlatform, label: `Product Page Optimization · ${e.name}`, files: [rel(p.experiments), ...(testImages.get(e.id) ?? [])], data: e });
   }
   const shots = await readJsonIfExists(p.shots, ShotList).catch(() => undefined);
   for (const e of shots?.creatives.events ?? []) {
     const cards = items.filter((i) => i.kind === 'event' && i.abs && basename(i.abs).includes(`event-${e.id}-`)).map((i) => i.id);
-    items.push({ id: `event/${e.id}`, kind: 'event', store: 'app-store', platform: ascPlatform, label: `In-App Event · ${e.id}`, files: [rel(p.shots), ...cards], data: e });
+    items.push({ id: `event/${e.id}`, kind: 'event', platform: ascPlatform, label: `In-App Event · ${e.id}`, files: [rel(p.shots), ...cards], data: e });
   }
 
   // Only what the user selected for this run (config.selection) is reviewed, approved and hashed.
@@ -316,7 +269,7 @@ export async function buildInventory(ctx: Ctx): Promise<Inventory> {
   const groups = new Map<string, InventoryItem[]>();
   for (const i of items) {
     if (!i.abs) continue;
-    const k = `${i.store}|${i.locale}|${i.target ?? i.kind}|${i.kind}`;
+    const k = `${i.locale}|${i.target ?? i.kind}|${i.kind}`;
     groups.set(k, [...(groups.get(k) ?? []), i]);
   }
   for (const g of groups.values()) g.sort((a, b) => natural(a.id, b.id)).forEach((i, n) => (i.order = n + 1));
@@ -336,7 +289,7 @@ export function isSelected(ctx: Pick<Ctx, 'config'>, item: Pick<ReviewItem, 'kin
   return true;
 }
 
-async function textItem(root: string, id: string, store: Store, platform: string, locale: string | undefined, list: string[], base: string, source: string | undefined): Promise<InventoryItem> {
+async function textItem(root: string, id: string, platform: string, locale: string | undefined, list: string[], base: string, source: string | undefined): Promise<InventoryItem> {
   const fields: NonNullable<InventoryItem['fields']> = [];
   for (const f of list) {
     const key = toPosix(relative(base, f)).replace(/\.txt$/, '');
@@ -345,13 +298,12 @@ async function textItem(root: string, id: string, store: Store, platform: string
   }
   const files = list.map((f) => toPosix(relative(root, f)));
   if (source && existsSync(source)) files.push(toPosix(relative(root, source)));
-  const storeName = store === 'google-play' ? 'Google Play' : 'App Store';
-  return { id, kind: 'metadata', store, platform, locale, label: `${storeName} metadata · ${locale ?? 'app level'}`, files, fields };
+  return { id, kind: 'metadata', platform, locale, label: `App Store metadata · ${locale ?? 'app level'}`, files, fields };
 }
 
 /** Strips gallery-only fields. */
 export function reviewItems(inv: Inventory): ReviewItem[] {
-  return inv.items.map(({ id, kind, store, platform, locale, target, label, files }) => ({ id, kind, store, platform, locale, target, label, files }));
+  return inv.items.map(({ id, kind, platform, locale, target, label, files }) => ({ id, kind, platform, locale, target, label, files }));
 }
 
 export interface ApprovalCheck {
@@ -536,7 +488,7 @@ async function reviewBrief(ctx: Ctx, feedback: ReviewFeedback): Promise<string> 
 
 Nothing may be uploaded until the user approves. Fix each item below at its source, then regenerate it:
 
-- Metadata text → \`metadata/listing/<locale>.json\` (or the Google Play listing JSON) → \`vitrin write\`.
+- Metadata text → \`metadata/listing/<locale>.json\` → \`vitrin write\`.
 - Screenshots / creatives / event cards → \`metadata/shots.json\` or \`art-direction.json\` → \`vitrin design\` (\`--only <shot ids>\`).
 - App Previews / loops → \`metadata/video-plan.json\` → \`vitrin video\`.
 - Custom Product Pages → \`metadata/cpp-suggestions.json\`; In-App Events → \`shots.json\` → \`creatives.events\`.
@@ -549,11 +501,11 @@ ${rows}`,
 
 const KIND_LABEL: Record<ReviewItemKind, string> = { screenshot: 'screenshots', preview: 'App Previews', creative: 'creatives', event: 'event items', metadata: 'metadata sets', cpp: 'Custom Product Pages', experiment: 'test items', other: 'other' };
 
-/** Counts per store → platform → locale → kind; the textual summary `vitrin approve` prints. */
+/** Counts per platform → locale → kind; the textual summary `vitrin approve` prints. */
 export function summarize(inv: Inventory): { lines: string[]; counts: Record<string, Record<string, number>> } {
   const counts: Record<string, Record<string, number>> = {};
   for (const i of inv.items) {
-    const key = `${i.store === 'google-play' ? 'Google Play' : 'App Store'} · ${i.platform} · ${i.locale ?? 'all locales'}`;
+    const key = `App Store · ${i.platform} · ${i.locale ?? 'all locales'}`;
     const c = (counts[key] ??= {});
     c[i.kind] = (c[i.kind] ?? 0) + 1;
   }

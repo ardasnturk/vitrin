@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
-import { DATA_DIR, findVitrinHome, TEMPLATES_DIR, VITRIN_HOME, vitrinVersion } from '../src/index.js';
+import { DATA_DIR, findVitrinHome, VITRIN_HOME, vitrinVersion } from '../src/index.js';
 
 const REPO = resolve(import.meta.dirname, '..', '..', '..');
 const tmp = mkdtempSync(join(tmpdir(), 'vitrin-home-'));
@@ -37,10 +37,9 @@ describe('Vitrin home resolver', () => {
     expect(findVitrinHome(lone)).toBeUndefined();
   });
 
-  it('resolves this checkout and its data, templates and version', () => {
+  it('resolves this checkout and its data and version', () => {
     expect(VITRIN_HOME).toBe(REPO);
     expect(DATA_DIR).toBe(join(REPO, 'data'));
-    expect(TEMPLATES_DIR).toBe(join(REPO, 'fastlane'));
     expect(vitrinVersion()).toMatch(/^\d+\.\d+\.\d+/);
     expect(vitrinVersion(fakeRoot(join(tmp, 'v'), '1.2.3'))).toBe('1.2.3');
     expect(vitrinVersion(join(tmp, 'missing'))).toBe('0.0.0');

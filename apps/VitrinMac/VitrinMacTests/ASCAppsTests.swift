@@ -48,7 +48,7 @@ import XCTest
         XCTAssertEqual(ASCWords.platform("MAC_OS"), "macOS")
         XCTAssertEqual(ASCWords.platform("TV_OS"), "tvOS")
         XCTAssertEqual(ASCWords.platform("VISION_OS"), "visionOS")
-        XCTAssertEqual(ASCWords.platform("ANDROID"), "ANDROID")
+        XCTAssertEqual(ASCWords.platform("WEB"), "WEB")
         XCTAssertEqual(ASCWords.tone("READY_FOR_SALE"), .ok)
         XCTAssertEqual(ASCWords.tone("IN_REVIEW"), .info)
         XCTAssertEqual(ASCWords.tone("PREPARE_FOR_SUBMISSION"), .warn)

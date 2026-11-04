@@ -24,21 +24,21 @@ Apple's rules as of October 2026, and the points that could not be verified, are
 
 ## Features
 
-- **Project and platform detection** — native Xcode, Flutter, React Native, Expo and native Android projects; every platform the app ships on (iPhone, iPad, iPhone Duo, macOS incl. Mac Catalyst, watchOS, tvOS, visionOS, Android) with evidence. You pick the platforms for each run from that list.
-- **Project analysis** — reads `.pbxproj`, `Info.plist`, entitlements, String Catalogs, asset catalogs, StoreKit configuration, App Intents, `pubspec.yaml`, `app.json`, Gradle files, Android resources and code signals to build an app profile with evidence-backed features.
+- **Project and platform detection** — native Xcode, Flutter, React Native and Expo projects (for their iOS side); every Apple platform the app ships on (iPhone, iPad, iPhone Duo, macOS incl. Mac Catalyst, watchOS, tvOS, visionOS) with evidence. You pick the platforms for each run from that list.
+- **Project analysis** — reads `.pbxproj`, `Info.plist`, entitlements, String Catalogs, asset catalogs, StoreKit configuration, App Intents, `pubspec.yaml`, `app.json` and code signals to build an app profile with evidence-backed features.
 - **Competitor and keyword research** — iTunes Search/Lookup, RSS top charts and reviews (cached, rate-limited), macOS Vision OCR of competitor screenshots, k-means color palettes, and keyword scoring (relevance × popularity × competition), the app's own rank per term and what its live listing says today. `vitrin write` checks the fields against the keyword plan (selected terms present, ranked terms kept, storefront-shared locales not repeating each other) and `vitrin rank` measures the result afterwards. Optional Apple Ads and AppTweak providers.
-- **Metadata** — validates Claude-written App Store fields (name, subtitle, keyword field, description, promotional text, release notes: grapheme and UTF-8 byte counts, duplicates, forbidden terms, competitor brands, claim-to-evidence checks) and the Google Play listing (title, short and full description, changelog, Play metadata policy), and exports them to `metadata/store/metadata/` (the store metadata tree; supply reads its Android part).
-- **Screens from the code, 1:1, no build** — by default Claude reads the app's views, whatever they are written in (SwiftUI, UIKit, Compose, Android XML, Flutter, React Native), and recreates each screen worth showing in HTML/CSS with measured spacing, the app's colors and fonts, realistic demo data and the app's own UI texts (`metadata/screens/`), starting from a native UI kit (iOS, Material 3, watchOS, macOS). Vitrin renders them per language and device at the exact screen size, with a 9:41 status bar. No Xcode build, no simulator, no demo mode.
-- **Ready-made device mockups** — `vitrin mockups` renders transparent templates with their screen rectangles for iPhone, iPad, iPhone Duo (closed, open with its fold, and both together), Apple Watch, Mac (laptop and window), Apple TV, Vision Pro and Android phone and tablet, and places the app's rendered screens into them (`metadata/mockups/`). The screenshots use the same frames.
-- **Real capture (optional)** — `capture.mode: launch-args` builds the app per platform (xcodebuild, `flutter build`, CocoaPods + xcodebuild, `expo prebuild`, Gradle) and captures raw screens in dedicated simulators (9:41 status bar, per-locale language), the Mac app window, or an Android emulator in System UI demo mode.
-- **Screenshots** — HTML templates rendered with Playwright, following a proven App Store design method: 16 style presets tinted with your brand colors and combinable (emphasis treatments, tag kickers, color-blocked sets), benefit checklists, brand lockups and the developer's own photos as scenes, headline-first layouts with mixed emphasis, varied device framing (bleed, tilted, two devices, no device), realistic CSS device frames for every family (iPhone, iPad, Duo, Mac, Watch, TV, Vision Pro, Android phone and tablet), Google Play feature graphic and icon templates, RTL, exact pixel sizes without alpha. Claude designs for each app instead of only picking presets: bespoke art directions (own palette, type and device treatment) and bespoke HTML layouts per shot with `<vitrin-device>` mockups. `vitrin design --samples` renders four designs side by side, and `store-preview.html` lets you switch the store (App Store iPhone/iPad, Google Play), the design and light/dark with drop-down menus before the full set is made.
+- **Metadata** — validates Claude-written App Store fields (name, subtitle, keyword field, description, promotional text, release notes: grapheme and UTF-8 byte counts, duplicates, forbidden terms, competitor brands, claim-to-evidence checks), and exports them to `metadata/store/metadata/` (the store metadata tree).
+- **Screens from the code, 1:1, no build** — by default Claude reads the app's views, whatever they are written in (SwiftUI, UIKit, Flutter, React Native), and recreates each screen worth showing in HTML/CSS with measured spacing, the app's colors and fonts, realistic demo data and the app's own UI texts (`metadata/screens/`), starting from a native UI kit (iOS, Material 3, watchOS, macOS). Vitrin renders them per language and device at the exact screen size, with a 9:41 status bar. No Xcode build, no simulator, no demo mode.
+- **Ready-made device mockups** — `vitrin mockups` renders transparent templates with their screen rectangles for iPhone, iPad, iPhone Duo (closed, open with its fold, and both together), Apple Watch, Mac (laptop and window), Apple TV and Vision Pro, and places the app's rendered screens into them (`metadata/mockups/`). The screenshots use the same frames.
+- **Real capture (optional)** — `capture.mode: launch-args` builds the app per platform (xcodebuild, `flutter build`, CocoaPods + xcodebuild, `expo prebuild`) and captures raw screens in dedicated simulators (9:41 status bar, per-locale language) or the Mac app window.
+- **Screenshots** — HTML templates rendered with Playwright, following a proven App Store design method: 16 style presets tinted with your brand colors and combinable (emphasis treatments, tag kickers, color-blocked sets), benefit checklists, brand lockups and the developer's own photos as scenes, headline-first layouts with mixed emphasis, varied device framing (bleed, tilted, two devices, no device), realistic CSS device frames for every family (iPhone, iPad, Duo, Mac, Watch, TV, Vision Pro), RTL, exact pixel sizes without alpha. Claude designs for each app instead of only picking presets: bespoke art directions (own palette, type and device treatment) and bespoke HTML layouts per shot with `<vitrin-device>` mockups. `vitrin design --samples` renders four designs side by side, and `store-preview.html` lets you switch the device (App Store iPhone/iPad), the design and light/dark with drop-down menus before the full set is made.
 - **Quality gate** — every rendered image is measured in the browser: device height ratio, largest empty band, widest headline word, worst-pixel headline contrast, visual layer count and a thumbnail legibility test.
 - **App Previews and creatives** — Remotion compositions in four styles (`classic`, `showcase`, `kinetic`, `energetic`) with seven scene types — including `flow`, the app in use with taps and screen changes — a camera that keeps moving, the same device frames as the screenshots, portrait iPhone/iPad and landscape Mac/Apple TV previews, normalized with ffmpeg to H.264 High@4.0, 30 fps CFR, stereo AAC; header and search loops; In-App Event cards.
 - **Product Page Optimization tests** — `metadata/experiments.json` plans an A/B test of the product page (hypothesis, up to three treatments that each change one thing: headline copy, screenshot order or an alternate icon, a duration estimate from page views and conversion). `vitrin design` renders every treatment's screenshot set, the review shows them, and `vitrin upload --experiment` creates the test as a draft with each treatment's set placed; the result is written back to plan the next test.
 - **Vitrin Studio** — `vitrin studio` opens the whole flow in a local web UI on `127.0.0.1` (every change needs the session token the Studio's own page carries, and the HTML it shows from `metadata/` runs sandboxed): a flow that shows every stage's status, what blocks it and the one next step, with live logs, editors for the setup, the HTML screens, the metadata (with App Store Connect counters and validation inline), the art direction, the shot list (with the rendered set beside it, one-click re-render of a shot) and the video plan, the design samples and store preview, the review gallery with approve and reject, and the upload with keys (names only), dry-run plan, explicit confirmation, read-back and finalize. A Claude panel runs your own Claude Code (`claude -p`, no API key) on any brief and shows what it does; when Claude needs a decision it leaves a question (`metadata/questions.json`) that the Studio shows as a card and hands back to Claude once you answer. The Studio speaks English or Turkish, keeps CLI commands and raw JSON for developer mode, and never uploads, approves or submits on its own.
 - **Vitrin for Mac** — a native macOS app ([`apps/VitrinMac`](apps/VitrinMac)) that runs the whole flow and manages the team's apps on App Store Connect through the asc CLI: release status, store text, screenshots, builds, TestFlight, reviews, prices and analytics, with every asc command on the tab it belongs to. With an Apple Account it also creates new apps and Admin API keys, and connects Apple Ads. It follows the system language, in ten languages.
 - **Review and approval** — `vitrin review --serve` opens a local gallery of everything that would be uploaded (every image, video and text, per store, platform, locale and target, with validation issues inline). You approve everything or reject single items with a comment; the approval records a hash of every file, and any later change requires approving again.
-- **Upload** — the [asc CLI](https://github.com/rorkai/App-Store-Connect-CLI) (`brew install asc`, no Ruby needed) is the one App Store uploader: `asc metadata push` for the text, `asc screenshots|video-previews upload --replace` per display type, the App Asset Library for iPhone Duo and creatives, plus Custom Product Pages and In-App Events; fastlane `supply` for Google Play. The key comes from `.env`, from Vitrin for Mac, or from asc's own `asc auth login`. Partial runs ("only watchOS screenshots", "only the App Preview") never delete or overwrite anything you did not select. Always a dry-run plan first, explicit approval, and a read-back after upload. Display types and Asset Library names follow Apple's App Store Connect API 4.5.1 OpenAPI spec.
+- **Upload** — the [asc CLI](https://github.com/rorkai/App-Store-Connect-CLI) (`brew install asc`) is the one uploader: `asc metadata push` for the text, `asc screenshots|video-previews upload --replace` per display type, the App Asset Library for iPhone Duo and creatives, plus Custom Product Pages and In-App Events. The key comes from `.env`, from Vitrin for Mac, or from asc's own `asc auth login`. Partial runs ("only watchOS screenshots", "only the App Preview") never delete or overwrite anything you did not select. Always a dry-run plan first, explicit approval, and a read-back after upload. Display types and Asset Library names follow Apple's App Store Connect API 4.5.1 OpenAPI spec.
 - **One folder, tidy repository** — everything Vitrin generates lives in `metadata/` (an older `.vitrin/` folder is moved there automatically); a managed `.gitignore` block keeps generated files out of git while the sources Claude writes stay committable. After a checked upload, `vitrin finalize` asks whether to delete the research data (`metadata/research/`) and deletes nothing else.
 - **Your language** — Vitrin talks English by default; the skill asks first and then writes every question, summary and the review gallery in the language you pick (English and Turkish built in, any other language translated by Claude).
 - **Fast first run** — four design samples in one language and one format come first; only after you pick a design and the store languages and formats is the rest captured and rendered.
@@ -75,10 +75,14 @@ The skill first asks which language to talk in (English by default). On a new re
 - macOS (Vision OCR; simulators and Mac window capture only for `capture.mode: launch-args`)
 - Node.js ≥ 22 (pnpm only for development)
 - Xcode (with `simctl`) only for real captures (`capture.mode: launch-args`); HTML screens need no Xcode
-- For App Store uploads: the asc CLI (`brew install asc`, no Ruby). Google Play uses fastlane supply (Ruby + Bundler, fastlane ≥ 2.241.1 pinned in the generated `Gemfile`)
+- For App Store uploads: the asc CLI (`brew install asc`)
 - ffmpeg / ffprobe
-- For cross-platform or Android apps: the Flutter SDK, Node/CocoaPods for React Native and Expo, or the Android SDK (`adb`, `emulator`, an AVD) as needed
+- For cross-platform apps: the Flutter SDK, or Node/CocoaPods for React Native and Expo, as needed
 - [Claude Code](https://claude.com/claude-code) for the `/vitrin` skill
+
+## On your iPhone
+
+With [Remote Code](https://github.com/ardasnturk/remote-code) 1.6.0 on your Mac, Vitrin is a tab on your iPhone: add app folders with the file browser, work through the whole flow in native screens, and manage App Store Connect. Remote Code starts what it needs through `vitrin hub` ([API](docs/HUB_API.md)), so Vitrin for Mac doesn't have to be open.
 
 ## Install
 
@@ -102,7 +106,7 @@ or from a terminal: `claude plugin install vitrin --marketplace ardasnturk/vitri
 
 The plugin adds the `/vitrin` skill and a `vitrin` command for Claude. Nothing else is needed up front besides Node.js 22+: the first time the skill runs `vitrin`, it downloads the release tarball for the plugin's version, checks it against the checksum recorded in the plugin (`plugins/vitrin/SHA256SUMS`; nothing is installed when they differ) and installs the CLI into `~/.local/share/vitrin/<version>/` (override with `VITRIN_HOME`), including Playwright Chromium. That one-time step downloads roughly 450 MB and takes a few minutes; it needs no sudo and no global npm packages. Update with `claude plugin update vitrin@vitrin` (or `/plugin` → Marketplaces → Update); the new version installs its CLI on its next run.
 
-To use the CLI in your own terminal as well: `npm install -g https://github.com/ardasnturk/vitrin/releases/download/v2.0.1/ardasnturk-vitrin-2.0.1.tgz`.
+To use the CLI in your own terminal as well: `npm install -g https://github.com/ardasnturk/vitrin/releases/download/v2.1.0/ardasnturk-vitrin-2.1.0.tgz`.
 
 The skill alone can also be added with the [skills CLI](https://github.com/vercel-labs/skills) (`npx skills add ardasnturk/vitrin`), but then the `vitrin` command is missing; prefer the plugin.
 
@@ -131,26 +135,26 @@ The Mac app checks GitHub for a new release once a day (Settings → Updates) an
 
 | Command | Output |
 | --- | --- |
-| `vitrin init [--language tr]` | `vitrin.config.yaml` and the managed `.gitignore` block; `Gemfile` (fastlane ≥ 2.241.1) and `fastlane/Fastfile` only for Google Play; `.env.example` only at the upload gate |
-| `vitrin doctor [--tools] [--play-live]` | Tools, `.env`, `.p8`, live JWT test, app record, editable version, URLs, Asset Library refData; the Google Play key for Android apps |
+| `vitrin init [--language tr]` | `vitrin.config.yaml` and the managed `.gitignore` block; `.env.example` only at the upload gate |
+| `vitrin doctor [--tools]` | Tools, `.env`, `.p8`, live JWT test, app record, editable version, URLs, Asset Library refData |
 | `vitrin analyze` | `metadata/app_profile.json` — project kind, platforms, targets, locales, entitlements, permissions, IAP, App Intents, colors, evidence-backed features |
 | `vitrin platforms [--json]` | Detected platforms with evidence and the targets each would produce |
 | `vitrin select --platforms … --assets … --targets … --locales … --primary-locale … --language … --uploader … --capture … --support-url … --privacy-url … --marketing-url …` | Stores the user's choices in `vitrin.config.yaml`: platforms, content kinds (`metadata`, `screenshots`, `previews`, `creatives`, `events`), formats (target ids), store locales and the primary one, the conversation language, the App Store uploader and the listing URLs (http(s); `""` removes one) |
-| `vitrin uploader [--json]` | Whether the asc CLI is installed and signed in (and fastlane, for Google Play) |
+| `vitrin uploader [--json]` | Whether the asc CLI is installed and signed in |
 | `vitrin asc apps [--json]` | The team's apps from App Store Connect with the newest App Store version and its state per platform; works in any folder with `ASC_KEY_ID`, `ASC_ISSUER_ID` and `ASC_KEY_PATH` in the environment (inside a project its `.env` fills in the rest) |
 | `vitrin research` | `metadata/research/competitors.json`, `metadata/research/keywords/<locale>.json` (with the app's own rank per term), `live-listing.json` (what the store shows today) — iTunes Search/Lookup, RSS, reviews, OCR, palettes, competition/popularity, App Store Connect when the key is set |
-| `vitrin write` | Validates Claude's metadata (App Store and Google Play) against the rules and the keyword plan → `metadata/store/metadata/`, and the finished text, readable, in `metadata/<store>/<platform>/<locale>/*.txt` |
+| `vitrin write` | Validates Claude's metadata against the rules and the keyword plan → `metadata/store/metadata/`, and the finished text, readable, in `metadata/app-store/<platform>/<locale>/*.txt` |
 | `vitrin rank` | The app's own search rank for its selected and best-scored terms → `metadata/rankings/<date>.json`, compared with the previous snapshot (run before a change and 1–2 weeks after) |
-| `vitrin capture` | Raw screens → `metadata/raw/<locale>/<family>/`: Claude's HTML screens from `metadata/screens/` (default, no build) or simulators, Mac window, Android emulator (`capture.mode: launch-args`) |
+| `vitrin capture` | Raw screens → `metadata/raw/<locale>/<family>/`: Claude's HTML screens from `metadata/screens/` (default, no build) or simulators and the Mac window (`capture.mode: launch-args`) |
 | `vitrin mockups [--screens] [--only …] [--list]` | Device mockup templates (transparent PNG + `mockups.json` screen rectangles) → `metadata/mockups/templates/`; `--screens` places the rendered screens into them → `metadata/mockups/screens/` |
-| `vitrin design --samples [--styles …] [--locale …]` | The first three shots in four designs (presets and/or bespoke options from `art-direction.json`), in one language, a labelled contact sheet and `store-preview.html` with store, design and appearance menus (App Store iPhone, iPad and Google Play when enabled) → `metadata/design-samples/` (comparison only) |
+| `vitrin design --samples [--styles …] [--locale …]` | The first three shots in four designs (presets and/or bespoke options from `art-direction.json`), in one language, a labelled contact sheet and `store-preview.html` with device, design and appearance menus (App Store iPhone, and iPad when enabled) → `metadata/design-samples/` (comparison only) |
 | `vitrin design` | HTML → Playwright → `metadata/store/screenshots/<locale>/NN_<slug>_<target>.png`, `metadata/creative/`, quality gate |
 | `vitrin video [--styles all] [--studio]` | Remotion → `metadata/store/app-previews/<locale>/…mp4`, header/search loops; `--studio` opens the first preview in Remotion Studio (development checkout) |
 | `vitrin validate` | `metadata/validation.json` (exit code 1 on errors) |
 | `vitrin review [--serve] [--print-labels]` | `metadata/report.html`, the gallery of everything that would be uploaded, in `ui.language`; `--serve` adds approve and reject buttons on `127.0.0.1`; `--print-labels` prints the words to translate into `metadata/i18n/<language>.json` |
 | `vitrin studio [--port 4871] [--no-open]` | Vitrin Studio on `127.0.0.1`: stages, editors, previews, the review gallery, approval, upload and a Claude panel in the browser (runs until Ctrl+C) |
 | `vitrin approve [--expect-hash …] [--reject … --comment …]` | Records the user's approval (or rejections) in `metadata/approval.json`; refuses while the last validation has errors |
-| `vitrin upload [--dry-run] [--creatives] [--cpp] [--events] [--experiment [id]]` | Plan with replaced and untouched sets; after approval: asc per display type and the text (Asset Library for Duo and creatives) / supply / CPP / In-App Events / a Product Page Optimization test (draft), then read-back |
+| `vitrin upload [--dry-run] [--creatives] [--cpp] [--events] [--experiment [id]]` | Plan with replaced and untouched sets; after approval: asc per display type and the text (Asset Library for Duo and creatives) / CPP / In-App Events / a Product Page Optimization test (draft), then read-back |
 | `vitrin finalize --checked --delete-research \| --keep-research` | After a checked upload: records what was uploaded (`metadata/uploaded.json`) and deletes the research data only when the user said so |
 | `vitrin submit --confirm <bundleId>` | Submits for review (only with explicit confirmation) |
 | `vitrin all` | Runs every stage in order; stops at the stage that needs input or approval |
@@ -177,16 +181,7 @@ ASC_ISSUER_ID=
 ASC_KEY_PATH=./secrets/AuthKey_XXXXXXXXXX.p8   # or ASC_KEY_CONTENT_BASE64
 ```
 
-For Google Play (Android apps only):
-
-```
-GOOGLE_PLAY_JSON_KEY_PATH=./secrets/play-service-account.json   # or GOOGLE_PLAY_JSON_KEY_BASE64
-GOOGLE_PLAY_PACKAGE_NAME=      # optional; defaults to the detected applicationId
-```
-
-The service account must be invited in Play Console with permission to edit the store listing. Vitrin uploads listing text and images only; it never touches binaries, tracks or rollouts.
-
-Optional: Apple Ads, AppTweak, `FASTLANE_USER/PASSWORD` (only for `produce`), `REVIEW_DEMO_USER/PASSWORD`, `VITRIN_CHROMIUM` (a Chromium path when the pinned Playwright browser is missing). While keys are missing, analysis and generation continue; upload does not start until `doctor` passes ("warn early, gate late"). Secret values are masked in all logs.
+Optional: Apple Ads, AppTweak, `REVIEW_DEMO_USER/PASSWORD`, `VITRIN_CHROMIUM` (a Chromium path when the pinned Playwright browser is missing). While keys are missing, analysis and generation continue; upload does not start until `doctor` passes ("warn early, gate late"). Secret values are masked in all logs.
 
 ## Render matrix
 
@@ -200,27 +195,24 @@ Optional: Apple Ads, AppTweak, `FASTLANE_USER/PASSWORD` (only for `produce`), `R
 | Apple TV 4K · Apple Vision Pro | 3840×2160 |
 | App Preview iPhone (30 fps, H.264 High@4.0, stereo AAC) · Mac / Apple TV · Vision Pro | 886×1920 · 1920×1080 · 3840×2160 |
 | Product page header (21:9) · Search result (3:2) | 3840×1646 · 1920×1280 – 3840×2560 |
-| Google Play phone · 7" tablet · 10" tablet | 1080×1920 · 1200×1920 · 1600×2560 |
-| Google Play feature graphic · icon | 1024×500 · 512×512 |
 
 Only the targets of the platforms you select are produced. Full list, sources and what is still unverified: [data/targets.json](data/targets.json) and [apple-notes.md](plugins/vitrin/skills/vitrin/references/apple-notes.md).
 
 ## Repository layout
 
 ```
-packages/cli        commands, state, briefs, HTML screens, build + capture (simulators, Mac, Android), review gallery, approval, finalize,
+packages/cli        commands, state, briefs, HTML screens, build + capture (simulators, Mac), review gallery, approval, finalize,
                     studio/ (the Studio server: jobs, editable files, overview, the Claude runner)
 packages/studio     the Studio UI (React, built with esbuild into dist/ by `pnpm build`; shipped prebuilt as studio/ in the npm package)
-packages/schemas    zod schemas (AppProfile, Competitors, KeywordPlan, Metadata, PlayListing, ArtDirection, ShotList, VideoPlan, Approval, Config)
+packages/schemas    zod schemas (AppProfile, Competitors, KeywordPlan, Metadata, ArtDirection, ShotList, VideoPlan, Approval, Config)
 packages/core       masking logger, exec, state, config/.env, data files, cached HTTP, enabled targets, .gitignore block
-packages/analyzer   project kind and platform detection; pbxproj / plists / entitlements / catalogs / StoreKit / Flutter / React Native / Gradle / code signals
+packages/analyzer   project kind and platform detection; pbxproj / plists / entitlements / catalogs / StoreKit / Flutter / React Native / code signals
 packages/research   iTunes Search/Lookup, RSS, reviews, Vision OCR (Swift), k-means palette, keyword scoring
-packages/validate   text (App Store and Google Play), image quality, video and claim-to-evidence checks
+packages/validate   text, image quality, video and claim-to-evidence checks
 packages/render     HTML templates, style presets, device frames, quality measurement, design samples; Playwright + sharp
 packages/video      Remotion: AppPreview (portrait and landscape), HeaderLoop, SearchLoop, EventCard; ffmpeg normalization
-packages/upload     asc CLI (App Store), fastlane supply (Google Play), ASC API (JWT), App Asset Library, Google Play API, CPP, In-App Events, partial-upload plan and read-back
-fastlane/           Gemfile and Fastfile templates (Google Play only)
-data/               targets.json, asc-display-types.json, asc-locales.json, play-locales.json, storefront-languages.json, forbidden-terms.json
+packages/upload     asc CLI, ASC API (JWT), App Asset Library, CPP, In-App Events, partial-upload plan and read-back
+data/               targets.json, asc-display-types.json, asc-locales.json, storefront-languages.json, forbidden-terms.json
 plugins/vitrin/     Claude Code plugin: .claude-plugin/plugin.json, bin/vitrin (self-installing launcher),
                     skills/vitrin/ (SKILL.md, references/ incl. apple-notes.md and styles/, scripts/install.sh)
 .claude-plugin/     marketplace.json (this repository is the `vitrin` plugin marketplace)

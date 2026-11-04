@@ -8,8 +8,6 @@ import {
   KeywordPlan,
   LiveListing,
   LocaleMetadata,
-  PlayAppMetadata,
-  PlayListing,
   RenderManifest,
   ShotList,
   VideoPlan,
@@ -20,7 +18,7 @@ import {
 import { validateClaims } from './claims.js';
 import { IssueList } from './issues.js';
 import { strayLocaleDirs, validateScreenshots, validateVideos } from './media.js';
-import { validatePlayText, validateText } from './text.js';
+import { validateText } from './text.js';
 import { join } from 'node:path';
 
 export * from './issues.js';
@@ -75,7 +73,7 @@ export async function validateAll(paths: AppPaths, config: VitrinConfig, scope: 
       issues.warn('config.primary-locale', `app.primaryLocale ${config.app.primaryLocale} is not one of app.locales (${config.app.locales.join(', ')}); copy and captures fall back to it. Add it, or set one of them as the primary locale (vitrin select --primary-locale ${config.app.locales[0]}).`);
     }
     for (const extra of await strayLocaleDirs(paths.storeMetadata, config.app.locales)) {
-      // `android/` is supply's Google Play folder.
+      // `android/` is the Google Play tree a Vitrin before 2.1 left here; it is ignored.
       if (!['default', 'android'].includes(extra)) issues.error('metadata.stray-locale', `metadata/store/metadata/${extra} is a locale not in the config; it would be uploaded too.`);
     }
     const keywordPlans = new Map<string, KeywordPlan>();
@@ -87,19 +85,6 @@ export async function validateAll(paths: AppPaths, config: VitrinConfig, scope: 
     const text = validateText({ config, profile, competitors, appMetadata, locales, keywordPlans, live });
     issues.push(...text.issues.items);
     measurements = text.measurements;
-    if (profile?.app.platforms.includes('android')) {
-      const listings = new Map<string, PlayListing>();
-      for (const locale of config.app.locales) {
-        const l = await load(join(paths.metadataDir, 'play', `${locale}.json`), PlayListing);
-        if (l) listings.set(locale, l);
-      }
-      const playApp = await load(join(paths.metadataDir, 'play', 'app.json'), PlayAppMetadata);
-      if (listings.size) {
-        const play = validatePlayText({ config, profile, competitors, listings, app: playApp });
-        issues.push(...play.issues.items);
-        Object.assign(measurements, play.measurements);
-      }
-    }
   }
 
   if (scope.claims !== false && profile) {

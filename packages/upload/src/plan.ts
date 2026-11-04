@@ -1,20 +1,16 @@
 import { existsSync, type AppPaths } from '@vitrin/core';
-import { uploaderOf, type CppSuggestions, type Experiment, type LocaleMetadata, type Platform, type RenderTarget, type ShotList, type Store, type VitrinConfig } from '@vitrin/schemas';
+import { uploaderOf, type CppSuggestions, type Experiment, type LocaleMetadata, type Platform, type RenderTarget, type ShotList, type VitrinConfig } from '@vitrin/schemas';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { isEditableVersion, type AscClient } from './asc-client.js';
 import { ASC_PLATFORM, applePlatformsOf, platformsFromConfig, routeAssets, type AppStorePlatform, type RenderedAsset } from './platforms.js';
 import { resolveScope, type StoreScope } from './scope.js';
 import { classicTypeFor, displayTypesFor, perTypeRoute } from './display-types.js';
-import { buildPlayPlan, type PlayImageIssue, type PlayImageSet, type PlayInputs } from './play.js';
-import type { PlayRemoteState } from './play-client.js';
 
 export type ChangeKind = 'create' | 'update' | 'unchanged' | 'unknown' | 'skip';
 
 export interface PlanItem {
   area: 'metadata' | 'screenshots' | 'previews' | 'creatives' | 'cpp' | 'events' | 'experiments' | 'app';
-  /** Missing = app-store (kept optional so older plan files still read). */
-  store?: Store;
   /** App Store version platform for items that belong to one version (ios, osx, appletvos, xros). */
   platform?: string;
   locale?: string;
@@ -24,9 +20,9 @@ export interface PlanItem {
   remote?: string;
   /**
    * asc-cli: the asc CLI (text, classic screenshot/preview sets); asset-library: the App Asset Library (Duo,
-   * creatives); asc-api: Vitrin's own ASC API calls (CPP, events, tests); supply: Google Play.
+   * creatives); asc-api: Vitrin's own ASC API calls (CPP, events, tests).
    */
-  via: 'asset-library' | 'asc-api' | 'asc-cli' | 'supply';
+  via: 'asset-library' | 'asc-api' | 'asc-cli';
   note?: string;
 }
 
@@ -52,8 +48,6 @@ export interface UploadPlan {
   firstRelease?: boolean;
   /** Every App Store version of the app, iOS first. */
   platforms: PlatformPlan[];
-  /** Google Play part, when the app ships on Android. */
-  play?: { packageName?: string; track: string; versionCode?: number; remoteKnown: boolean; warnings: string[] };
   /** What this run replaces and what it leaves untouched, per platform (config.selection). */
   scope?: StoreScope;
   items: PlanItem[];
@@ -94,16 +88,6 @@ export function isActive(s: StoreScope['apple'][number] | undefined): boolean {
 
 type Loc = { id: string; attributes: Record<string, string | null> };
 
-export interface PlayPlanInput {
-  packageName?: string;
-  inputs: PlayInputs;
-  sets: PlayImageSet[];
-  imageIssues: PlayImageIssue[];
-  stray?: string[];
-  /** PlayClient.readState result; undefined = remote unknown. */
-  remote?: PlayRemoteState;
-}
-
 export async function buildPlan(opts: {
   paths: AppPaths;
   config: VitrinConfig;
@@ -121,7 +105,6 @@ export async function buildPlan(opts: {
   assets?: RenderedAsset[];
   /** Targets enabled for the app (the plan names the ones a run leaves untouched). */
   enabledTargets?: RenderTarget[];
-  play?: PlayPlanInput;
 }): Promise<UploadPlan> {
   const { config, metadata, client } = opts;
   const uploader = uploaderOf(config);
@@ -290,21 +273,11 @@ export async function buildPlan(opts: {
     plan.items.push({ area: 'experiments', field: e.name, change: 'create', via: 'asc-api', note: `${e.treatments.length} treatment(s), ${sets} with their own screenshots (metadata/store/experiments/${e.id}), ${e.trafficProportion} % of traffic; a draft: App Review checks it, you start it in App Store Connect` });
   }
 
-  // ---- Google Play ----
-  if (opts.play && scope?.play && !scope.play.selected) {
-    plan.items.push({ area: 'app', store: 'google-play', change: 'skip', via: 'supply', note: scope.play.untouched[0] });
-  } else if (opts.play) {
-    const pr = buildPlayPlan({ ...opts.play, scope: scope?.play });
-    plan.play = { packageName: opts.play.packageName, track: opts.play.inputs.app.track, versionCode: opts.play.inputs.app.versionCode, remoteKnown: Boolean(opts.play.remote), warnings: pr.warnings };
-    for (const it of pr.items) plan.items.push({ ...it, store: 'google-play', via: 'supply' });
-    plan.blockers.push(...pr.blockers.map((b) => `Google Play: ${b}`));
-  }
   return plan;
 }
 
 function sectionOf(it: PlanItem, multi: boolean): string {
-  if (it.area === 'app' && it.change === 'skip') return `untouched · ${it.store === 'google-play' ? 'Google Play' : (PLATFORM_LABEL[it.platform as AppStorePlatform] ?? it.platform ?? 'App Store')}`;
-  if (it.store === 'google-play') return `Google Play · ${it.area}`;
+  if (it.area === 'app' && it.change === 'skip') return `untouched · ${PLATFORM_LABEL[it.platform as AppStorePlatform] ?? it.platform ?? 'App Store'}`;
   // With a single Apple platform the suffix only splits shared app info from version text; leave it out.
   return it.platform && multi ? `${it.area} · ${PLATFORM_LABEL[it.platform as AppStorePlatform] ?? it.platform}` : it.area;
 }
@@ -316,7 +289,6 @@ export function formatPlan(plan: UploadPlan): string {
     if (p.version) lines.push(`Version (${PLATFORM_LABEL[p.platform]}): ${p.version.versionString} — ${p.version.state}${p.firstRelease ? ' (first release)' : ''}`);
   }
   if (plan.platforms.length) lines.push(`Uploader: ${plan.uploader}${plan.remoteKnown ? '' : '  (not connected to ASC: remote state unknown)'}`);
-  if (plan.play) lines.push(`Google Play: ${plan.play.packageName ?? '(no package name)'} — track ${plan.play.track}${plan.play.versionCode ? `, version code ${plan.play.versionCode}` : ''}${plan.play.remoteKnown ? '' : '  (not connected to Google Play: remote state unknown)'}`);
   const symbol: Record<ChangeKind, string> = { create: '+', update: '~', unchanged: '=', unknown: '?', skip: '-' };
   let section = '';
   for (const it of plan.items) {
@@ -331,7 +303,6 @@ export function formatPlan(plan: UploadPlan): string {
   }
   const counts = plan.items.reduce<Record<string, number>>((a, i) => ((a[i.change] = (a[i.change] ?? 0) + 1), a), {});
   lines.push('', `Summary: ${Object.entries(counts).map(([k, v]) => `${k}=${v}`).join(', ')}`);
-  for (const w of plan.play?.warnings ?? []) lines.push(`WARNING: Google Play: ${w}`);
   for (const b of plan.blockers) lines.push(`BLOCKED: ${b}`);
   return lines.join('\n');
 }

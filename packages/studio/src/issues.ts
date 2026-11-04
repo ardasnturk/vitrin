@@ -78,7 +78,6 @@ const TR_FAMILY: Record<string, string> = {
   badge: 'Rozet',
   claim: 'İddia',
   event: 'Etkinlik',
-  play: 'Google Play',
   metadata: 'Mağaza metinleri',
   cpp: 'Özel ürün sayfası',
   experiment: 'Ürün sayfası testi',

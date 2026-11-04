@@ -22,9 +22,8 @@ export async function initCommand(opts: { cwd?: string; force?: boolean; uploade
     throw err;
   }
 
-  let detectedAndroid: boolean | undefined;
   if (!existsSync(paths.config) || opts.force) {
-    let detected: { project?: string; scheme?: string; bundleId?: string; locales: string[]; primary: string; holder?: string; android?: boolean } = { locales: ['en-US'], primary: 'en-US' };
+    let detected: { project?: string; scheme?: string; bundleId?: string; locales: string[]; primary: string; holder?: string } = { locales: ['en-US'], primary: 'en-US' };
     try {
       const loc = await locateProject(root);
       const profile = await analyzeProject({ root });
@@ -36,7 +35,6 @@ export async function initCommand(opts: { cwd?: string; force?: boolean; uploade
         bundleId: profile.app.bundleId,
         locales: asc.length ? [...new Set(asc)] : ['en-US'],
         primary: dev,
-        android: profile.app.platforms.includes('android'),
       };
       log.ok(`Xcode project: ${detected.project} (scheme ${detected.scheme}, ${detected.locales.join(', ')})`);
     } catch (err) {
@@ -71,7 +69,7 @@ export async function initCommand(opts: { cwd?: string; force?: boolean; uploade
         simulators: {},
       },
       video: { enabled: true, loops: true },
-      // App Store uploads use the asc CLI (no uploader choice); Google Play uses fastlane supply.
+      // App Store uploads use the asc CLI (no uploader choice).
       upload: { platform: 'ios' },
     };
     const header = [
@@ -80,7 +78,6 @@ export async function initCommand(opts: { cwd?: string; force?: boolean; uploade
       '# research.seeds and capture.screens are filled in by Claude while the /vitrin skill runs.',
       '',
     ].join('\n');
-    detectedAndroid = detected.android;
     await writeText(paths.config, header + stringify(config, { lineWidth: 120 }));
     log.ok('Created vitrin.config.yaml');
   } else {
@@ -94,7 +91,6 @@ export async function initCommand(opts: { cwd?: string; force?: boolean; uploade
   if (gi.changed) log.ok('.gitignore: wrote the Vitrin block (secrets and generated files are not committed).');
   if (gi.trackedIgnored.length) log.warn(`Already tracked but now ignored: ${gi.trackedIgnored.map((g) => g.path).join(', ')} — to stop tracking: git rm -r --cached ${gi.trackedIgnored.map((g) => g.path).join(' ')}`);
 
-  if (detectedAndroid) log.dim('Google Play uploads use fastlane supply; its Fastfile is written only when the upload is prepared.');
   log.dim(`App Store uploads use the asc CLI (${ASC_INSTALL_HINT}); it is needed only for the upload.`);
   log.info('\nNext step: `vitrin doctor --tools` (keys are needed only for the upload).');
   return 0;

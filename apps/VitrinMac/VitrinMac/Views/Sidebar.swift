@@ -152,6 +152,16 @@ struct Sidebar: View {
                 Circle().fill(accountTone.color).frame(width: 7, height: 7)
                 SettingsButton { Image(systemName: "gearshape") }.buttonStyle(.borderless).help(L.t("settings.title"))
             }
+            if let version = model.updates.available {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(L.t("updates.banner").replacingOccurrences(of: "{version}", with: version)).font(.caption.weight(.medium))
+                    UpdateButton().controlSize(.small)
+                }
+            } else if case .downloading(let progress) = model.updates.state {
+                ProgressView(value: progress) { Text(L.t("updates.downloading")).font(.caption) }
+            } else if model.updates.state == .installing {
+                Text(L.t("updates.installing")).font(.caption).foregroundStyle(.secondary)
+            }
             HStack(spacing: 6) {
                 if model.locating { ProgressView().controlSize(.mini) }
                 else { Image(systemName: model.cli == nil ? "exclamationmark.circle" : "terminal").foregroundStyle(model.cli == nil ? .orange : .secondary) }

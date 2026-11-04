@@ -72,7 +72,7 @@ export function Video({ openClaude }: { openClaude: () => void }) {
         </Button>
         {hasBrief && (
           <Button kind="primary" disabled={busy || !o.claude.available} onClick={() => api.askClaude({ stage: 'video' }).then(openClaude).catch((err) => toast((err as Error).message, 'err'))}>
-            ✳ {t('askClaude')}
+            ✳︎ {t('askClaude')}
           </Button>
         )}
         <span className="grow" />

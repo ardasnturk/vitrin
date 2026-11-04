@@ -26,8 +26,7 @@ struct UploadView: View {
     /// asc is the one uploader; it only has to be installed.
     private var toolVersion: String? { overview.tools.asc }
     private var uploaderOk: Bool { toolVersion != nil }
-    /// The App Store keys count as present when the app is connected (Vitrin's key or asc's own login); the
-    /// Google Play key still comes from the project's .env.
+    /// The App Store keys count as present when the app is connected (Vitrin's key or asc's own login).
     private var ascKeyNames: Set<String> { ["ASC_KEY_ID", "ASC_ISSUER_ID", "ASC_KEY_PATH", "ASC_KEY_CONTENT_BASE64"] }
     private var missingKeys: [String] { overview.missingKeys.filter { !(model.connection.isConnected && ascKeyNames.contains($0)) } }
     private var keysOk: Bool { missingKeys.isEmpty }
@@ -36,11 +35,9 @@ struct UploadView: View {
     private var uploaded: ApprovalSummary.Upload? { overview.approval?.upload }
     private var waiting: [String] { [uploaderOk ? nil : L.t("upload.stepUploader"), keysOk ? nil : L.t("upload.stepKeys"), approved ? nil : L.t("upload.stepApproval")].compactMap { $0 } }
     private var appName: String { overview.app?.name ?? "" }
-    /// The key names the upload needs for this app's platforms: present ones from the env key list, missing ones from the overview.
+    /// The key names the upload needs: present ones from the env key list, missing ones from the overview.
     private var keyNames: [(name: String, present: Bool)] {
-        let platforms = overview.app?.platforms ?? ["ios"]
-        var names = platforms.contains(where: { $0 != "android" }) ? ["ASC_KEY_ID", "ASC_ISSUER_ID", "ASC_KEY_PATH"] : []
-        if platforms.contains("android") { names.append("GOOGLE_PLAY_JSON_KEY_PATH") }
+        var names = ["ASC_KEY_ID", "ASC_ISSUER_ID", "ASC_KEY_PATH"]
         for m in missingKeys where !names.contains(m) { names.append(m) }
         return names.map { ($0, !missingKeys.contains($0)) }
     }

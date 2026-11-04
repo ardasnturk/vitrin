@@ -204,18 +204,10 @@ struct UpdateSettings: View {
                 Toggle(L.t("settings.checkUpdates"), isOn: $settings.checkForUpdates)
                 LabeledContent(L.t("updates.app"), value: u.appVersion)
                 LabeledContent(L.t("updates.cli"), value: u.cliVersion ?? "—")
-                LabeledContent(L.t("updates.latest")) {
-                    switch u.state {
-                    case .idle: Text(u.latest?.version ?? "—")
-                    case .checking: ProgressView().controlSize(.small)
-                    case .upToDate: Label(L.t("updates.upToDate"), systemImage: "checkmark.circle.fill").foregroundStyle(.green)
-                    case .available(let v): Label(L.t("updates.availableBody").replacingOccurrences(of: "{version}", with: v).replacingOccurrences(of: "{current}", with: u.cliVersion ?? u.appVersion), systemImage: "arrow.down.circle.fill").foregroundStyle(.orange)
-                    case .failed(let e): Text(e).foregroundStyle(.red)
-                    }
-                }
+                UpdateStatus()
                 if let at = u.checkedAt { Text("\(L.t("updates.checkedAt")) \(at.formatted(date: .abbreviated, time: .shortened))").font(.caption).foregroundStyle(.secondary) }
                 HStack {
-                    Button(L.t("updates.checkNow")) { Task { await u.check(notify: false) } }.disabled(u.state == .checking)
+                    Button(L.t("updates.checkNow")) { Task { await u.check(notify: false) } }.disabled(u.isBusy)
                     if let r = u.latest { Button(L.t("updates.openRelease")) { NSWorkspace.shared.open(URL(string: r.html_url)!) } }
                 }
                 if let r = u.latest, !r.assets.isEmpty {
@@ -224,11 +216,45 @@ struct UpdateSettings: View {
                 Text(L.t("updates.cliHint")).font(.caption).foregroundStyle(.secondary)
                 if let v = model.cli?.version, v != u.appVersion { ToolInstallButton(tool: .vitrin, prominent: false) }
             }
-            Section("Sparkle") {
-                TextField(L.t("updates.appcast"), text: $settings.appcastURL)
-                Text(L.t("updates.sparkleHint")).font(.caption).foregroundStyle(.secondary)
-            }
         }
         .formStyle(.grouped)
+    }
+}
+
+/// The update's state with its action: install, progress or the failure.
+struct UpdateStatus: View {
+    @Environment(AppModel.self) private var model
+    var body: some View {
+        let u = model.updates
+        switch u.state {
+        case .idle: LabeledContent(L.t("updates.latest"), value: u.latest?.version ?? "—")
+        case .checking: LabeledContent(L.t("updates.latest")) { ProgressView().controlSize(.small) }
+        case .upToDate: LabeledContent(L.t("updates.latest")) { Label(L.t("updates.upToDate"), systemImage: "checkmark.circle.fill").foregroundStyle(.green) }
+        case .available(let v):
+            LabeledContent(L.t("updates.availableTitle"), value: v)
+            UpdateButton()
+        case .downloading(let progress): ProgressView(value: progress) { Text(L.t("updates.downloading")) }
+        case .installing: LabeledContent(L.t("updates.installing")) { ProgressView().controlSize(.small) }
+        case .failed(let e):
+            Text(e).foregroundStyle(.red).fixedSize(horizontal: false, vertical: true)
+            if u.latest != nil, UpdateChecker.compare(u.latest?.version ?? "0", u.appVersion) > 0 { UpdateRetry() }
+        }
+    }
+}
+
+struct UpdateButton: View {
+    @Environment(AppModel.self) private var model
+    var body: some View {
+        Button(L.t("updates.install")) { Task { await model.updates.install() } }
+            .buttonStyle(GradientButtonStyle(fullWidth: false))
+            .accessibilityIdentifier("updates.install")
+    }
+}
+
+/// After a failed install: check again, which brings the install button back.
+private struct UpdateRetry: View {
+    @Environment(AppModel.self) private var model
+    var body: some View {
+        Button(L.t("common.retry")) { Task { await model.updates.check(notify: false) } }
     }
 }

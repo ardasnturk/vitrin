@@ -1,4 +1,4 @@
-import { legacyUploaderOf, VitrinConfig } from '@vitrin/schemas';
+import { androidEntriesOf, legacyUploaderOf, VitrinConfig } from '@vitrin/schemas';
 import { parse as parseDotenv } from 'dotenv';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, isAbsolute, resolve } from 'node:path';
@@ -12,6 +12,11 @@ export function loadConfig(file: string): VitrinConfig {
   }
   const data = parseYaml(readFileSync(file, 'utf8')) ?? {};
   const config = parseWith(file, data, VitrinConfig);
+  const android = androidEntriesOf(data);
+  if (android.length && !warnedAndroid.has(file)) {
+    warnedAndroid.add(file);
+    log.warn(`vitrin.config.yaml still names Android (${android.join(', ')}): Vitrin is for Apple platforms only now, so these entries are ignored. Delete them from the file.`);
+  }
   const legacy = legacyUploaderOf(config);
   if (legacy && !warnedLegacyUploader.has(file)) {
     // Once per config file and process: the Studio re-reads the config on every request.
@@ -22,6 +27,7 @@ export function loadConfig(file: string): VitrinConfig {
 }
 
 const warnedLegacyUploader = new Set<string>();
+const warnedAndroid = new Set<string>();
 
 /**
  * Loads `.env` without overriding variables already set in the process environment,

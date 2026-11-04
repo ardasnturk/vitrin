@@ -5,16 +5,16 @@
     "url": "https://github.com/ardasnturk"
   },
   "metadata": {
-    "description": "Vitrin: App Store Connect and Google Play listings, screenshots and App Previews from your app repository."
+    "description": "Vitrin: App Store Connect listings, screenshots and App Previews from your app repository."
   },
   "plugins": [
     {
       "name": "vitrin",
       "source": "./plugins/vitrin",
-      "description": "The /vitrin skill plus a self-installing vitrin CLI: ASO metadata, HTML-rendered screenshots, Remotion App Previews, validation, review and upload for App Store Connect and Google Play.",
-      "version": "2.0.1",
+      "description": "The /vitrin skill plus a self-installing vitrin CLI: ASO metadata, HTML-rendered screenshots, Remotion App Previews, validation, review and upload for App Store Connect.",
+      "version": "2.1.0",
       "category": "productivity",
-      "tags": ["app-store", "app-store-connect", "google-play", "aso", "screenshots", "app-preview", "fastlane", "ios"]
+      "tags": ["app-store", "app-store-connect", "aso", "screenshots", "app-preview", "ios"]
     }
   ]
 }

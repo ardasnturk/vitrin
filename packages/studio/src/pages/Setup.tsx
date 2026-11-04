@@ -11,7 +11,7 @@ import { Button, Card, Check, Field, Pill, Radio, Select } from '../ui';
  * saves them with `vitrin select` (or discards them) and appears only when something changed.
  */
 
-const PLATFORM_LABEL: Record<string, UiKey> = { ios: 'platformIos', macos: 'platformMacos', watchos: 'platformWatchos', tvos: 'platformTvos', visionos: 'platformVisionos', android: 'platformAndroid' };
+const PLATFORM_LABEL: Record<string, UiKey> = { ios: 'platformIos', macos: 'platformMacos', watchos: 'platformWatchos', tvos: 'platformTvos', visionos: 'platformVisionos' };
 const ASSET_LABEL: Record<string, UiKey> = { metadata: 'assetMetadata', screenshots: 'assetScreenshots', previews: 'assetPreviews', creatives: 'assetCreatives', events: 'assetEvents' };
 const KIND_LABEL: Record<string, UiKey> = { screenshot: 'kindScreenshot', preview: 'kindPreview', creative: 'kindCreative', event: 'kindEvent' };
 const CAPTURE: Array<{ mode: string; label: UiKey; hint: UiKey }> = [
@@ -20,7 +20,7 @@ const CAPTURE: Array<{ mode: string; label: UiKey; hint: UiKey }> = [
   { mode: 'manual', label: 'captureManual', hint: 'captureManualHint' },
 ];
 /** Example lines for .env: names only, never values. */
-const ENV_LINE: Record<string, string> = { ASC_KEY_PATH: 'ASC_KEY_PATH=./secrets/AuthKey_XXXXXXXXXX.p8', GOOGLE_PLAY_JSON_KEY_PATH: 'GOOGLE_PLAY_JSON_KEY_PATH=./secrets/google-play.json' };
+const ENV_LINE: Record<string, string> = { ASC_KEY_PATH: 'ASC_KEY_PATH=./secrets/AuthKey_XXXXXXXXXX.p8' };
 
 interface Draft {
   platforms: string[];
@@ -292,17 +292,11 @@ function NewLocale({ onAdd }: { onAdd: (locale: string) => void }) {
 /** Each tool, why this run needs it (or not, for this selection) and how to install it. */
 function Tools({ o, draft }: { o: Overview; draft: Draft }) {
   const video = o.flow.find((s) => s.id === 'video')?.status !== 'skipped';
-  // App Store uploads use the asc CLI; fastlane (with Ruby and Bundler) is only for Google Play.
-  const apple = !draft.platforms.length || draft.platforms.some((p) => p !== 'android');
-  const fastlane = draft.platforms.includes('android');
   const rows: Array<{ id: Exclude<keyof Overview['tools'], 'ascLogin'>; why: UiKey; needed: boolean; install: string }> = [
     { id: 'claude', why: 'toolWhyClaude', needed: true, install: 'npm install -g @anthropic-ai/claude-code' },
     { id: 'ffmpeg', why: 'toolWhyFfmpeg', needed: video, install: 'brew install ffmpeg' },
-    { id: 'asc', why: 'toolWhyAsc', needed: apple, install: 'brew install asc' },
-    { id: 'fastlane', why: 'toolWhyFastlane', needed: fastlane, install: 'bundle install' },
-    { id: 'ruby', why: 'toolWhyRuby', needed: fastlane, install: 'brew install ruby' },
-    { id: 'bundler', why: 'toolWhyBundler', needed: fastlane, install: 'gem install bundler' },
-    { id: 'brew', why: 'toolWhyBrew', needed: (video && !o.tools.ffmpeg) || (apple && !o.tools.asc), install: 'https://brew.sh' },
+    { id: 'asc', why: 'toolWhyAsc', needed: true, install: 'brew install asc' },
+    { id: 'brew', why: 'toolWhyBrew', needed: (video && !o.tools.ffmpeg) || !o.tools.asc, install: 'https://brew.sh' },
   ];
   return (
     <div className="tools">
@@ -328,7 +322,6 @@ function Tools({ o, draft }: { o: Overview; draft: Draft }) {
 function Keys({ o }: { o: Overview }) {
   if (o.missingKeys.length === 0) return <Pill tone="ok">{t('keysOk')}</Pill>;
   const apple = o.missingKeys.some((k) => k.startsWith('ASC_'));
-  const play = o.missingKeys.some((k) => k.startsWith('GOOGLE_PLAY_'));
   return (
     <>
       <div>
@@ -351,7 +344,6 @@ function Keys({ o }: { o: Overview }) {
           </ol>
         </div>
       )}
-      {play && <div className="small">{t('keysPlayStep')}</div>}
       <div className="dim small">{t('keysEnvSnippet')}</div>
       <CopyCode block text={o.missingKeys.map((k) => ENV_LINE[k] ?? `${k}=`).join('\n')} />
       <div className="dim small">{t('keysHint')}</div>

@@ -54,7 +54,7 @@ export function Pipeline({ openClaude }: { openClaude: () => void }) {
   };
   const claudeButton = (name: string, size?: 'sm') => (
     <Button size={size} kind="primary" disabled={busy || !o.claude.available} title={o.claude.available ? t('askClaudeHint') : t('claudeMissing')} onClick={() => askClaude(name)}>
-      ✳ {t('askClaude')}
+      ✳︎ {t('askClaude')}
     </Button>
   );
   const runButton = (id: PipelineStage, opts: { size?: 'sm'; primary?: boolean; force?: boolean } = {}) => {
@@ -170,7 +170,7 @@ export function Pipeline({ openClaude }: { openClaude: () => void }) {
           wide
           actions={
             <Button kind="primary" size="sm" disabled={busy || !o.claude.available} onClick={() => askClaude(brief.name).then(() => setBrief(undefined))}>
-              ✳ {t('askClaude')}
+              ✳︎ {t('askClaude')}
             </Button>
           }
         >

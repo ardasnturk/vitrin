@@ -6,7 +6,7 @@ final class ToolInstallerTests: XCTestCase {
         XCTAssertEqual(LocalTool(hint: "npm install -g @anthropic-ai/claude-code"), .claude)
         XCTAssertEqual(LocalTool(hint: "brew install asc"), .asc)
         XCTAssertEqual(LocalTool(hint: "brew install ffmpeg"), .ffmpeg)
-        XCTAssertNil(LocalTool(hint: "bundle install"))
+        XCTAssertNil(LocalTool(hint: "pod install"))
     }
 
     func testTheNewestLTSAtTheMinimumMajorIsPicked() {

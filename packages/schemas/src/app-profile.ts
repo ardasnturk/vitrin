@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { AscLocale, Evidence, FeatureId, HexColor, Timestamp } from './common.js';
-import { PlatformEnum } from './targets.js';
+import { PlatformList } from './targets.js';
 
 /** How the app is built: native Xcode (Swift/SwiftUI, the primary case) or a cross-platform framework. */
 export const ProjectKind = z.enum(['native', 'flutter', 'react-native', 'expo']);
@@ -17,7 +17,7 @@ export const ProjectTarget = z.object({
   /** Values of TARGETED_DEVICE_FAMILY mapped to names. */
   devices: z.array(z.enum(['iphone', 'ipad', 'mac', 'vision', 'tv', 'watch'])).default([]),
   /** Platforms the target builds for (SDKROOT, SUPPORTED_PLATFORMS, Mac Catalyst). "Designed for iPad" on Mac/Vision does not count. */
-  platforms: z.array(PlatformEnum).default([]),
+  platforms: PlatformList.default([]),
   /** The macOS build of this target is Mac Catalyst (`platform=macOS,variant=Mac Catalyst`). */
   macCatalyst: z.boolean().default(false),
   infoPlist: z.string().optional(),
@@ -53,9 +53,6 @@ export const AppProfile = z.object({
     kind: ProjectKind.default('native'),
     /** Directory of the iOS host project relative to root (`ios` for Flutter/React Native, `.` for native). */
     iosDir: z.string().optional(),
-    /** Android Gradle project directory relative to root (`android` for Flutter/React Native, or a native Android app). */
-    androidDir: z.string().optional(),
-    androidApplicationId: z.string().optional(),
     /** Flutter desktop host project (`macos`), when present. */
     macosDir: z.string().optional(),
     /** Expo app whose native folders are missing: capture runs `npx expo prebuild` first. */
@@ -76,11 +73,9 @@ export const AppProfile = z.object({
     /** iPhone Duo (foldable) layouts detected in the project. */
     supportsDuo: z.boolean().default(false),
     /** Every platform the project ships on, detected from targets, SDKs and framework folders. */
-    platforms: z.array(PlatformEnum).default(['ios']),
-    /** Why each platform was detected (pbxproj build settings, framework folders, Gradle module). */
+    platforms: PlatformList.default(['ios']),
+    /** Why each platform was detected (pbxproj build settings, framework folders). */
     platformEvidence: z.record(z.string(), z.array(Evidence)).default({}),
-    /** Android tablet layouts (sw600dp/sw720dp resources) detected; gates the Google Play tablet targets. */
-    supportsAndroidTablet: z.boolean().default(false),
     developmentRegion: z.string().optional(),
     knownRegions: z.array(z.string()).default([]),
     locales: z.array(LocaleMapping).default([]),

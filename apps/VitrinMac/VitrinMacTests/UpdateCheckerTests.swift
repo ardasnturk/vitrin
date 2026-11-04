@@ -34,4 +34,18 @@ final class UpdateCheckerTests: XCTestCase {
         XCTAssertEqual(r.version, "1.4.0")
         XCTAssertEqual(r.assets.first?.name, "SHA256SUMS")
     }
+
+    func testAReleaseNamesItsOwnDMGAndChecksum() throws {
+        let json = #"{"tag_name":"v2.1.0","html_url":"https://x","assets":[{"name":"ardasnturk-vitrin-2.1.0.tgz","browser_download_url":"https://x/a","size":1},{"name":"Vitrin-2.1.0.dmg","browser_download_url":"https://x/d","size":2},{"name":"Vitrin-2.1.0.dmg.sha256","browser_download_url":"https://x/s","size":3}]}"#
+        let release = try JSONDecoder().decode(UpdateChecker.Release.self, from: Data(json.utf8))
+        XCTAssertEqual(release.dmg?.browser_download_url, "https://x/d")
+        XCTAssertEqual(release.checksum?.browser_download_url, "https://x/s")
+    }
+
+    func testTheChecksumFileIsRead() {
+        let hash = String(repeating: "a", count: 64)
+        XCTAssertEqual(UpdateChecker.digest(from: "\(hash)  dist/Vitrin-2.1.0.dmg\n", fileName: "Vitrin-2.1.0.dmg"), hash)
+        XCTAssertEqual(UpdateChecker.digest(from: "\(hash.uppercased())  Vitrin-2.1.0.dmg", fileName: "Vitrin-2.1.0.dmg"), hash)
+        XCTAssertNil(UpdateChecker.digest(from: "not a checksum", fileName: "Vitrin-2.1.0.dmg"))
+    }
 }

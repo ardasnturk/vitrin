@@ -49,8 +49,6 @@
         "uploadPlan": true,
         "renderManifest": true,
         "reviewFeedback": false,
-        "gemfile": true,
-        "fastfile": true,
         "env": false,
         "screensKit": true
     },
@@ -58,7 +56,6 @@
         "en-US",
         "tr"
     ],
-    "playListing": [],
     "briefs": [
         {
             "name": "design",
@@ -643,9 +640,6 @@
     "cpp": {},
     "tools": {
         "asc": "5.17.1",
-        "fastlane": "2.241.1",
-        "ruby": "4.0.7",
-        "bundler": "4.0.20",
         "brew": "7.0.12",
         "claude": "/opt/homebrew/bin/claude",
         "ffmpeg": "/opt/homebrew/bin/ffmpeg"
@@ -983,24 +977,6 @@
                         "preview-vision"
                     ],
                     "creatives": [],
-                    "events": []
-                }
-            },
-            {
-                "platform": "android",
-                "label": "Android (Google Play)",
-                "detected": false,
-                "selected": false,
-                "evidence": [],
-                "targets": {
-                    "screenshots": [
-                        "play-phone"
-                    ],
-                    "previews": [],
-                    "creatives": [
-                        "play-feature-graphic",
-                        "play-icon"
-                    ],
                     "events": []
                 }
             }

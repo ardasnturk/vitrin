@@ -86,7 +86,7 @@ export function Design({ openClaude }: { openClaude: () => void }) {
         <span className="grow" />
         {hasBrief && (
           <Button kind="primary" disabled={busy || !o.claude.available} onClick={() => api.askClaude({ stage: 'design' }).then(openClaude).catch((err) => toast((err as Error).message, 'err'))}>
-            ✳ {t('askClaude')}
+            ✳︎ {t('askClaude')}
           </Button>
         )}
       </div>

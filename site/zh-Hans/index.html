@@ -1,0 +1,648 @@
+<!doctype html>
+<html data-copied="已拷贝" data-copy-fallback="按下 ⌘C" lang="zh-Hans">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vitrin — 用代码生成你的商店页面</title>
+  <meta name="description" content="免费开源。Vitrin 读取 App 的代码，为 App Store 制作元数据、截图和 App 预览，再用一个 Mac App 管理整个 App Store Connect。">
+  <link rel="canonical" href="https://vitrin.ardasnturk.com/zh-Hans/">
+  <link rel="alternate" hreflang="en" href="https://vitrin.ardasnturk.com/">
+  <link rel="alternate" hreflang="tr" href="https://vitrin.ardasnturk.com/tr/">
+  <link rel="alternate" hreflang="de" href="https://vitrin.ardasnturk.com/de/">
+  <link rel="alternate" hreflang="es" href="https://vitrin.ardasnturk.com/es/">
+  <link rel="alternate" hreflang="fr" href="https://vitrin.ardasnturk.com/fr/">
+  <link rel="alternate" hreflang="it" href="https://vitrin.ardasnturk.com/it/">
+  <link rel="alternate" hreflang="ja" href="https://vitrin.ardasnturk.com/ja/">
+  <link rel="alternate" hreflang="ko" href="https://vitrin.ardasnturk.com/ko/">
+  <link rel="alternate" hreflang="pt-BR" href="https://vitrin.ardasnturk.com/pt-BR/">
+  <link rel="alternate" hreflang="zh-Hans" href="https://vitrin.ardasnturk.com/zh-Hans/">
+  <link rel="alternate" hreflang="x-default" href="https://vitrin.ardasnturk.com/">
+  <meta name="theme-color" content="#FFF8F3" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#140D11" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="../favicon.ico" sizes="32x32">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+  <link rel="manifest" href="../site.webmanifest">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Vitrin">
+  <meta property="og:title" content="Vitrin — 用代码生成你的商店页面">
+  <meta property="og:description" content="从代码生成元数据、截图和 App 预览，按 App Store 规则检查，经你批准后上传。App Store Connect 也能在一个 Mac App 里搞定。">
+  <meta property="og:url" content="https://vitrin.ardasnturk.com/zh-Hans/">
+  <meta property="og:image" content="https://vitrin.ardasnturk.com/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preload" href="../assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../styles.css">
+  <script>document.documentElement.classList.add('js')</script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Vitrin",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "macOS",
+    "description": "开源的 Mac App 和 Claude Code 插件，可生成、验证并上传 App Store 商店页面，还能管理 App Store Connect。",
+    "url": "https://vitrin.ardasnturk.com/",
+    "codeRepository": "https://github.com/ardasnturk/vitrin",
+    "license": "https://opensource.org/licenses/MIT",
+    "softwareVersion": "2.1.0",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">跳到正文</a>
+
+  <svg width="0" height="0" class="sprite" aria-hidden="true">
+    <defs>
+      <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF9E33"/><stop offset=".55" stop-color="#FA6B61"/><stop offset="1" stop-color="#ED5C9E"/></linearGradient>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0 5-5m-5 5-5-5M4 20h16"/></symbol>
+      <symbol id="i-terminal" viewBox="0 0 24 24"><path d="m5 7 5 5-5 5M13 18h7"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.500L19 7.500"/></symbol>
+      <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 10v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9M3 9l2-5h14l2 5a3 3 0 0 1-6 .5 3 3 0 0 1-6 0A3 3 0 0 1 3 9ZM10 20v-5h4v5"/></symbol>
+      <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M12 3.500 13.800 9l5.700 2-5.700 2L12 18.500 10.200 13l-5.700-2 5.700-2zM19 16.500v4M17 18.500h4"/></symbol>
+      <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.700"/><path d="m4 18 5-4.500 3.500 3 3-2.500 4.500 4"/></symbol>
+      <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5zM3 13l9 5 9-5"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.500 3 7.500 7 9 4-1.500 7-4.500 7-9V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5M4 20h16"/></symbol>
+      <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4.500"/><path d="m11.500 11.500 8-8M16 7l3 3"/></symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 4v16h16M8 15l3.500-4 3 2.500L20 8"/></symbol>
+      <symbol id="i-megaphone" viewBox="0 0 24 24"><path d="M4 10v4l14 5V5zM8 15.500V19h3v-2.300M18 9.500a2.500 2.500 0 0 1 0 5"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3.500 15 0 18-3.500-3-3-15 0-18"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+      <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M15 6.500a4 4 0 0 1 5-1.200l-3 3 2 2 3-3M15 6.500A4.500 4.500 0 0 0 14.500 11L5 20l-2-2 9-9.500"/></symbol>
+      <symbol id="i-rocket" viewBox="0 0 24 24"><path d="M9 15c-2-2-2-8 7-12 2 0 3 1 3 3-4 9-8 11-10 9ZM9 15l-3 3M6 13l-3 1 2 2M11 18l-1 3-2-2"/><circle cx="14.500" cy="9.500" r="1.300"/></symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6.500A1.500 1.500 0 0 1 4.500 5H9l2 3h8.500A1.500 1.500 0 0 1 21 9.500v8a1.500 1.500 0 0 1-1.500 1.500h-15A1.500 1.500 0 0 1 3 17.500z"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14-4.500L4 9m0-5v5h5M4 13a8 8 0 0 0 14 4.500l2-2.500m0 5v-5h-5"/></symbol>
+      <symbol id="i-text" viewBox="0 0 24 24"><path d="M5 6h14M5 11h14M5 16h9"/></symbol>
+      <symbol id="i-window" viewBox="0 0 24 24"><rect x="3" y="4.500" width="18" height="15" rx="3"/><path d="M3 9h18M6.500 6.800h.1M9 6.800h.1"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.500 2.700 3.800 5.700 3.800 9s-1.300 6.300-3.800 9c-2.500-2.700-3.800-5.700-3.800-9s1.300-6.300 3.800-9z"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.500v13l10.500-6.500z"/></symbol>
+      <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 18a9.500 9.500 0 1 1 16 0M12 15l4-5.500"/><circle cx="12" cy="15.500" r="1.200"/></symbol>
+      <symbol id="i-devices" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2.500"/><path d="M11 18h2"/></symbol>
+      <symbol id="i-testflight" viewBox="0 0 24 24"><path d="M21 3 3 10.500l7 3 3 7z"/><path d="M10 13.500 21 3"/></symbol>
+      <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 4 2.500 5.200 5.500.8-4 4 1 5.700L12 17.200 7 19.700l1-5.700-4-4 5.500-.8z"/></symbol>
+      <symbol id="i-box" viewBox="0 0 24 24"><path d="m12 3 8 4.500v9L12 21l-8-4.500v-9zM4 7.500l8 4.500 8-4.500M12 12v9"/></symbol>
+      <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="5.500" width="18" height="13" rx="2.500"/><path d="M3 10h18M7 15h4"/></symbol>
+      <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2.500-6 4 12L16 12h5"/></symbol>
+      <symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-4.500 1.500-4.500-2.500-6-3m12 5v-3.500c0-1 .1-1.400-.5-2 2.800-.3 5.500-1.400 5.500-6a4.600 4.600 0 0 0-1.300-3.200 4.300 4.300 0 0 0-.1-3.200s-1.100-.3-3.500 1.300a12 12 0 0 0-6.300 0C6.400 2.800 5.300 3.100 5.300 3.100a4.300 4.300 0 0 0-.1 3.200A4.600 4.600 0 0 0 3.900 9.500c0 4.600 2.700 5.700 5.500 6-.6.600-.6 1.200-.5 2V21"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="progress" aria-hidden="true"></div>
+
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#top" aria-label="Vitrin 首页">
+        <img src="../assets/logo.svg" alt="" width="30" height="30">
+        <span>Vitrin</span>
+      </a>
+      <nav class="nav-links" id="nav-links" aria-label="主导航">
+        <a href="#what">功能介绍</a>
+        <a href="#how">工作方式</a>
+        <a href="#design">设计</a>
+        <a href="#mac">Mac App</a>
+        <a href="#trust">安全</a>
+        <a href="#start">安装</a>
+        <a href="#faq">常见问题</a>
+      </nav>
+      <div class="nav-end">
+        <details class="lang" translate="no"><summary aria-label="语言"><svg class="ico"><use href="#i-globe"/></svg><span>简体中文</span></summary><div class="lang-list"><a href="../" hreflang="en" lang="en" translate="no">English</a><a href="../tr/" hreflang="tr" lang="tr" translate="no">Türkçe</a><a href="../de/" hreflang="de" lang="de" translate="no">Deutsch</a><a href="../es/" hreflang="es" lang="es" translate="no">Español</a><a href="../fr/" hreflang="fr" lang="fr" translate="no">Français</a><a href="../it/" hreflang="it" lang="it" translate="no">Italiano</a><a href="../ja/" hreflang="ja" lang="ja" translate="no">日本語</a><a href="../ko/" hreflang="ko" lang="ko" translate="no">한국어</a><a href="../pt-BR/" hreflang="pt-BR" lang="pt-BR" translate="no">Português (Brasil)</a><a href="../zh-Hans/" hreflang="zh-Hans" lang="zh-Hans" translate="no" aria-current="page">简体中文</a></div></details>
+        <a class="icon-link" href="https://github.com/ardasnturk/vitrin" aria-label="GitHub 上的 Vitrin"><svg class="ico"><use href="#i-github"/></svg></a>
+        <a class="btn btn-primary btn-sm" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg">下载</a>
+        <button class="menu" type="button" aria-label="菜单" aria-expanded="false" aria-controls="nav-links"><svg class="ico"><use href="#i-menu"/></svg></button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero" id="top">
+      <div class="wrap hero-copy">
+        <p class="pill load" style="--d:0"><span class="dot"></span>Vitrin 2.1 · 免费开源</p>
+        <h1 class="load" style="--d:1">你的商店页面，<br><span class="shine">由代码生成。</span></h1>
+        <p class="lead load" style="--d:2">Vitrin 读取你的 App，制作文案、截图和 App 预览，只上传你批准的内容。然后用一个 Mac App 管理整个 App Store Connect。</p>
+        <div class="cta load" style="--d:3">
+          <a class="btn btn-primary" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg"><svg class="ico"><use href="#i-download"/></svg>下载 Mac 版</a>
+          <a class="btn btn-ghost" href="#start"><svg class="ico"><use href="#i-terminal"/></svg>在 Claude Code 中使用</a>
+        </div>
+        <p class="fine load" style="--d:4">macOS 15 或更高版本 · 已公证 · MIT 许可证 · 无需额外的 AI 密钥</p>
+      </div>
+
+      <div class="wrap stage-wrap load" style="--d:5">
+        <div class="awning" aria-hidden="true"></div>
+        <div class="win" id="win" role="group" aria-label="Vitrin for Mac 一览，以示例 App Ritim 为例">
+          <div class="win-bar"><i></i><i></i><i></i><span>Ritim <em>com.jastech.ritim</em></span></div>
+          <div class="win-body">
+            <aside class="win-side" aria-hidden="true">
+              <b>App</b>
+              <span class="on"><i class="mini-icon"></i>Ritim</span>
+              <span><i class="mini-icon alt"></i>Atlas Notes</span>
+              <span><i class="mini-icon third"></i>Tempo</span>
+              <b>团队</b>
+              <span><svg class="ico"><use href="#i-key"/></svg>用户</span>
+              <span><svg class="ico"><use href="#i-devices"/></svg>设备</span>
+              <span><svg class="ico"><use href="#i-shield"/></svg>证书</span>
+              <span><svg class="ico"><use href="#i-megaphone"/></svg>Apple Ads</span>
+            </aside>
+            <div class="win-main">
+              <div class="app-head">
+                <i class="app-icon" aria-hidden="true"></i>
+                <div><strong>Ritim</strong><small>com.jastech.ritim</small><span class="state"><i></i>iOS 1.2.0 · 可供分发</span></div>
+              </div>
+              <div class="tabs" role="tablist" aria-label="App 页面">
+                <button role="tab" aria-selected="true" aria-controls="p-status" id="t-status" style="--a:#FA6B61;--b:#ED5C9E"><svg class="ico"><use href="#i-pulse"/></svg>状态</button>
+                <button role="tab" aria-selected="false" aria-controls="p-text" id="t-text" tabindex="-1" style="--a:#9E52EB;--b:#ED5C9E"><svg class="ico"><use href="#i-text"/></svg>商店文案</button>
+                <button role="tab" aria-selected="false" aria-controls="p-shots" id="t-shots" tabindex="-1" style="--a:#FF9E33;--b:#FA6B61"><svg class="ico"><use href="#i-image"/></svg>截图</button>
+                <button role="tab" aria-selected="false" aria-controls="p-builds" id="t-builds" tabindex="-1" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-box"/></svg>构建版本</button>
+                <button role="tab" aria-selected="false" aria-controls="p-tf" id="t-tf" tabindex="-1" style="--a:#0DA8AD;--b:#4D5CED"><svg class="ico"><use href="#i-testflight"/></svg>TestFlight</button>
+                <button role="tab" aria-selected="false" aria-controls="p-rev" id="t-rev" tabindex="-1" style="--a:#FF9E33;--b:#FA6B61"><svg class="ico"><use href="#i-star"/></svg>评论</button>
+                <button role="tab" aria-selected="false" aria-controls="p-an" id="t-an" tabindex="-1" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-chart"/></svg>分析</button>
+              </div>
+              <div class="panes">
+                <div class="pane" id="p-status" role="tabpanel" aria-labelledby="t-status">
+                  <div class="tiles">
+                    <div><small>已在商店上架</small><strong>1.2.0</strong><span class="ok">可供分发</span></div>
+                    <div><small>下一版本</small><strong>1.3.0</strong><span class="warn">准备提交</span></div>
+                    <div><small>分阶段发布</small><strong>第 4 天，共 7 天</strong><span class="bar"><i style="--w:43%"></i></span></div>
+                  </div>
+                  <div class="list">
+                    <p><svg class="ico ok"><use href="#i-check"/></svg>已添加构建版本 42</p>
+                    <p><svg class="ico ok"><use href="#i-check"/></svg>商店文案已备好 2 种语言</p>
+                    <p><svg class="ico warn"><use href="#i-sparkles"/></svg>缺少土耳其语的新功能说明</p>
+                  </div>
+                </div>
+                <div class="pane" id="p-text" role="tabpanel" aria-labelledby="t-text" hidden>
+                  <div class="fields">
+                    <label>名称 <span>5 / 30</span><b>Ritim</b></label>
+                    <label>副标题 <span>27 / 30</span><b>养成能坚持的好习惯</b></label>
+                    <label>关键词 <span>96 / 100</span><b>习惯,打卡,连续,日常,目标,每日</b></label>
+                    <label>宣传文本 <span>62 / 170</span><b>每天轻点一下打卡，看着连续记录不断增长。</b></label>
+                  </div>
+                </div>
+                <div class="pane" id="p-shots" role="tabpanel" aria-labelledby="t-shots" hidden>
+                  <div class="shots">
+                    <img src="../assets/midnight-shot-01.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-02.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-03.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-04.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-05.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-06.webp" alt="" loading="lazy" width="500" height="1087">
+                  </div>
+                </div>
+                <div class="pane" id="p-builds" role="tabpanel" aria-labelledby="t-builds" hidden>
+                  <div class="rows">
+                    <p><b>构建版本 42</b><span>1.3.0</span><span class="ok">有效</span><em>今天</em></p>
+                    <p><b>构建版本 41</b><span>1.3.0</span><span class="ok">有效</span><em>昨天</em></p>
+                    <p><b>构建版本 40</b><span>1.2.0</span><span class="warn">12 天后过期</span><em>10月22日</em></p>
+                    <p><b>构建版本 39</b><span>1.2.0</span><span class="dim">已过期</span><em>9月30日</em></p>
+                  </div>
+                </div>
+                <div class="pane" id="p-tf" role="tabpanel" aria-labelledby="t-tf" hidden>
+                  <div class="rows">
+                    <p><b>内部测试员</b><span>6 人</span><span class="ok">构建版本 42</span><em>内部</em></p>
+                    <p><b>Beta 俱乐部</b><span>148 人</span><span class="ok">构建版本 41</span><em>外部</em></p>
+                    <p><b>媒体</b><span>12 人</span><span class="warn">Beta 审核中</span><em>外部</em></p>
+                  </div>
+                </div>
+                <div class="pane" id="p-rev" role="tabpanel" aria-labelledby="t-rev" hidden>
+                  <div class="reviews">
+                    <div><span class="stars" aria-label="5 星">★★★★★</span><b>终于坚持下来了</b><p>连续打卡图表是我坚持的动力。</p><span class="reply">回复</span></div>
+                    <div><span class="stars" aria-label="4 星">★★★★<i>★</i></span><b>几乎完美</b><p>希望能有锁定屏幕小组件。</p><span class="reply">回复</span></div>
+                  </div>
+                </div>
+                <div class="pane" id="p-an" role="tabpanel" aria-labelledby="t-an" hidden>
+                  <div class="tiles"><div><small>展示次数</small><strong>41.2K</strong></div><div><small>下载次数</small><strong>3,180</strong></div><div><small>转化率</small><strong>7.7%</strong></div></div>
+                  <div class="chart" aria-hidden="true"><i style="--h:32%"></i><i style="--h:44%"></i><i style="--h:38%"></i><i style="--h:58%"></i><i style="--h:50%"></i><i style="--h:66%"></i><i style="--h:60%"></i><i style="--h:78%"></i><i style="--h:72%"></i><i style="--h:92%"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="note">示例图，使用仓库中的示例 App Ritim。</p>
+      </div>
+    </section>
+
+    <!-- Numbers -->
+    <section class="numbers" aria-label="一览">
+      <div class="wrap numbers-row reveal">
+        <p><strong data-count="6">6</strong>Apple 平台</p>
+        <p><strong data-count="16">16</strong>风格预设</p>
+        <p><strong data-count="50">50</strong>App Store 语言区域</p>
+        <p><strong data-count="1300" data-sep>1,300</strong>App Store Connect 命令</p>
+        <p><strong data-count="10">10</strong>App 界面语言</p>
+      </div>
+    </section>
+
+    <!-- What it does -->
+    <section id="what" aria-labelledby="what-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">功能介绍</p>
+          <h2 id="what-title">两件事，一个工具。</h2>
+          <p class="sub">每个 App 都需要一个好的商店页面，也需要有人打理。Vitrin 两件事都能做。</p>
+        </div>
+        <div class="jobs">
+          <article class="job reveal">
+            <span class="badge" style="--a:#FF9E33;--b:#ED5C9E"><svg class="ico"><use href="#i-sparkles"/></svg></span>
+            <h3>制作商店页面</h3>
+            <p>Claude 读取你的代码和竞争对手，然后撰写并设计商店页面所需的一切。</p>
+            <ul class="ticks">
+              <li>名称、副标题、关键词、描述、新功能</li>
+              <li>适配所有设备、所有语言的截图</li>
+              <li>App 预览、创意和 App 内活动 卡片</li>
+              <li>按 App Store 规则检查后再上传</li>
+            </ul>
+          </article>
+          <article class="job reveal" style="--stagger:1">
+            <span class="badge" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-store"/></svg></span>
+            <h3>打理商店</h3>
+            <p>团队的所有 App，都在一个原生窗口里。App Store Connect 能做的事，这里都能做，不用开一堆浏览器标签页。</p>
+            <ul class="ticks">
+              <li>版本、构建版本、TestFlight 和评论</li>
+              <li>价格、购买项目、销售和分析</li>
+              <li>用户、设备、证书和 Apple Ads</li>
+              <li>坐在桌前就能提交、发布或分阶段发布版本</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="ways">
+          <h3 class="reveal">按你的方式来用</h3>
+          <div class="ways-row">
+            <article class="way reveal">
+              <svg class="ico"><use href="#i-window"/></svg>
+              <h4>Vitrin for Mac</h4>
+              <p>原生 App。两件事都能做，无需终端。所需工具点一下就能装好。</p>
+            </article>
+            <article class="way reveal" style="--stagger:1">
+              <svg class="ico"><use href="#i-sparkles"/></svg>
+              <h4>Claude Code 插件</h4>
+              <p>在仓库中输入 <code>/vitrin</code>。Claude 会询问你的需求，并逐一完成每个阶段。</p>
+            </article>
+            <article class="way reveal" style="--stagger:2">
+              <svg class="ico"><use href="#i-terminal"/></svg>
+              <h4>CLI 和 Studio</h4>
+              <p>每个阶段都是一条命令。<code>vitrin studio</code> 会在本地网页中打开同样的流程。</p>
+            </article>
+          </div>
+          <p class="also reveal center">在路上？有了 <a href="https://github.com/ardasnturk/remote-code">Remote Code</a>，Vitrin 就是 iPhone 上的原生标签页：项目、每个阶段和 App Store Connect 都在其中。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section id="how" aria-labelledby="how-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">工作方式</p>
+          <h2 id="how-title">从代码到商店，只需四步</h2>
+          <p class="sub">创意工作交给 Claude，选择权在你手中。其余都是经过测试、可以阅读的命令。</p>
+        </div>
+        <div class="how">
+          <ol class="steps">
+            <li class="step" data-step="0">
+              <span class="num">1</span>
+              <h3>分析</h3>
+              <p>Vitrin 从代码中找出你的平台、语言和功能。每项功能都指向能证明它的文件，因此商店页面只会宣传 App 真正能做的事。</p>
+              <p class="also">自动检测 Swift、Flutter、React Native 和 Expo。</p>
+            </li>
+            <li class="step" data-step="1">
+              <span class="num">2</span>
+              <h3>调研</h3>
+              <p>在各个国家或地区搜索 App Store，用设备端 OCR 读取竞争对手的截图，并按相关性、热度和竞争度为关键词打分。</p>
+              <p class="also">平台和语言由你选择，绝不擅自假定。</p>
+            </li>
+            <li class="step" data-step="2">
+              <span class="num">3</span>
+              <h3>制作</h3>
+              <p>Claude 根据代码重建你的界面，无需构建，也无需模拟器。然后 Vitrin 渲染截图和视频，你可以从自己 App 的真实样例中挑选。</p>
+              <p class="also">需要真实截图？也可以在模拟器中构建并拍摄你的 App。</p>
+            </li>
+            <li class="step" data-step="3">
+              <span class="num">4</span>
+              <h3>检查并上传</h3>
+              <p>所有内容都在一个总览中呈现，你可以全部批准，也可以附上意见拒绝单个项目。Vitrin 只上传你批准的内容，并回读商店保存的结果。</p>
+              <p class="also">上传由 asc CLI 完成，无需安装 Ruby。</p>
+            </li>
+          </ol>
+          <div class="scene" aria-hidden="true">
+            <div class="scene-box">
+              <div class="panel" data-panel="0">
+                <p class="panel-title"><svg class="ico"><use href="#i-folder"/></svg>Ritim · App 档案</p>
+                <div class="scan">
+                  <p><b>每日连续记录</b><code>Streaks/StreakView.swift</code></p>
+                  <p><b>提醒</b><code>Reminders/Schedule.swift</code></p>
+                  <p><b>图表</b><code>Stats/ChartsView.swift</code></p>
+                  <p><b>iPhone, iPad</b><code>project.pbxproj</code></p>
+                  <p><b>英语、土耳其语</b><code>Localizable.xcstrings</code></p>
+                </div>
+              </div>
+              <div class="panel" data-panel="1">
+                <p class="panel-title"><svg class="ico"><use href="#i-chart"/></svg>关键词候选 · 中国大陆</p>
+                <div class="kw">
+                  <p>习惯追踪<i style="--w:92%"></i></p>
+                  <p>每日例行<i style="--w:78%"></i></p>
+                  <p>连续打卡<i style="--w:64%"></i></p>
+                  <p>目标规划<i style="--w:55%"></i></p>
+                  <p>自我关怀<i style="--w:41%"></i></p>
+                </div>
+              </div>
+              <div class="panel" data-panel="2">
+                <div class="mini-fan">
+                  <img src="../assets/glass-shot-02.webp" alt="" loading="lazy" width="500" height="1087">
+                  <img src="../assets/midnight-shot-01.webp" alt="" loading="lazy" width="500" height="1087">
+                  <img src="../assets/candy-shot-03.webp" alt="" loading="lazy" width="500" height="1087">
+                </div>
+              </div>
+              <div class="panel" data-panel="3">
+                <p class="panel-title"><svg class="ico"><use href="#i-upload"/></svg>上传方案</p>
+                <div class="plan">
+                  <p><svg class="ico ok"><use href="#i-check"/></svg>文案 · en-US, tr</p>
+                  <p><svg class="ico ok"><use href="#i-check"/></svg>截图 · iPhone 6.9"</p>
+                  <p><svg class="ico ok"><use href="#i-check"/></svg>App 预览 · en-US</p>
+                  <p class="keep">iPad 截图保持不变</p>
+                </div>
+                <span class="go">已批准 · 正在上传</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Design -->
+    <section id="design" aria-labelledby="design-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">设计</p>
+          <h2 id="design-title">有你品牌味道的截图</h2>
+          <p class="sub">16 种风格预设，用你的品牌色着色，还有 Claude 为你的 App 量身打造的设计。标题优先，真实界面呈现在逼真的设备中。</p>
+        </div>
+        <div class="switch reveal" role="tablist" aria-label="风格样例">
+          <button role="tab" aria-selected="true" data-style="midnight">Midnight Glow</button>
+          <button role="tab" aria-selected="false" data-style="glass" tabindex="-1">Liquid Glass</button>
+          <button role="tab" aria-selected="false" data-style="candy" tabindex="-1">Candy Pop</button>
+        </div>
+        <div class="fan reveal" id="fan" role="img" aria-label="示例 App Ritim 在所选风格下的五张商店截图">
+          <img src="../assets/midnight-shot-02.webp" alt="" width="500" height="1087" loading="lazy" data-n="02">
+          <img src="../assets/midnight-shot-03.webp" alt="" width="500" height="1087" loading="lazy" data-n="03">
+          <img src="../assets/midnight-shot-01.webp" alt="" width="500" height="1087" loading="lazy" data-n="01">
+          <img src="../assets/midnight-shot-04.webp" alt="" width="500" height="1087" loading="lazy" data-n="04">
+          <img src="../assets/midnight-shot-05.webp" alt="" width="500" height="1087" loading="lazy" data-n="05">
+        </div>
+
+        <div class="split">
+          <div class="reveal">
+            <h3>你发布的每个平台</h3>
+            <p>精确的像素尺寸，逼真的设备边框。只制作你选择的平台。</p>
+            <ul class="chips">
+              <li>iPhone</li><li>iPad</li><li>Mac</li><li>Apple Watch</li><li>Apple TV</li><li>Vision Pro</li><li>iPhone Duo</li>
+            </ul>
+            <p class="also">还有 21:9 产品页面页眉和 3:2 搜索创意。</p>
+          </div>
+          <div class="reveal" style="--stagger:1">
+            <h3>靠测量，不靠目测</h3>
+            <p>每张图片在呈现给你之前都要通过质量关：设备尺寸、留白、标题宽度和对比度、视觉层次，以及缩略图下的观感。</p>
+            <h3 class="gap">为每个市场而写</h3>
+            <p>文本按商店的方式计数，同时统计字符和字节。“习惯”是 2 个字符，但占 6 个字节。也支持从右到左书写的语言。</p>
+          </div>
+        </div>
+
+        <div class="previews">
+          <div class="preview-head reveal">
+            <h3>App 预览，四种动感风格</h3>
+            <p>用你的真实界面通过代码渲染，再规范化为 App Store Connect 接受的格式。</p>
+          </div>
+          <div class="videos">
+            <figure class="reveal"><video data-autoplay muted loop playsinline preload="none" poster="../assets/style-showcase.jpg" src="../assets/style-showcase.mp4" aria-label="Showcase 风格样例"></video><figcaption><b>Showcase</b>3D 入场，镜头推进</figcaption></figure>
+            <figure class="reveal" style="--stagger:1"><video data-autoplay muted loop playsinline preload="none" poster="../assets/style-kinetic.jpg" src="../assets/style-kinetic.mp4" aria-label="Kinetic 风格样例"></video><figcaption><b>Kinetic</b>逐词呈现，利落剪辑</figcaption></figure>
+            <figure class="reveal" style="--stagger:2"><video data-autoplay muted loop playsinline preload="none" poster="../assets/style-energetic.jpg" src="../assets/style-energetic.mp4" aria-label="Energetic 风格样例"></video><figcaption><b>Energetic</b>倾斜设备，快速划变</figcaption></figure>
+            <figure class="reveal" style="--stagger:3"><video data-autoplay muted loop playsinline preload="none" poster="../assets/style-classic.jpg" src="../assets/style-classic.mp4" aria-label="Classic 风格样例"></video><figcaption><b>Classic</b>平稳入场与淡变</figcaption></figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mac app -->
+    <section id="mac" aria-labelledby="mac-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">Vitrin for Mac</p>
+          <h2 id="mac-title">App Store Connect，告别标签页</h2>
+          <p class="sub">只需连接一次，团队的每个 App 都会带着实时数据打开。你的项目文件夹就在旁边。</p>
+        </div>
+        <div class="bento">
+          <article class="tile wide reveal">
+            <span class="badge" style="--a:#FF9E33;--b:#FA6B61"><svg class="ico"><use href="#i-layers"/></svg></span>
+            <h3>命令变成功能</h3>
+            <p>asc CLI 的 1,300 条命令各归其位，放在对应的标签页上。读取类内容自动加载，以列表和卡片呈现。修改类操作是一个带简短表单的按钮。语言代码、类别和状态都显示为通俗的文字。</p>
+            <div class="chips-move" aria-hidden="true">
+              <div><span>状态</span><span>商店文案</span><span>截图</span><span>构建版本</span><span>TestFlight</span><span>评论</span><span>购买项目</span><span>分析</span><span>用户</span><span>设备</span><span>证书</span><span>描述文件</span><span>Bundle ID</span><span>状态</span><span>商店文案</span><span>截图</span><span>构建版本</span><span>TestFlight</span><span>评论</span><span>购买项目</span><span>分析</span><span>用户</span><span>设备</span><span>证书</span><span>描述文件</span><span>Bundle ID</span></div>
+            </div>
+          </article>
+          <article class="tile reveal" style="--stagger:1">
+            <span class="badge" style="--a:#4ADE80;--b:#0DA8AD"><svg class="ico"><use href="#i-wrench"/></svg></span>
+            <h3>自动完成设置</h3>
+            <p>缺少工具？点一下就能安装，无需终端，也不需要 Homebrew。</p>
+            <ul class="install" aria-hidden="true">
+              <li>Node.js</li><li>Vitrin CLI</li><li>Claude Code</li><li>asc CLI</li><li>ffmpeg</li>
+            </ul>
+          </article>
+          <article class="tile reveal">
+            <span class="badge" style="--a:#FA6B61;--b:#ED5C9E"><svg class="ico"><use href="#i-rocket"/></svg></span>
+            <h3>在桌前发布</h3>
+            <p>查看版本无法提交的原因，以及 App 审核人员看到的内容。然后提交、发布或分阶段发布。</p>
+          </article>
+          <article class="tile reveal" style="--stagger:1">
+            <span class="badge" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-key"/></svg></span>
+            <h3>新 App 和密钥</h3>
+            <p>使用 Apple 账户登录，一步创建 App 或管理员 API 密钥。密码保存在钥匙串中。</p>
+          </article>
+          <article class="tile reveal" style="--stagger:2">
+            <span class="badge" style="--a:#0DA8AD;--b:#4D5CED"><svg class="ico"><use href="#i-chart"/></svg></span>
+            <h3>分析和 Apple Ads</h3>
+            <p>App Store Connect 仪表板、销售数据和 Apple Ads 广告系列都在 App 内。菜单栏会显示哪些 App 需要你处理。</p>
+          </article>
+          <article class="tile wide lang reveal">
+            <span class="badge" style="--a:#9E52EB;--b:#ED5C9E"><svg class="ico"><use href="#i-globe"/></svg></span>
+            <div>
+              <h3>会说 <span class="ticker" aria-hidden="true"><span>Türkçe</span><span>Deutsch</span><span>日本語</span><span>Español</span><span>한국어</span><span>Français</span><span>简体中文</span><span>Italiano</span><span>Português</span><span>English</span><span>Türkçe</span></span><span class="sr">十种语言</span></h3>
+              <p>支持十种语言，跟随系统设置。每个板块都有信息按钮，随时为你说明。</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Safety -->
+    <section id="trust" aria-labelledby="trust-title">
+      <div class="wrap trust">
+        <div class="reveal">
+          <p class="kicker">安全</p>
+          <h2 id="trust-title">未经你同意，任何内容都不会进入商店</h2>
+          <p class="sub">Vitrin 的设计，就是为了让你放心地把线上商店页面交给它。</p>
+          <ul class="points">
+            <li><svg class="ico"><use href="#i-shield"/></svg><div><b>从设计上保证真实</b><span>每条标题和宣传语都必须指向代码中的功能。评分来自线上 App Store，用户好评只取自你自己的评论。</span></div></li>
+            <li><svg class="ico"><use href="#i-gauge"/></svg><div><b>抢在 Apple 之前发现</b><span>一条命令按 App Store 规则检查文案、图片和视频，并明确告诉 Claude 该修什么。</span></div></li>
+            <li><svg class="ico"><use href="#i-image"/></svg><div><b>批准与文件绑定</b><span>你的批准会记录每个文件的哈希。之后如有任何更改，即使是 Claude 改的，也需要重新批准。</span></div></li>
+            <li><svg class="ico"><use href="#i-upload"/></svg><div><b>部分上传，就只是部分</b><span>先出试运行方案。你没选择的内容绝不会被删除或覆盖，每次上传都会回读确认。</span></div></li>
+          </ul>
+        </div>
+        <div class="term reveal" style="--stagger:1" role="img" aria-label="vitrin validate 列出示例商店页面中的错误，例如占位文本和截图上的价格，并给出修复建议">
+          <div class="term-bar"><i></i><i></i><i></i><span>vitrin validate</span></div>
+          <pre><code><span class="ln"><span class="pr">$</span> vitrin validate</span><span class="ln"><span class="er">ERROR</span> promotionalText 包含 "TODO"</span><span class="ln"><span class="er">ERROR</span> 截图 04：价格用语 "五折"</span><span class="ln"><span class="er">ERROR</span> 截图 06：网站地址</span><span class="ln"><span class="er">ERROR</span> "习惯" 已出现在名称中</span><span class="ln">      <span class="fx">→ 删除 "习惯"。</span></span><span class="ln"><span class="wa">WARN</span>  新功能说明过于笼统</span><span class="ln"><span class="wa">WARN</span>  supportUrl 是占位内容</span><span class="ln"><span class="fi">4 个错误，2 个警告</span></span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- The rest -->
+    <section id="more" aria-labelledby="more-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">还有这些细节</p>
+          <h2 id="more-title">你想要的其他一切</h2>
+        </div>
+        <div class="facts">
+          <article class="reveal"><svg class="ico"><use href="#i-window"/></svg><h3>Vitrin Studio</h3><p>整个流程都在本地网页中：实时日志、编辑器、设计样例、审核总览，还有侧边栏里你自己的 Claude Code。</p></article>
+          <article class="reveal" style="--stagger:1"><svg class="ico"><use href="#i-key"/></svg><h3>无需额外的 AI 密钥</h3><p>创意工作在你自己的 Claude Code 会话中运行。CLI 本身不调用任何 AI。</p></article>
+          <article class="reveal" style="--stagger:2"><svg class="ico"><use href="#i-refresh"/></svg><h3>可随时继续</h3><p>各阶段会跳过没有变化的内容。缺少密钥不会中断工作，只有上传需要等待密钥。</p></article>
+          <article class="reveal"><svg class="ico"><use href="#i-folder"/></svg><h3>整洁的仓库</h3><p>所有内容都放在一个 <code>metadata/</code> 文件夹中，不进入 git。密钥保存在 <code>.env</code> 中，并在所有日志里隐去。</p></article>
+          <article class="reveal" style="--stagger:1"><svg class="ico"><use href="#i-store"/></svg><h3>自定产品页面</h3><p>将自定产品页面、App 内活动 和 App 素材库与商店页面一起上传。</p></article>
+          <article class="reveal" style="--stagger:2"><svg class="ico"><use href="#i-text"/></svg><h3>内置商店规则</h3><p>字符限制、关键词规则和 App 审核政策，在结果呈现给你之前，已按每种语言检查完毕。</p></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Install -->
+    <section id="start" aria-labelledby="start-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">安装</p>
+          <h2 id="start-title">一分钟上手</h2>
+        </div>
+        <div class="starts">
+          <article class="start reveal">
+            <span class="badge" style="--a:#FF9E33;--b:#ED5C9E"><svg class="ico"><use href="#i-window"/></svg></span>
+            <h3>Vitrin for Mac</h3>
+            <p>下载后拖到“应用程序”文件夹，跟随欢迎导览操作。它会检查你的 Mac，点一下就能安装缺少的工具。</p>
+            <a class="btn btn-primary" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg"><svg class="ico"><use href="#i-download"/></svg>下载 Mac 版</a>
+            <p class="fine">或使用 Homebrew：</p>
+            <div class="code"><code>brew tap ardasnturk/vitrin https://github.com/ardasnturk/vitrin
+brew install --cask vitrin</code><button class="copy" type="button" data-copy="brew tap ardasnturk/vitrin https://github.com/ardasnturk/vitrin && brew install --cask vitrin">拷贝</button></div>
+          </article>
+          <article class="start reveal" style="--stagger:1">
+            <span class="badge" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-sparkles"/></svg></span>
+            <h3>Claude Code 插件</h3>
+            <p>安装一次后，在 <a href="https://claude.com/claude-code">Claude Code</a> 中打开 App 的仓库，输入 <code>/vitrin</code> 即可。无需克隆任何内容。</p>
+            <div class="code"><code>claude plugin install vitrin --marketplace ardasnturk/vitrin</code><button class="copy" type="button" data-copy="claude plugin install vitrin --marketplace ardasnturk/vitrin">拷贝</button></div>
+            <p class="fine">首次运行时会设置一次 CLI，约 450 MB（含 Chromium），无需 sudo。需要 Node.js 22 或更高版本。其余项目由 <code>vitrin doctor</code> 检查。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" aria-labelledby="faq-title">
+      <div class="wrap narrow">
+        <div class="head reveal">
+          <p class="kicker">常见问题</p>
+          <h2 id="faq-title">你可能想问</h2>
+        </div>
+        <div class="qa reveal">
+          <details>
+            <summary>支持 Flutter 或 React Native App 吗？</summary>
+            <p>支持。Swift 和 SwiftUI 优先，Flutter、React Native 和 Expo 项目也会被自动检测。它们的界面可以根据代码重建而无需构建，也可以按你的偏好用各自的工具构建并在模拟器中截图。Vitrin 面向 App Store，因此只涵盖它们的 Apple 平台 App。</p>
+          </details>
+          <details>
+            <summary>需要 OpenAI 或 Anthropic 的 API 密钥吗？</summary>
+            <p>不需要。创意工作在你的 Claude Code 会话中完成，CLI 不调用任何 AI。不用 Claude 时，也可以按需求说明手动操作。</p>
+          </details>
+          <details>
+            <summary>可以在 iPhone 上使用吗？</summary>
+            <p>可以。在 Mac 上安装 <a href="https://github.com/ardasnturk/remote-code">Remote Code</a> 1.6 后，Vitrin 就是 iPhone 上的一个标签页。你可以添加项目文件夹、运行每个阶段，并在原生界面中管理 App Store Connect，而且 Vitrin for Mac 无需保持打开。项目会在 iPhone 和 Mac 之间保持同步。</p>
+          </details>
+          <details>
+            <summary>Mac App 需要用终端吗？</summary>
+            <p>不需要。欢迎导览会检查你的 Mac，点一下就能安装 Node.js、Vitrin CLI、Claude Code、asc CLI 和 ffmpeg。有 Homebrew 时会使用它，没有也能正常工作。</p>
+          </details>
+          <details>
+            <summary>不手动创建密钥，能连接 App Store Connect 吗？</summary>
+            <p>可以。使用 Apple 账户登录后，Vitrin 一步创建管理员 API 密钥。你也可以自己添加密钥，或使用 asc CLI 中已有的登录信息。项目无需任何连接也能工作。</p>
+          </details>
+          <details>
+            <summary>能在 App Store Connect 中创建新 App 吗？</summary>
+            <p>使用 Apple 账户登录后，Vitrin for Mac 可以创建。Apple 不允许通过 API 密钥创建，所以当 App 不存在时，CLI 和插件会停下来告诉你。</p>
+          </details>
+          <details>
+            <summary>会不经询问就上传内容吗？</summary>
+            <p>不会。所有图片、视频和文案都会先给你看。上传从试运行方案开始，需要你的同意，与你批准的内容不一致时会被拒绝。提交审核还需要单独确认。在插件中，价格、发布、年龄分级和隐私问卷都由你亲自处理。</p>
+          </details>
+          <details>
+            <summary>具体会上传什么？</summary>
+            <p>只上传你批准后选定的平台和内容。选定的截图集按显示类型替换，其他内容保持不变。Vitrin 绝不上传构建版本。</p>
+          </details>
+          <details>
+            <summary>需要构建我的 App 吗？</summary>
+            <p>不需要。默认情况下，Claude 根据源代码用 HTML 重建你的界面，因此无需构建、模拟器或演示模式。如果你更想要真实截图，它也可以构建 App，并在专用模拟器中打开每个界面。</p>
+          </details>
+          <details>
+            <summary>生成的文件会怎样？</summary>
+            <p>它们保留在项目的 <code>metadata/</code> 文件夹中，由受管理的 <code>.gitignore</code> 区块排除在 git 之外。上传并核对后，Vitrin 会询问是否删除调研数据。其他内容都不会被删除。</p>
+          </details>
+          <details>
+            <summary>许可证方面呢？</summary>
+            <p>Vitrin 采用 MIT 许可证。它内置 OFL 字体和 Lucide 图标，风格预设改编自 <a href="https://github.com/ParthJadhav/app-store-screenshots">ParthJadhav/app-store-screenshots</a>（MIT）。App 预览 使用 Remotion 渲染，个人及不超过三名员工的公司可免费使用。更大的团队需要 <a href="https://www.remotion.dev/license">Remotion 公司许可证</a>。</p>
+          </details>
+          <details>
+            <summary>这是 Apple 的产品吗？</summary>
+            <p>不是。Vitrin 是独立的开源项目，与 Apple Inc. 没有关联，也未获得其认可或赞助。</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Closing -->
+    <section class="closing" aria-labelledby="closing-title">
+      <div class="wrap">
+        <div class="closing-card reveal">
+          <div class="awning small" aria-hidden="true"></div>
+          <h2 id="closing-title">打开你的橱窗</h2>
+          <p>Vitrin 免费、开源，代码任你阅读。</p>
+          <div class="cta">
+            <a class="btn btn-light" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg"><svg class="ico"><use href="#i-download"/></svg>下载 Mac 版</a>
+            <a class="btn btn-outline" href="https://github.com/ardasnturk/vitrin"><svg class="ico"><use href="#i-github"/></svg>在 GitHub 上查看</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div class="footer-top">
+        <a class="brand" href="#top"><img src="../assets/logo.svg" alt="" width="26" height="26"><span>Vitrin</span></a>
+        <a class="version" href="https://github.com/ardasnturk/vitrin/blob/main/CHANGELOG.md">v2.1.0</a>
+        <nav aria-label="页脚">
+          <a href="https://github.com/ardasnturk/vitrin">GitHub</a>
+          <a href="https://github.com/ardasnturk/vitrin/releases">发布版本</a>
+          <a href="https://github.com/ardasnturk/vitrin/blob/main/CHANGELOG.md">更新日志</a>
+          <a href="https://github.com/ardasnturk/vitrin/blob/main/CONTRIBUTING.md">参与贡献</a>
+          <a href="https://github.com/ardasnturk/vitrin/blob/main/SECURITY.md">安全</a>
+          <a href="https://github.com/ardasnturk/vitrin/blob/main/LICENSE">MIT 许可证</a>
+        </nav>
+      </div>
+      <p class="legal">App Store、App Store Connect、iPhone、iPad、Mac、Apple Watch、Apple TV 和 Apple Vision Pro 是 Apple Inc. 的商标。Vitrin 与 Apple 没有关联。</p>
+    </div>
+  </footer>
+
+  <script src="../script.js" defer></script>
+</body>
+</html>

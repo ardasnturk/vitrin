@@ -18,7 +18,7 @@ beforeAll(async () => {
 describe('device mockups', () => {
   it('cover every device family, with the iPhone Duo open, closed and as a pair', () => {
     const families = new Set(MOCKUPS.map((m) => m.family));
-    for (const f of ['iphone', 'ipad', 'duo', 'watch', 'mac', 'tv', 'vision', 'android-phone', 'android-tablet']) expect(families.has(f as never), f).toBe(true);
+    for (const f of ['iphone', 'ipad', 'duo', 'watch', 'mac', 'tv', 'vision']) expect(families.has(f as never), f).toBe(true);
     expect(mockupSpec('duo-open').variant).toEqual({ duo: 'inner' });
     expect(mockupSpec('duo-closed').variant).toEqual({ duo: 'outer' });
     const pair = mockupPage(mockupSpec('duo-pair'), 'a.png', 2853 / 2007);

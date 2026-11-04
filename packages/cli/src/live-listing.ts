@@ -11,14 +11,12 @@ import { bundleIdOf, type Ctx } from './context.js';
  */
 export async function refreshLiveListing(ctx: Ctx, profile: AppProfile, competitors?: Competitors): Promise<LiveListing | undefined> {
   let live: LiveListing | undefined;
-  if (profile.app.platforms.some((p) => p !== 'android')) {
-    try {
-      live = (await fetchLiveListing(new AscClient(credentialsFromEnv(ctx.env)), bundleIdOf(ctx, profile))) ?? undefined;
-    } catch (err) {
-      // No key yet is normal before the upload gate; anything else is worth a warning, not a failed research run.
-      if (err instanceof AscCredentialError) log.dim('No App Store Connect key: the live subtitle and keyword field are not read (the public lookup has neither).');
-      else log.warn(`Could not read the live listing from App Store Connect: ${(err as Error).message}`);
-    }
+  try {
+    live = (await fetchLiveListing(new AscClient(credentialsFromEnv(ctx.env)), bundleIdOf(ctx, profile))) ?? undefined;
+  } catch (err) {
+    // No key yet is normal before the upload gate; anything else is worth a warning, not a failed research run.
+    if (err instanceof AscCredentialError) log.dim('No App Store Connect key: the live subtitle and keyword field are not read (the public lookup has neither).');
+    else log.warn(`Could not read the live listing from App Store Connect: ${(err as Error).message}`);
   }
   const self = competitors?.self;
   if (!live && self) {

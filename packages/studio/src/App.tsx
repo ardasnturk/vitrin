@@ -19,7 +19,7 @@ export type Route = 'pipeline' | 'setup' | 'screens' | 'metadata' | 'design' | '
 /** In the order the run goes through them. */
 const ROUTES: Array<{ id: Route; icon: string }> = [
   { id: 'pipeline', icon: '◫' },
-  { id: 'setup', icon: '⚙' },
+  { id: 'setup', icon: '⚙︎' },
   { id: 'metadata', icon: '¶' },
   { id: 'screens', icon: '▭' },
   { id: 'design', icon: '✦' },
@@ -99,7 +99,7 @@ export function App() {
           <span className={`dot ${state.connected ? 'on' : ''}`} /> {state.connected ? t('connected') : t('disconnected')}
         </span>
         <Button size="sm" kind={claudeOpen ? 'primary' : undefined} onClick={() => setClaudeOpen((v) => !v)}>
-          ✳ {t('claude')}
+          ✳︎ {t('claude')}
         </Button>
       </div>
 

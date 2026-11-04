@@ -31,7 +31,7 @@ export function Screens({ openClaude }: { openClaude: () => void }) {
       <div className="row wrap" style={{ marginBottom: 14 }}>
         {hasBrief && (
           <Button kind="primary" disabled={busy || !o.claude.available} onClick={() => api.askClaude({ stage: 'screens' }).then(openClaude).catch((err) => toast((err as Error).message, 'err'))}>
-            ✳ {t('askClaude')}
+            ✳︎ {t('askClaude')}
           </Button>
         )}
         <Button kind={hasBrief ? undefined : 'primary'} disabled={busy} title={cli('vitrin capture')} onClick={() => run('capture')}>

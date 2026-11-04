@@ -1,0 +1,648 @@
+<!doctype html>
+<html data-copied="Kopyalandı" data-copy-fallback="⌘C’ye bas" lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vitrin: Kodundan doğan mağaza listesi</title>
+  <meta name="description" content="Ücretsiz ve açık kaynak. Vitrin uygulamanın kodunu okur, App Store için mağaza metinlerini, ekran görüntülerini ve App Preview’ları hazırlar, sonra tüm App Store Connect işlerini tek bir Mac uygulamasından yürütür.">
+  <link rel="canonical" href="https://vitrin.ardasnturk.com/tr/">
+  <link rel="alternate" hreflang="en" href="https://vitrin.ardasnturk.com/">
+  <link rel="alternate" hreflang="tr" href="https://vitrin.ardasnturk.com/tr/">
+  <link rel="alternate" hreflang="de" href="https://vitrin.ardasnturk.com/de/">
+  <link rel="alternate" hreflang="es" href="https://vitrin.ardasnturk.com/es/">
+  <link rel="alternate" hreflang="fr" href="https://vitrin.ardasnturk.com/fr/">
+  <link rel="alternate" hreflang="it" href="https://vitrin.ardasnturk.com/it/">
+  <link rel="alternate" hreflang="ja" href="https://vitrin.ardasnturk.com/ja/">
+  <link rel="alternate" hreflang="ko" href="https://vitrin.ardasnturk.com/ko/">
+  <link rel="alternate" hreflang="pt-BR" href="https://vitrin.ardasnturk.com/pt-BR/">
+  <link rel="alternate" hreflang="zh-Hans" href="https://vitrin.ardasnturk.com/zh-Hans/">
+  <link rel="alternate" hreflang="x-default" href="https://vitrin.ardasnturk.com/">
+  <meta name="theme-color" content="#FFF8F3" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#140D11" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="../favicon.ico" sizes="32x32">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+  <link rel="manifest" href="../site.webmanifest">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Vitrin">
+  <meta property="og:title" content="Vitrin: Kodundan doğan mağaza listesi">
+  <meta property="og:description" content="Kodundan çıkan mağaza metinleri, ekran görüntüleri ve App Preview’lar. App Store kurallarına göre kontrol edilir, onayından sonra yüklenir. Üstüne tek bir Mac uygulamasında App Store Connect.">
+  <meta property="og:url" content="https://vitrin.ardasnturk.com/tr/">
+  <meta property="og:image" content="https://vitrin.ardasnturk.com/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preload" href="../assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../styles.css">
+  <script>document.documentElement.classList.add('js')</script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Vitrin",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "macOS",
+    "description": "App Store listelerini üreten, kontrol eden ve yükleyen, App Store Connect’i yöneten açık kaynak Mac uygulaması ve Claude Code eklentisi.",
+    "url": "https://vitrin.ardasnturk.com/",
+    "codeRepository": "https://github.com/ardasnturk/vitrin",
+    "license": "https://opensource.org/licenses/MIT",
+    "softwareVersion": "2.1.0",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">İçeriğe geç</a>
+
+  <svg width="0" height="0" class="sprite" aria-hidden="true">
+    <defs>
+      <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF9E33"/><stop offset=".55" stop-color="#FA6B61"/><stop offset="1" stop-color="#ED5C9E"/></linearGradient>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0 5-5m-5 5-5-5M4 20h16"/></symbol>
+      <symbol id="i-terminal" viewBox="0 0 24 24"><path d="m5 7 5 5-5 5M13 18h7"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.500L19 7.500"/></symbol>
+      <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 10v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9M3 9l2-5h14l2 5a3 3 0 0 1-6 .5 3 3 0 0 1-6 0A3 3 0 0 1 3 9ZM10 20v-5h4v5"/></symbol>
+      <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M12 3.500 13.800 9l5.700 2-5.700 2L12 18.500 10.200 13l-5.700-2 5.700-2zM19 16.500v4M17 18.500h4"/></symbol>
+      <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.700"/><path d="m4 18 5-4.500 3.500 3 3-2.500 4.500 4"/></symbol>
+      <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5zM3 13l9 5 9-5"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.500 3 7.500 7 9 4-1.500 7-4.500 7-9V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5M4 20h16"/></symbol>
+      <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4.500"/><path d="m11.500 11.500 8-8M16 7l3 3"/></symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 4v16h16M8 15l3.500-4 3 2.500L20 8"/></symbol>
+      <symbol id="i-megaphone" viewBox="0 0 24 24"><path d="M4 10v4l14 5V5zM8 15.500V19h3v-2.300M18 9.500a2.500 2.500 0 0 1 0 5"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3.500 15 0 18-3.500-3-3-15 0-18"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+      <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M15 6.500a4 4 0 0 1 5-1.200l-3 3 2 2 3-3M15 6.500A4.500 4.500 0 0 0 14.500 11L5 20l-2-2 9-9.500"/></symbol>
+      <symbol id="i-rocket" viewBox="0 0 24 24"><path d="M9 15c-2-2-2-8 7-12 2 0 3 1 3 3-4 9-8 11-10 9ZM9 15l-3 3M6 13l-3 1 2 2M11 18l-1 3-2-2"/><circle cx="14.500" cy="9.500" r="1.300"/></symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6.500A1.500 1.500 0 0 1 4.500 5H9l2 3h8.500A1.500 1.500 0 0 1 21 9.500v8a1.500 1.500 0 0 1-1.500 1.500h-15A1.500 1.500 0 0 1 3 17.500z"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14-4.500L4 9m0-5v5h5M4 13a8 8 0 0 0 14 4.500l2-2.500m0 5v-5h-5"/></symbol>
+      <symbol id="i-text" viewBox="0 0 24 24"><path d="M5 6h14M5 11h14M5 16h9"/></symbol>
+      <symbol id="i-window" viewBox="0 0 24 24"><rect x="3" y="4.500" width="18" height="15" rx="3"/><path d="M3 9h18M6.500 6.800h.1M9 6.800h.1"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.500 2.700 3.800 5.700 3.800 9s-1.300 6.300-3.800 9c-2.500-2.700-3.800-5.700-3.800-9s1.300-6.300 3.800-9z"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.500v13l10.500-6.500z"/></symbol>
+      <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 18a9.500 9.500 0 1 1 16 0M12 15l4-5.500"/><circle cx="12" cy="15.500" r="1.200"/></symbol>
+      <symbol id="i-devices" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2.500"/><path d="M11 18h2"/></symbol>
+      <symbol id="i-testflight" viewBox="0 0 24 24"><path d="M21 3 3 10.500l7 3 3 7z"/><path d="M10 13.500 21 3"/></symbol>
+      <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 4 2.500 5.200 5.500.8-4 4 1 5.700L12 17.200 7 19.700l1-5.700-4-4 5.500-.8z"/></symbol>
+      <symbol id="i-box" viewBox="0 0 24 24"><path d="m12 3 8 4.500v9L12 21l-8-4.500v-9zM4 7.500l8 4.500 8-4.500M12 12v9"/></symbol>
+      <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="5.500" width="18" height="13" rx="2.500"/><path d="M3 10h18M7 15h4"/></symbol>
+      <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2.500-6 4 12L16 12h5"/></symbol>
+      <symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-4.500 1.500-4.500-2.500-6-3m12 5v-3.500c0-1 .1-1.400-.5-2 2.800-.3 5.500-1.400 5.500-6a4.600 4.600 0 0 0-1.300-3.200 4.300 4.300 0 0 0-.1-3.200s-1.100-.3-3.500 1.300a12 12 0 0 0-6.300 0C6.400 2.800 5.300 3.100 5.300 3.100a4.300 4.300 0 0 0-.1 3.200A4.600 4.600 0 0 0 3.900 9.500c0 4.600 2.700 5.700 5.500 6-.6.600-.6 1.200-.5 2V21"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="progress" aria-hidden="true"></div>
+
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#top" aria-label="Vitrin ana sayfa">
+        <img src="../assets/logo.svg" alt="" width="30" height="30">
+        <span>Vitrin</span>
+      </a>
+      <nav class="nav-links" id="nav-links" aria-label="Ana menü">
+        <a href="#what">Neler yapar</a>
+        <a href="#how">Nasıl çalışır</a>
+        <a href="#design">Tasarım</a>
+        <a href="#mac">Mac uygulaması</a>
+        <a href="#trust">Güvenlik</a>
+        <a href="#start">Kurulum</a>
+        <a href="#faq">SSS</a>
+      </nav>
+      <div class="nav-end">
+        <details class="lang" translate="no"><summary aria-label="Dil"><svg class="ico"><use href="#i-globe"/></svg><span>Türkçe</span></summary><div class="lang-list"><a href="../" hreflang="en" lang="en" translate="no">English</a><a href="../tr/" hreflang="tr" lang="tr" translate="no" aria-current="page">Türkçe</a><a href="../de/" hreflang="de" lang="de" translate="no">Deutsch</a><a href="../es/" hreflang="es" lang="es" translate="no">Español</a><a href="../fr/" hreflang="fr" lang="fr" translate="no">Français</a><a href="../it/" hreflang="it" lang="it" translate="no">Italiano</a><a href="../ja/" hreflang="ja" lang="ja" translate="no">日本語</a><a href="../ko/" hreflang="ko" lang="ko" translate="no">한국어</a><a href="../pt-BR/" hreflang="pt-BR" lang="pt-BR" translate="no">Português (Brasil)</a><a href="../zh-Hans/" hreflang="zh-Hans" lang="zh-Hans" translate="no">简体中文</a></div></details>
+        <a class="icon-link" href="https://github.com/ardasnturk/vitrin" aria-label="GitHub’da Vitrin"><svg class="ico"><use href="#i-github"/></svg></a>
+        <a class="btn btn-primary btn-sm" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg">İndir</a>
+        <button class="menu" type="button" aria-label="Menü" aria-expanded="false" aria-controls="nav-links"><svg class="ico"><use href="#i-menu"/></svg></button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero" id="top">
+      <div class="wrap hero-copy">
+        <p class="pill load" style="--d:0"><span class="dot"></span>Vitrin 2.1 · Ücretsiz ve açık kaynak</p>
+        <h1 class="load" style="--d:1">Mağaza listen,<br><span class="shine">kodundan doğsun.</span></h1>
+        <p class="lead load" style="--d:2">Vitrin uygulamanı okur, metinleri, ekran görüntülerini ve App Preview’ları hazırlar, yalnızca onayladıklarını yükler. Sonra tüm App Store Connect işlerini tek bir Mac uygulamasından yürütür.</p>
+        <div class="cta load" style="--d:3">
+          <a class="btn btn-primary" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg"><svg class="ico"><use href="#i-download"/></svg>Mac için indir</a>
+          <a class="btn btn-ghost" href="#start"><svg class="ico"><use href="#i-terminal"/></svg>Claude Code’da kullan</a>
+        </div>
+        <p class="fine load" style="--d:4">macOS 15 veya üstü · Noterlik onaylı · MIT lisansı · Ek yapay zekâ anahtarı yok</p>
+      </div>
+
+      <div class="wrap stage-wrap load" style="--d:5">
+        <div class="awning" aria-hidden="true"></div>
+        <div class="win" id="win" role="group" aria-label="Örnek uygulama Ritim ile Vitrin for Mac’e bir bakış">
+          <div class="win-bar"><i></i><i></i><i></i><span>Ritim <em>com.jastech.ritim</em></span></div>
+          <div class="win-body">
+            <aside class="win-side" aria-hidden="true">
+              <b>Uygulamalar</b>
+              <span class="on"><i class="mini-icon"></i>Ritim</span>
+              <span><i class="mini-icon alt"></i>Atlas Notes</span>
+              <span><i class="mini-icon third"></i>Tempo</span>
+              <b>Takım</b>
+              <span><svg class="ico"><use href="#i-key"/></svg>Kullanıcılar</span>
+              <span><svg class="ico"><use href="#i-devices"/></svg>Cihazlar</span>
+              <span><svg class="ico"><use href="#i-shield"/></svg>Sertifikalar</span>
+              <span><svg class="ico"><use href="#i-megaphone"/></svg>Apple Ads</span>
+            </aside>
+            <div class="win-main">
+              <div class="app-head">
+                <i class="app-icon" aria-hidden="true"></i>
+                <div><strong>Ritim</strong><small>com.jastech.ritim</small><span class="state"><i></i>iOS 1.2.0 · Dağıtıma hazır</span></div>
+              </div>
+              <div class="tabs" role="tablist" aria-label="Uygulama sayfaları">
+                <button role="tab" aria-selected="true" aria-controls="p-status" id="t-status" style="--a:#FA6B61;--b:#ED5C9E"><svg class="ico"><use href="#i-pulse"/></svg>Durum</button>
+                <button role="tab" aria-selected="false" aria-controls="p-text" id="t-text" tabindex="-1" style="--a:#9E52EB;--b:#ED5C9E"><svg class="ico"><use href="#i-text"/></svg>Mağaza metni</button>
+                <button role="tab" aria-selected="false" aria-controls="p-shots" id="t-shots" tabindex="-1" style="--a:#FF9E33;--b:#FA6B61"><svg class="ico"><use href="#i-image"/></svg>Görseller</button>
+                <button role="tab" aria-selected="false" aria-controls="p-builds" id="t-builds" tabindex="-1" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-box"/></svg>Derlemeler</button>
+                <button role="tab" aria-selected="false" aria-controls="p-tf" id="t-tf" tabindex="-1" style="--a:#0DA8AD;--b:#4D5CED"><svg class="ico"><use href="#i-testflight"/></svg>TestFlight</button>
+                <button role="tab" aria-selected="false" aria-controls="p-rev" id="t-rev" tabindex="-1" style="--a:#FF9E33;--b:#FA6B61"><svg class="ico"><use href="#i-star"/></svg>Yorumlar</button>
+                <button role="tab" aria-selected="false" aria-controls="p-an" id="t-an" tabindex="-1" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-chart"/></svg>Analitik</button>
+              </div>
+              <div class="panes">
+                <div class="pane" id="p-status" role="tabpanel" aria-labelledby="t-status">
+                  <div class="tiles">
+                    <div><small>Mağazada yayında</small><strong>1.2.0</strong><span class="ok">Dağıtıma hazır</span></div>
+                    <div><small>Sonraki sürüm</small><strong>1.3.0</strong><span class="warn">Gönderime hazırlanıyor</span></div>
+                    <div><small>Aşamalı yayın</small><strong>Gün 4 / 7</strong><span class="bar"><i style="--w:43%"></i></span></div>
+                  </div>
+                  <div class="list">
+                    <p><svg class="ico ok"><use href="#i-check"/></svg>Derleme 42 eklendi</p>
+                    <p><svg class="ico ok"><use href="#i-check"/></svg>Mağaza metni 2 dilde hazır</p>
+                    <p><svg class="ico warn"><use href="#i-sparkles"/></svg>Türkçe için Yenilikler metni eksik</p>
+                  </div>
+                </div>
+                <div class="pane" id="p-text" role="tabpanel" aria-labelledby="t-text" hidden>
+                  <div class="fields">
+                    <label>Ad <span>5 / 30</span><b>Ritim</b></label>
+                    <label>Alt başlık <span>27 / 30</span><b>Kalıcı alışkanlıklar edin</b></label>
+                    <label>Anahtar kelimeler <span>96 / 100</span><b>alışkanlık,takip,seri,rutin,hedef,günlük</b></label>
+                    <label>Tanıtım metni <span>62 / 170</span><b>Günde bir dokunuşla işaretle, serinin büyümesini izle.</b></label>
+                  </div>
+                </div>
+                <div class="pane" id="p-shots" role="tabpanel" aria-labelledby="t-shots" hidden>
+                  <div class="shots">
+                    <img src="../assets/midnight-shot-01.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-02.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-03.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-04.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-05.webp" alt="" loading="lazy" width="500" height="1087">
+                    <img src="../assets/midnight-shot-06.webp" alt="" loading="lazy" width="500" height="1087">
+                  </div>
+                </div>
+                <div class="pane" id="p-builds" role="tabpanel" aria-labelledby="t-builds" hidden>
+                  <div class="rows">
+                    <p><b>Derleme 42</b><span>1.3.0</span><span class="ok">Geçerli</span><em>Bugün</em></p>
+                    <p><b>Derleme 41</b><span>1.3.0</span><span class="ok">Geçerli</span><em>Dün</em></p>
+                    <p><b>Derleme 40</b><span>1.2.0</span><span class="warn">12 gün kaldı</span><em>22 Eki</em></p>
+                    <p><b>Derleme 39</b><span>1.2.0</span><span class="dim">Süresi doldu</span><em>30 Eyl</em></p>
+                  </div>
+                </div>
+                <div class="pane" id="p-tf" role="tabpanel" aria-labelledby="t-tf" hidden>
+                  <div class="rows">
+                    <p><b>Dahili test kullanıcıları</b><span>6 kişi</span><span class="ok">Derleme 42</span><em>Dahili</em></p>
+                    <p><b>Beta kulübü</b><span>148 kişi</span><span class="ok">Derleme 41</span><em>Harici</em></p>
+                    <p><b>Basın</b><span>12 kişi</span><span class="warn">Beta incelemesinde</span><em>Harici</em></p>
+                  </div>
+                </div>
+                <div class="pane" id="p-rev" role="tabpanel" aria-labelledby="t-rev" hidden>
+                  <div class="reviews">
+                    <div><span class="stars" aria-label="5 yıldız">★★★★★</span><b>Sonunda alışkanlık oldu</b><p>Devam etmemi sağlayan şey seri grafiği.</p><span class="reply">Yanıtla</span></div>
+                    <div><span class="stars" aria-label="4 yıldız">★★★★<i>★</i></span><b>Neredeyse kusursuz</b><p>Kilit ekranı için bir widget çok iyi olurdu.</p><span class="reply">Yanıtla</span></div>
+                  </div>
+                </div>
+                <div class="pane" id="p-an" role="tabpanel" aria-labelledby="t-an" hidden>
+                  <div class="tiles"><div><small>Gösterimler</small><strong>41.2K</strong></div><div><small>İndirmeler</small><strong>3,180</strong></div><div><small>Dönüşüm</small><strong>7.7%</strong></div></div>
+                  <div class="chart" aria-hidden="true"><i style="--h:32%"></i><i style="--h:44%"></i><i style="--h:38%"></i><i style="--h:58%"></i><i style="--h:50%"></i><i style="--h:66%"></i><i style="--h:60%"></i><i style="--h:78%"></i><i style="--h:72%"></i><i style="--h:92%"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="note">Depodaki örnek uygulama Ritim ile hazırlanmış bir gösterim.</p>
+      </div>
+    </section>
+
+    <!-- Numbers -->
+    <section class="numbers" aria-label="Bir bakışta">
+      <div class="wrap numbers-row reveal">
+        <p><strong data-count="6">6</strong>Apple platformu</p>
+        <p><strong data-count="16">16</strong>hazır stil</p>
+        <p><strong data-count="50">50</strong>App Store dili</p>
+        <p><strong data-count="1300" data-sep>1.300</strong>App Store Connect komutu</p>
+        <p><strong data-count="10">10</strong>uygulama dili</p>
+      </div>
+    </section>
+
+    <!-- What it does -->
+    <section id="what" aria-labelledby="what-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">Neler yapar</p>
+          <h2 id="what-title">İki iş. Tek araç.</h2>
+          <p class="sub">Her uygulamanın iyi bir mağaza sayfasına ve ona göz kulak olacak birine ihtiyacı var. Vitrin ikisini de yapar.</p>
+        </div>
+        <div class="jobs">
+          <article class="job reveal">
+            <span class="badge" style="--a:#FF9E33;--b:#ED5C9E"><svg class="ico"><use href="#i-sparkles"/></svg></span>
+            <h3>Listeyi hazırla</h3>
+            <p>Claude kodunu ve rakiplerini okur, sonra mağaza sayfanın ihtiyaç duyduğu her şeyi yazar ve tasarlar.</p>
+            <ul class="ticks">
+              <li>Ad, alt başlık, anahtar kelimeler, açıklama, Yenilikler</li>
+              <li>Her cihaz için, her dilde ekran görüntüleri</li>
+              <li>App Preview’lar, kreatifler ve In-App Event kartları</li>
+              <li>App Store kurallarına göre kontrol edilir, sonra yüklenir</li>
+            </ul>
+          </article>
+          <article class="job reveal" style="--stagger:1">
+            <span class="badge" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-store"/></svg></span>
+            <h3>Mağazayı yönet</h3>
+            <p>Takımındaki her uygulama, tek bir yerel pencerede. App Store Connect’in yaptığı her şey, tarayıcı sekmeleri olmadan.</p>
+            <ul class="ticks">
+              <li>Sürümler, derlemeler, TestFlight ve yorumlar</li>
+              <li>Fiyatlar, satın almalar, satışlar ve analitik</li>
+              <li>Kullanıcılar, cihazlar, sertifikalar ve Apple Ads</li>
+              <li>Bir sürümü masandan gönder, yayınla ya da aşamalı olarak çıkar</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="ways">
+          <h3 class="reveal">Nasıl çalışıyorsan öyle kullan</h3>
+          <div class="ways-row">
+            <article class="way reveal">
+              <svg class="ico"><use href="#i-window"/></svg>
+              <h4>Vitrin for Mac</h4>
+              <p>Yerel uygulama. İki iş de burada, terminal gerekmez. İhtiyaç duyduğu araçları tek tıkla kurar.</p>
+            </article>
+            <article class="way reveal" style="--stagger:1">
+              <svg class="ico"><use href="#i-sparkles"/></svg>
+              <h4>Claude Code eklentisi</h4>
+              <p>Deponda <code>/vitrin</code> yaz. Claude ne istediğini sorar ve her aşamayı tek tek yürütür.</p>
+            </article>
+            <article class="way reveal" style="--stagger:2">
+              <svg class="ico"><use href="#i-terminal"/></svg>
+              <h4>CLI ve Studio</h4>
+              <p>Her aşama bir komut. <code>vitrin studio</code> aynı akışı yerel bir web sayfasında açar.</p>
+            </article>
+          </div>
+          <p class="also reveal center">Yoldasın mı? <a href="https://github.com/ardasnturk/remote-code">Remote Code</a> ile Vitrin, iPhone’unda yerel bir sekme olur: projeler, tüm aşamalar ve App Store Connect.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section id="how" aria-labelledby="how-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">Nasıl çalışır</p>
+          <h2 id="how-title">Koddan mağazaya dört adımda</h2>
+          <p class="sub">Yaratıcı işi Claude yapar, seçimleri sen yaparsın. Geri kalan her şey okuyabileceğin, test edilmiş bir komuttur.</p>
+        </div>
+        <div class="how">
+          <ol class="steps">
+            <li class="step" data-step="0">
+              <span class="num">1</span>
+              <h3>Analiz et</h3>
+              <p>Vitrin platformlarını, dillerini ve özelliklerini kodda bulur. Her özellik onu kanıtlayan dosyayı gösterir, böylece listen yalnızca uygulamanın gerçekten yaptıklarını anlatır.</p>
+              <p class="also">Swift, Flutter, React Native ve Expo otomatik algılanır.</p>
+            </li>
+            <li class="step" data-step="1">
+              <span class="num">2</span>
+              <h3>Araştır</h3>
+              <p>Her ülkede App Store’u tarar, rakiplerin ekran görüntülerini cihaz üzerinde OCR ile okur ve anahtar kelimeleri alaka, popülerlik ve rekabete göre puanlar.</p>
+              <p class="also">Platformları ve dilleri sen seçersin. Hiçbir şey varsayılmaz.</p>
+            </li>
+            <li class="step" data-step="2">
+              <span class="num">3</span>
+              <h3>Üret</h3>
+              <p>Claude ekranlarını koddan yeniden oluşturur; derleme de simülatör de gerekmez. Sonra Vitrin ekran görüntülerini ve videoları üretir, sen de kendi uygulamanın gerçek örnekleri arasından seçersin.</p>
+              <p class="also">Gerçek çekimler mi lazım? Uygulamanı derleyip simülatörlerde de çekebilir.</p>
+            </li>
+            <li class="step" data-step="3">
+              <span class="num">4</span>
+              <h3>Gözden geçir ve yükle</h3>
+              <p>Her şeyi tek galeride görür ve onaylarsın ya da tek bir öğeyi yorumla reddedersin. Vitrin tam olarak onayladığını yükler ve mağazanın ne kaydettiğini geri okur.</p>
+              <p class="also">Yüklemeyi asc CLI yapar, yani Ruby kurman gerekmez.</p>
+            </li>
+          </ol>
+          <div class="scene" aria-hidden="true">
+            <div class="scene-box">
+              <div class="panel" data-panel="0">
+                <p class="panel-title"><svg class="ico"><use href="#i-folder"/></svg>Ritim · uygulama profili</p>
+                <div class="scan">
+                  <p><b>Günlük seriler</b><code>Streaks/StreakView.swift</code></p>
+                  <p><b>Hatırlatıcılar</b><code>Reminders/Schedule.swift</code></p>
+                  <p><b>Grafikler</b><code>Stats/ChartsView.swift</code></p>
+                  <p><b>iPhone, iPad</b><code>project.pbxproj</code></p>
+                  <p><b>İngilizce, Türkçe</b><code>Localizable.xcstrings</code></p>
+                </div>
+              </div>
+              <div class="panel" data-panel="1">
+                <p class="panel-title"><svg class="ico"><use href="#i-chart"/></svg>Anahtar kelime adayları · TR</p>
+                <div class="kw">
+                  <p>alışkanlık takibi<i style="--w:92%"></i></p>
+                  <p>günlük rutin<i style="--w:78%"></i></p>
+                  <p>seri<i style="--w:64%"></i></p>
+                  <p>hedef planlayıcı<i style="--w:55%"></i></p>
+                  <p>öz bakım<i style="--w:41%"></i></p>
+                </div>
+              </div>
+              <div class="panel" data-panel="2">
+                <div class="mini-fan">
+                  <img src="../assets/glass-shot-02.webp" alt="" loading="lazy" width="500" height="1087">
+                  <img src="../assets/midnight-shot-01.webp" alt="" loading="lazy" width="500" height="1087">
+                  <img src="../assets/candy-shot-03.webp" alt="" loading="lazy" width="500" height="1087">
+                </div>
+              </div>
+              <div class="panel" data-panel="3">
+                <p class="panel-title"><svg class="ico"><use href="#i-upload"/></svg>Yükleme planı</p>
+                <div class="plan">
+                  <p><svg class="ico ok"><use href="#i-check"/></svg>Metin · en-US, tr</p>
+                  <p><svg class="ico ok"><use href="#i-check"/></svg>Ekran görüntüleri · iPhone 6,9"</p>
+                  <p><svg class="ico ok"><use href="#i-check"/></svg>App Preview · en-US</p>
+                  <p class="keep">iPad ekran görüntülerine dokunulmaz</p>
+                </div>
+                <span class="go">Onaylandı · Yükleniyor</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Design -->
+    <section id="design" aria-labelledby="design-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">Tasarım</p>
+          <h2 id="design-title">Markana yakışan ekran görüntüleri</h2>
+          <p class="sub">Renklerine bürünen 16 hazır stil, üstüne Claude’un uygulaman için yaptığı tasarımlar. Önce başlıklar, gerçekçi cihazların içinde gerçek arayüzün.</p>
+        </div>
+        <div class="switch reveal" role="tablist" aria-label="Stil örnekleri">
+          <button role="tab" aria-selected="true" data-style="midnight">Midnight Glow</button>
+          <button role="tab" aria-selected="false" data-style="glass" tabindex="-1">Liquid Glass</button>
+          <button role="tab" aria-selected="false" data-style="candy" tabindex="-1">Candy Pop</button>
+        </div>
+        <div class="fan reveal" id="fan" role="img" aria-label="Örnek uygulama Ritim’in seçili stildeki beş mağaza ekran görüntüsü">
+          <img src="../assets/midnight-shot-02.webp" alt="" width="500" height="1087" loading="lazy" data-n="02">
+          <img src="../assets/midnight-shot-03.webp" alt="" width="500" height="1087" loading="lazy" data-n="03">
+          <img src="../assets/midnight-shot-01.webp" alt="" width="500" height="1087" loading="lazy" data-n="01">
+          <img src="../assets/midnight-shot-04.webp" alt="" width="500" height="1087" loading="lazy" data-n="04">
+          <img src="../assets/midnight-shot-05.webp" alt="" width="500" height="1087" loading="lazy" data-n="05">
+        </div>
+
+        <div class="split">
+          <div class="reveal">
+            <h3>Yayınladığın her platform</h3>
+            <p>Gerçekçi cihaz çerçeveleriyle tam piksel ölçüleri. Yalnızca seçtiğin platformlar üretilir.</p>
+            <ul class="chips">
+              <li>iPhone</li><li>iPad</li><li>Mac</li><li>Apple Watch</li><li>Apple TV</li><li>Vision Pro</li><li>iPhone Duo</li>
+            </ul>
+            <p class="also">Ayrıca 21:9 ürün sayfası başlığı ve 3:2 arama kreatifleri.</p>
+          </div>
+          <div class="reveal" style="--stagger:1">
+            <h3>Göz kararı değil, ölçülü</h3>
+            <p>Her görsel sana ulaşmadan önce kalite kapısından geçer: cihaz boyutu, boş alan, başlık genişliği ve kontrast, görsel katmanlar ve küçük boyutta nasıl okunduğu.</p>
+            <h3 class="gap">Her pazar için yazılır</h3>
+            <p>Metinler mağazaların saydığı gibi, karakter ve bayt olarak sayılır. “alışkanlık” 10 karakter ama 13 bayttır. Sağdan sola yazılan diller desteklenir.</p>
+          </div>
+        </div>
+
+        <div class="previews">
+          <div class="preview-head reveal">
+            <h3>Dört hareket tarzında App Preview’lar</h3>
+            <p>Gerçek ekranlarınla kodda üretilir, sonra App Store Connect’in kabul ettiği biçime getirilir.</p>
+          </div>
+          <div class="videos">
+            <figure class="reveal"><video data-autoplay muted loop playsinline preload="none" poster="../assets/style-showcase.jpg" src="../assets/style-showcase.mp4" aria-label="Showcase stil örneği"></video><figcaption><b>Showcase</b>3B girişler, yakınlaştırmalar</figcaption></figure>
+            <figure class="reveal" style="--stagger:1"><video data-autoplay muted loop playsinline preload="none" poster="../assets/style-kinetic.jpg" src="../assets/style-kinetic.mp4" aria-label="Kinetic stil örneği"></video><figcaption><b>Kinetic</b>Kelime kelime, vurucu kesmeler</figcaption></figure>
+            <figure class="reveal" style="--stagger:2"><video data-autoplay muted loop playsinline preload="none" poster="../assets/style-energetic.jpg" src="../assets/style-energetic.mp4" aria-label="Energetic stil örneği"></video><figcaption><b>Energetic</b>Eğik cihazlar, hızlı geçişler</figcaption></figure>
+            <figure class="reveal" style="--stagger:3"><video data-autoplay muted loop playsinline preload="none" poster="../assets/style-classic.jpg" src="../assets/style-classic.mp4" aria-label="Classic stil örneği"></video><figcaption><b>Classic</b>Sakin girişler ve solmalar</figcaption></figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mac app -->
+    <section id="mac" aria-labelledby="mac-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">Vitrin for Mac</p>
+          <h2 id="mac-title">App Store Connect, sekme kalabalığı olmadan</h2>
+          <p class="sub">Bir kez bağlan, takımındaki her uygulama canlı verileriyle açılsın. Proje klasörlerin de hemen yanında.</p>
+        </div>
+        <div class="bento">
+          <article class="tile wide reveal">
+            <span class="badge" style="--a:#FF9E33;--b:#FA6B61"><svg class="ico"><use href="#i-layers"/></svg></span>
+            <h3>Komutlar özelliğe dönüşür</h3>
+            <p>asc CLI’ın 1.300 komutu ait oldukları sekmede durur. Bilgi okuyanlar kendiliğinden yüklenir, liste ve kart olarak. Bir şeyi değiştirenler kısa formlu birer düğmedir. Dil kodları, kategoriler ve durumlar düz sözcüklerle okunur.</p>
+            <div class="chips-move" aria-hidden="true">
+              <div><span>Durum</span><span>Mağaza metni</span><span>Görseller</span><span>Derlemeler</span><span>TestFlight</span><span>Yorumlar</span><span>Satın almalar</span><span>Analitik</span><span>Kullanıcılar</span><span>Cihazlar</span><span>Sertifikalar</span><span>Profiller</span><span>Bundle ID’ler</span><span>Durum</span><span>Mağaza metni</span><span>Görseller</span><span>Derlemeler</span><span>TestFlight</span><span>Yorumlar</span><span>Satın almalar</span><span>Analitik</span><span>Kullanıcılar</span><span>Cihazlar</span><span>Sertifikalar</span><span>Profiller</span><span>Bundle ID’ler</span></div>
+            </div>
+          </article>
+          <article class="tile reveal" style="--stagger:1">
+            <span class="badge" style="--a:#4ADE80;--b:#0DA8AD"><svg class="ico"><use href="#i-wrench"/></svg></span>
+            <h3>Kendini kurar</h3>
+            <p>Araç mı eksik? Tek tıkla kurulur; terminal de Homebrew de gerekmez.</p>
+            <ul class="install" aria-hidden="true">
+              <li>Node.js</li><li>Vitrin CLI</li><li>Claude Code</li><li>asc CLI</li><li>ffmpeg</li>
+            </ul>
+          </article>
+          <article class="tile reveal">
+            <span class="badge" style="--a:#FA6B61;--b:#ED5C9E"><svg class="ico"><use href="#i-rocket"/></svg></span>
+            <h3>Masandan yayınla</h3>
+            <p>Bir sürümün neden gönderilemediğini ve App Review’un ne gördüğünü gör. Sonra gönder, yayınla ya da aşamalı olarak çıkar.</p>
+          </article>
+          <article class="tile reveal" style="--stagger:1">
+            <span class="badge" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-key"/></svg></span>
+            <h3>Yeni uygulamalar ve anahtarlar</h3>
+            <p>Apple Hesabınla giriş yap, tek adımda uygulama ya da Admin API anahtarı oluştur. Parolan anahtar zincirinde kalır.</p>
+          </article>
+          <article class="tile reveal" style="--stagger:2">
+            <span class="badge" style="--a:#0DA8AD;--b:#4D5CED"><svg class="ico"><use href="#i-chart"/></svg></span>
+            <h3>Analitik ve Apple Ads</h3>
+            <p>App Store Connect panoları, satışlar ve Apple Ads kampanyaları uygulamanın içinde. Menü çubuğu hangi uygulamaların seni beklediğini gösterir.</p>
+          </article>
+          <article class="tile wide lang reveal">
+            <span class="badge" style="--a:#9E52EB;--b:#ED5C9E"><svg class="ico"><use href="#i-globe"/></svg></span>
+            <div>
+              <h3><span class="ticker" aria-hidden="true"><span>Türkçe</span><span>Deutsch</span><span>日本語</span><span>Español</span><span>한국어</span><span>Français</span><span>简体中文</span><span>Italiano</span><span>Português</span><span>English</span><span>Türkçe</span></span><span class="sr">On dil</span> konuşuyor</h3>
+              <p>On dil, sisteminin diline uyar. Her bölüm kendini bir bilgi düğmesiyle anlatır.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Safety -->
+    <section id="trust" aria-labelledby="trust-title">
+      <div class="wrap trust">
+        <div class="reveal">
+          <p class="kicker">Güvenlik</p>
+          <h2 id="trust-title">Sen evet demeden mağazaya hiçbir şey gitmez</h2>
+          <p class="sub">Vitrin, yayındaki listeni gönül rahatlığıyla emanet edebilmen için yapıldı.</p>
+          <ul class="points">
+            <li><svg class="ico"><use href="#i-shield"/></svg><div><b>Tasarımı gereği dürüst</b><span>Her başlık ve iddia kodundaki bir özelliğe dayanmak zorunda. Puanlar canlı App Store’dan, alıntılar yalnızca kendi yorumlarından gelir.</span></div></li>
+            <li><svg class="ico"><use href="#i-gauge"/></svg><div><b>Apple’dan önce yakalanır</b><span>Tek komut metinleri, görselleri ve videoları App Store kurallarına göre kontrol eder, Claude’a neyi düzelteceğini tam olarak söyler.</span></div></li>
+            <li><svg class="ico"><use href="#i-image"/></svg><div><b>Dosyalara bağlı onay</b><span>Onayın her dosyanın hash’ini kaydeder. Sonradan bir şey değişirse, Claude değiştirse bile, yeni onay gerekir.</span></div></li>
+            <li><svg class="ico"><use href="#i-upload"/></svg><div><b>Kısmi yükleme kısmi kalır</b><span>Önce kuru çalıştırma planı gelir. Seçmediğin hiçbir şey silinmez ya da üzerine yazılmaz, her yükleme de geri okunur.</span></div></li>
+          </ul>
+        </div>
+        <div class="term reveal" style="--stagger:1" role="img" aria-label="vitrin validate, örnek listedeki yer tutucu metin ve ekran görüntüsündeki fiyat gibi hataları düzeltmeleriyle birlikte sıralar">
+          <div class="term-bar"><i></i><i></i><i></i><span>vitrin validate</span></div>
+          <pre><code><span class="ln"><span class="pr">$</span> vitrin validate</span><span class="ln"><span class="er">HATA</span>  promotionalText içinde "TODO" var</span><span class="ln"><span class="er">HATA</span>  Ekran görüntüsü 04: fiyat ifadesi, "%50 indirim"</span><span class="ln"><span class="er">HATA</span>  Ekran görüntüsü 06: web sitesi adresi</span><span class="ln"><span class="er">HATA</span>  "alışkanlık" zaten adda geçiyor</span><span class="ln">      <span class="fx">→ "alışkanlık" sözcüğünü kaldır.</span></span><span class="ln"><span class="wa">UYARI</span> Yenilikler metni çok genel</span><span class="ln"><span class="wa">UYARI</span> supportUrl yer tutucu</span><span class="ln"><span class="fi">4 hata, 2 uyarı</span></span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- The rest -->
+    <section id="more" aria-labelledby="more-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">Ve ayrıntılar</p>
+          <h2 id="more-title">İsteyeceğin diğer her şey</h2>
+        </div>
+        <div class="facts">
+          <article class="reveal"><svg class="ico"><use href="#i-window"/></svg><h3>Vitrin Studio</h3><p>Tüm akış yerel bir web sayfasında: canlı loglar, düzenleyiciler, tasarım örnekleri, inceleme galerisi ve yan panelde kendi Claude Code’un.</p></article>
+          <article class="reveal" style="--stagger:1"><svg class="ico"><use href="#i-key"/></svg><h3>Ek yapay zekâ anahtarı yok</h3><p>Yaratıcı iş kendi Claude Code oturumunda çalışır. CLI’ın kendisi hiçbir yapay zekâ çağrısı yapmaz.</p></article>
+          <article class="reveal" style="--stagger:2"><svg class="ico"><use href="#i-refresh"/></svg><h3>Kaldığı yerden devam eder</h3><p>Aşamalar değişmeyen işleri atlar. Eksik anahtarlar işi durdurmaz; onları yalnızca yükleme bekler.</p></article>
+          <article class="reveal"><svg class="ico"><use href="#i-folder"/></svg><h3>Derli toplu bir depo</h3><p>Her şey git dışında tutulan tek bir <code>metadata/</code> klasöründe durur. Anahtarlar <code>.env</code> içinde kalır ve her logda maskelenir.</p></article>
+          <article class="reveal" style="--stagger:1"><svg class="ico"><use href="#i-store"/></svg><h3>Custom Product Pages</h3><p>Custom Product Page’leri, In-App Event’leri ve varlık kitaplığını listenle birlikte yükle.</p></article>
+          <article class="reveal" style="--stagger:2"><svg class="ico"><use href="#i-text"/></svg><h3>Mağaza kuralları içinde hazır</h3><p>Karakter sınırları, anahtar kelime kuralları ve App Review politikaları, sonucu görmeden önce her dil için kontrol edilir.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Install -->
+    <section id="start" aria-labelledby="start-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="kicker">Kurulum</p>
+          <h2 id="start-title">Bir dakikada başla</h2>
+        </div>
+        <div class="starts">
+          <article class="start reveal">
+            <span class="badge" style="--a:#FF9E33;--b:#ED5C9E"><svg class="ico"><use href="#i-window"/></svg></span>
+            <h3>Vitrin for Mac</h3>
+            <p>İndir, Uygulamalar klasörüne sürükle ve hoş geldin turunu izle. Mac’ini kontrol eder, eksikleri tek tıkla kurar.</p>
+            <a class="btn btn-primary" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg"><svg class="ico"><use href="#i-download"/></svg>Mac için indir</a>
+            <p class="fine">Ya da Homebrew ile:</p>
+            <div class="code"><code>brew tap ardasnturk/vitrin https://github.com/ardasnturk/vitrin
+brew install --cask vitrin</code><button class="copy" type="button" data-copy="brew tap ardasnturk/vitrin https://github.com/ardasnturk/vitrin && brew install --cask vitrin">Kopyala</button></div>
+          </article>
+          <article class="start reveal" style="--stagger:1">
+            <span class="badge" style="--a:#4D5CED;--b:#9E52EB"><svg class="ico"><use href="#i-sparkles"/></svg></span>
+            <h3>Claude Code eklentisi</h3>
+            <p>Bir kez kur, uygulamanın deposunu <a href="https://claude.com/claude-code">Claude Code</a>’da aç ve <code>/vitrin</code> yaz. Klonlanacak bir şey yok.</p>
+            <div class="code"><code>claude plugin install vitrin --marketplace ardasnturk/vitrin</code><button class="copy" type="button" data-copy="claude plugin install vitrin --marketplace ardasnturk/vitrin">Kopyala</button></div>
+            <p class="fine">İlk çalıştırma CLI’ı bir kez kurar: Chromium ile birlikte yaklaşık 450 MB, sudo gerekmez. Node.js 22 veya üstü gerekir. Gerisini <code>vitrin doctor</code> kontrol eder.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" aria-labelledby="faq-title">
+      <div class="wrap narrow">
+        <div class="head reveal">
+          <p class="kicker">SSS</p>
+          <h2 id="faq-title">Güzel sorular</h2>
+        </div>
+        <div class="qa reveal">
+          <details>
+            <summary>Flutter veya React Native uygulamalarıyla çalışır mı?</summary>
+            <p>Evet. Önceliği Swift ve SwiftUI alır; Flutter, React Native ve Expo projeleri otomatik algılanır. Ekranları derlemeden koddan yeniden oluşturulur, istersen kendi araçlarıyla derlenip simülatörlerde çekilir. Vitrin App Store için olduğundan yalnızca Apple uygulamaları kapsanır.</p>
+          </details>
+          <details>
+            <summary>OpenAI veya Anthropic API anahtarı gerekir mi?</summary>
+            <p>Hayır. Yaratıcı iş Claude Code oturumunda olur, CLI hiçbir yapay zekâ çağrısı yapmaz. Claude olmadan da brief’leri elle izleyebilirsin.</p>
+          </details>
+          <details>
+            <summary>iPhone’umdan kullanabilir miyim?</summary>
+            <p>Evet. Mac’inde <a href="https://github.com/ardasnturk/remote-code">Remote Code</a> 1.6 ile Vitrin, iPhone’unda bir sekme olur. Proje klasörleri ekleyebilir, her aşamayı çalıştırabilir ve App Store Connect’i yerel ekranlarda yönetebilirsin; Vitrin for Mac’in açık olması gerekmez. Projeler telefonla Mac arasında eşitlenir.</p>
+          </details>
+          <details>
+            <summary>Mac uygulaması için terminal gerekir mi?</summary>
+            <p>Hayır. Hoş geldin turu Mac’ini kontrol eder; Node.js, Vitrin CLI, Claude Code, asc CLI ve ffmpeg’i tek tıkla kurar. Homebrew varsa kullanır, yoksa onsuz da çalışır.</p>
+          </details>
+          <details>
+            <summary>App Store Connect’i elle anahtar oluşturmadan bağlayabilir miyim?</summary>
+            <p>Evet. Apple Hesabınla giriş yap, Vitrin tek adımda Admin API anahtarı oluştursun. Anahtarı kendin de ekleyebilir ya da asc CLI’daki mevcut oturumunu kullanabilirsin. Projeler hiçbir bağlantı olmadan da çalışır.</p>
+          </details>
+          <details>
+            <summary>App Store Connect’te yeni uygulama oluşturabilir mi?</summary>
+            <p>Vitrin for Mac, Apple Hesabınla giriş yaptığında oluşturabilir. Apple buna API anahtarıyla izin vermiyor, bu yüzden CLI ve eklenti durur ve uygulamanın eksik olduğunu söyler.</p>
+          </details>
+          <details>
+            <summary>Sormadan bir şey yükler mi?</summary>
+            <p>Hayır. Her görsel, video ve metin önce sana gösterilir. Yükleme kuru çalıştırma planıyla başlar, senin onayını ister ve onayladığından farklı içeriği reddeder. İncelemeye göndermek ayrı bir onay ister. Eklentide fiyatlar, yayınlar, yaş sınırı ve gizlilik anketleri sende kalır.</p>
+          </details>
+          <details>
+            <summary>Tam olarak ne yüklenir?</summary>
+            <p>Onayından sonra yalnızca seçtiğin platformlar ve içerikler. Seçili ekran görüntüsü setleri ekran türüne göre değiştirilir, geri kalan her şey olduğu gibi kalır. Vitrin asla derleme yüklemez.</p>
+          </details>
+          <details>
+            <summary>Uygulamamı derlemesi gerekir mi?</summary>
+            <p>Hayır. Varsayılan olarak Claude ekranlarını kaynak koddan HTML ile yeniden oluşturur; derleme, simülatör ve demo modu gerekmez. Gerçek çekimler istersen uygulamanı derleyip her ekranı ayrı simülatörlerde açabilir.</p>
+          </details>
+          <details>
+            <summary>Üretilen dosyalara ne olur?</summary>
+            <p>Projenin <code>metadata/</code> klasöründe kalırlar, yönetilen bir <code>.gitignore</code> bloğu da onları git dışında tutar. Doğrulanmış bir yüklemeden sonra Vitrin araştırma verilerini silmek isteyip istemediğini sorar. Başka hiçbir şey silinmez.</p>
+          </details>
+          <details>
+            <summary>Lisanslar ne durumda?</summary>
+            <p>Vitrin MIT lisanslıdır. OFL yazı tiplerini ve Lucide simgelerini içerir; hazır stiller <a href="https://github.com/ParthJadhav/app-store-screenshots">ParthJadhav/app-store-screenshots</a> (MIT) projesinden uyarlanmıştır. App Preview’lar, bireyler ve en fazla üç çalışanı olan şirketler için ücretsiz olan Remotion ile üretilir. Daha büyük ekiplerin <a href="https://www.remotion.dev/license">Remotion şirket lisansı</a> alması gerekir.</p>
+          </details>
+          <details>
+            <summary>Bu bir Apple ürünü mü?</summary>
+            <p>Hayır. Vitrin bağımsız, açık kaynak bir projedir. Apple Inc. ile bağlantılı değildir, Apple Inc. tarafından onaylanmamış ya da desteklenmemiştir.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Closing -->
+    <section class="closing" aria-labelledby="closing-title">
+      <div class="wrap">
+        <div class="closing-card reveal">
+          <div class="awning small" aria-hidden="true"></div>
+          <h2 id="closing-title">Vitrinini aç</h2>
+          <p>Vitrin ücretsiz, açık kaynak ve kodu senin okuman için açık.</p>
+          <div class="cta">
+            <a class="btn btn-light" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg"><svg class="ico"><use href="#i-download"/></svg>Mac için indir</a>
+            <a class="btn btn-outline" href="https://github.com/ardasnturk/vitrin"><svg class="ico"><use href="#i-github"/></svg>GitHub’da gör</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div class="footer-top">
+        <a class="brand" href="#top"><img src="../assets/logo.svg" alt="" width="26" height="26"><span>Vitrin</span></a>
+        <a class="version" href="https://github.com/ardasnturk/vitrin/blob/main/CHANGELOG.md">v2.1.0</a>
+        <nav aria-label="Alt bilgi">
+          <a href="https://github.com/ardasnturk/vitrin">GitHub</a>
+          <a href="https://github.com/ardasnturk/vitrin/releases">Sürümler</a>
+          <a href="https://github.com/ardasnturk/vitrin/blob/main/CHANGELOG.md">Değişiklik günlüğü</a>
+          <a href="https://github.com/ardasnturk/vitrin/blob/main/CONTRIBUTING.md">Katkıda bulun</a>
+          <a href="https://github.com/ardasnturk/vitrin/blob/main/SECURITY.md">Güvenlik</a>
+          <a href="https://github.com/ardasnturk/vitrin/blob/main/LICENSE">MIT Lisansı</a>
+        </nav>
+      </div>
+      <p class="legal">App Store, App Store Connect, iPhone, iPad, Mac, Apple Watch, Apple TV ve Apple Vision Pro, Apple Inc.’in ticari markalarıdır. Vitrin’in Apple ile bağlantısı yoktur.</p>
+    </div>
+  </footer>
+
+  <script src="../script.js" defer></script>
+</body>
+</html>

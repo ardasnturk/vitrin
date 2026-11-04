@@ -4,7 +4,7 @@
 //   node scripts/site-assets.mjs --samples <dir> [--review <dir>] [--no-video]
 //
 // --samples   a folder with one sub-folder per style preset, each holding the PNGs `vitrin design` rendered for
-//             examples/Ritim (`NN_<slug>_<target>.png`, `header_header.png`, `play-feature-graphic_feature-graphic.png`),
+//             examples/Ritim (`NN_<slug>_<target>.png`, `header_header.png`),
 //             plus `video/` with Remotion stills (`mac-40.png`, `tv-140.png`).
 // --review    a folder with screenshots of `vitrin review --serve` (`gallery-desktop.png`, `gallery-reject.png`).
 // --no-video  skip the App Preview clips (they come from examples/Ritim: `vitrin -C examples/Ritim video --styles all`).
@@ -42,7 +42,7 @@ async function webp(src, dest, width, quality = 80, extract) {
   await img.resize({ width, withoutEnlargement: true }).webp({ quality, effort: 6 }).toFile(join(out, dest));
 }
 
-// The style switcher: three of the twelve presets, six iPhone shots each, plus iPad, Play phone and feature graphic.
+// The style switcher: three of the twelve presets, six iPhone shots each, plus iPad.
 const styles = { glass: 'liquid-glass-aurora', midnight: 'midnight-glow-pro', candy: 'candy-pop-social' };
 const slugs = ['today', 'streaks', 'charts', 'reminders', 'custom', 'more'];
 for (const [key, style] of Object.entries(styles)) {
@@ -52,8 +52,6 @@ for (const [key, style] of Object.entries(styles)) {
     await webp(join(dir, `${n}_${slug}_iphone-6.9.png`), `${key}-shot-${n}.webp`, 500, 78);
   }
   await webp(join(dir, '01_today_ipad-13.png'), `${key}-ipad.webp`, 640, 78);
-  await webp(join(dir, '01_today_play-phone.png'), `${key}-play.webp`, 420, 78);
-  await webp(join(dir, 'play-feature-graphic_feature-graphic.png'), `${key}-feature.webp`, 720, 80);
 }
 
 // The platforms showcase, all in one preset.
@@ -82,7 +80,7 @@ if (!args.includes('--no-video')) {
     return f;
   };
   // Full App Preview (showcase), web-sized.
-  const preview = missing(join(ex, 'fastlane/app-previews/en-US/01_IPHONE_67.mp4'));
+  const preview = missing(join(ex, 'metadata/store/app-previews/en-US/01_IPHONE_67.mp4'));
   ffmpeg(['-i', preview, '-vf', 'scale=432:-2', '-c:v', 'libx264', '-preset', 'slow', '-crf', '27', '-pix_fmt', 'yuv420p', '-an', '-movflags', '+faststart', join(out, 'preview.mp4')]);
   ffmpeg(['-ss', '5', '-i', preview, '-frames:v', '1', '-vf', 'scale=432:-2', join(out, 'preview.jpg')]);
   // Short silent loops of each style for the style picker.

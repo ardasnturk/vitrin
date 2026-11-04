@@ -4,12 +4,12 @@
 
 Screenshots must not show real user data and must be identical on every run. If the app does not have this yet, suggest the code below for its framework to the user (do not touch the app's code without approval). Every framework receives the same two inputs:
 
-| Input | Apple platforms (simctl / Mac launch) | Android (`am start`) |
-| --- | --- | --- |
-| Demo mode | launch argument `-VitrinDemo` | intent extra `--ez vitrinDemo true` |
-| Screen to open | `-VitrinScreen <id>` | `--es vitrinScreen <id>` |
-| Other `capture.screens[].launchArgs` | passed as-is | `-Name value` → `--es name value` (`YES`/`NO` → `--ez`, integers → `--ei`), `-Flag` → `--ez flag true` |
-| Language | `-AppleLanguages (tr) -AppleLocale tr_TR` + simulator system language | per-app language (`cmd locale set-app-locales`, Android 13+) |
+| Input | Apple platforms (simctl / Mac launch) |
+| --- | --- |
+| Demo mode | launch argument `-VitrinDemo` |
+| Screen to open | `-VitrinScreen <id>` |
+| Other `capture.screens[].launchArgs` | passed as-is |
+| Language | `-AppleLanguages (tr) -AppleLocale tr_TR` + simulator system language |
 
 While demo mode is on: in-memory store with fixed, locale-specific demo data; no permission prompts, sign-in, network, ads or purchase calls; the root view opens the requested screen. Never hard-code strings — the language comes from the system.
 
@@ -33,11 +33,10 @@ enum VitrinDemo {
 - In the root view, select a tab / push / present a sheet based on `VitrinDemo.screen`.
 - `-VitrinScreen home` also lands in `UserDefaults.standard.string(forKey: "VitrinScreen")` (argument domain), which is handy in a watch extension.
 - Sample app: `examples/Ritim/Ritim/Support/VitrinDemo.swift`.
-- Native Android apps: see "Android (Kotlin)" below.
 
 ### Flutter
 
-Dart cannot read process arguments on iOS, so the host apps forward them over a method channel:
+Dart cannot read process arguments on iOS, so the iOS host app forwards them over a method channel:
 
 ```swift
 // ios/Runner/AppDelegate.swift (inside application(_:didFinishLaunchingWithOptions:))
@@ -46,18 +45,6 @@ FlutterMethodChannel(name: "vitrin", binaryMessenger: controller.binaryMessenger
     let args = ProcessInfo.processInfo.arguments
     let screen = args.firstIndex(of: "-VitrinScreen").flatMap { $0 + 1 < args.count ? args[$0 + 1] : nil }
     result(["demo": args.contains("-VitrinDemo"), "screen": screen as Any])
-}
-```
-
-```kotlin
-// android/app/src/main/kotlin/…/MainActivity.kt
-class MainActivity : FlutterActivity() {
-    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
-        super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "vitrin").setMethodCallHandler { _, result ->
-            result.success(mapOf("demo" to intent.getBooleanExtra("vitrinDemo", false), "screen" to intent.getStringExtra("vitrinScreen")))
-        }
-    }
 }
 ```
 
@@ -71,44 +58,30 @@ Future<({bool demo, String? screen})> vitrinDemo() async {
 }
 ```
 
-- Capture builds Flutter apps in debug mode (`flutter build ios --simulator --debug`, `flutter build apk --debug`); macOS desktop (`macos/`) uses the Swift snippet in its `MainFlutterWindow.swift`.
+- Capture builds Flutter apps in debug mode (`flutter build ios --simulator --debug`); macOS desktop (`macos/`) uses the Swift snippet in its `MainFlutterWindow.swift`.
 - Languages come from `MaterialApp(localizationsDelegates: …, supportedLocales: …)` and the device; declare iOS languages in `ios/Runner/Info.plist` `CFBundleLocalizations`.
 
 ### React Native and Expo
 
-Use `react-native-launch-arguments` (reads `ProcessInfo` arguments on iOS and intent extras on Android) — no native code needed:
+Use `react-native-launch-arguments` (reads `ProcessInfo` arguments on iOS) — no native code needed:
 
 ```ts
 // src/vitrinDemo.ts
 import { LaunchArguments } from 'react-native-launch-arguments';
-const args = LaunchArguments.value<{ VitrinDemo?: boolean; VitrinScreen?: string; vitrinDemo?: boolean; vitrinScreen?: string }>();
-export const vitrinDemo = Boolean(args.VitrinDemo ?? args.vitrinDemo);
-export const vitrinScreen = args.VitrinScreen ?? args.vitrinScreen; // iOS: -VitrinScreen, Android: vitrinScreen extra
+const args = LaunchArguments.value<{ VitrinDemo?: boolean; VitrinScreen?: string }>();
+export const vitrinDemo = Boolean(args.VitrinDemo);
+export const vitrinScreen = args.VitrinScreen; // -VitrinScreen
 ```
 
 - Pass `vitrinScreen` as the initial route of React Navigation / Expo Router (`router.replace('/' + vitrinScreen)` in the root layout).
-- Expo: the library has native code, so it needs a development or prebuilt build (not Expo Go). Vitrin runs `npx expo prebuild` when `ios/`/`android/` are missing.
-- Without the library, a tiny native module works too: on iOS return `ProcessInfo.processInfo.arguments`, on Android `currentActivity?.intent?.extras` from a `@ReactMethod`.
-- Capture builds **Release** variants by default (the JS bundle is embedded, no Metro server, no dev overlays). If demo mode is behind `__DEV__`, set `capture.reactNative.metro: true`, start Metro (`npx react-native start` / `npx expo start`) and capture runs Debug builds.
-
-### Android (Kotlin, also the Flutter/React Native host)
-
-```kotlin
-// MainActivity.kt
-val vitrinDemo = intent.getBooleanExtra("vitrinDemo", false)
-val vitrinScreen = intent.getStringExtra("vitrinScreen") // "home", "stats", …
-```
-
-- Vitrin launches with `am start -W -S -n <applicationId>/<launcher activity> --ez vitrinDemo true --es vitrinScreen <id>` (cold start each time), installs with `adb install -g` so runtime permissions are pre-granted, and turns on System UI demo mode (clock 09:41, full battery and signal, notifications hidden).
-- Per-app language needs Android 13+ and, for AppCompat apps, `android:localeConfig` / `AppCompatDelegate.setApplicationLocales`. Older images show the device language.
-- The launcher activity is resolved from the device; set `capture.android.activity` if the app has several.
+- Expo: the library has native code, so it needs a development or prebuilt build (not Expo Go). Vitrin runs `npx expo prebuild` when `ios/` is missing.
+- Without the library, a tiny native module works too: return `ProcessInfo.processInfo.arguments` from it.
+- Capture builds the **Release** configuration by default (the JS bundle is embedded, no Metro server, no dev overlays). If demo mode is behind `__DEV__`, set `capture.reactNative.metro: true`, start Metro (`npx react-native start` / `npx expo start`) and capture runs Debug builds.
 
 ## Capture on other platforms
 
 - **watchOS / tvOS / visionOS:** each needs its simulator runtime (`xcodebuild -downloadPlatform watchOS|tvOS|visionOS`). Device types come from `data/targets.json` (`watch-ultra` → "Apple Watch Ultra 3 (49mm)", …); override with `capture.simulators.watch|tv|vision`. The watch app is built from its own target (scheme = target name).
 - **Mac:** the app is built (native or Mac Catalyst, ad-hoc signed), started with the demo arguments, resized to 1440×900 points and captured with `screencapture -l <window>`, then scaled to 2880×1800. Resizing needs Accessibility permission for the terminal; without it the capture is cropped/scaled to 16:10.
-- **Android:** needs the Android SDK (`ANDROID_HOME`) with `emulator`, `platform-tools` and a system image. Vitrin creates `Vitrin_<device>` AVDs (`pixel_9`, `Nexus 7 2013`, `pixel_tablet`) or uses `capture.android.avds`. Pass a pre-built APK with `capture.prebuilt.android`.
-- **React Native Release builds fail to sign on Android:** the template signs release with the debug keystore; if yours requires a release keystore, set `capture.reactNative.metro: true` or `capture.prebuilt.android`.
 - **A selected platform was not detected:** provide its build with `capture.prebuilt.<platform>` or use `capture.mode: manual`.
 
 ## iPhone Duo
@@ -118,7 +91,7 @@ val vitrinScreen = intent.getStringExtra("vitrinScreen") // "home", "stats", …
 
 ## No app record / 403
 
-- An app cannot be created with an API key. Create it once manually via ASC > Apps > + (bundle id, SKU, primary language). `fastlane produce` only works with an Apple ID + 2FA (FASTLANE_USER/PASSWORD).
+- An app cannot be created with an API key. Create it once manually via ASC > Apps > + (bundle id, SKU, primary language).
 - 401: Key ID / Issuer ID / .p8 do not match, or the key has been revoked.
 - 403: insufficient key role (at least App Manager, Team Key).
 

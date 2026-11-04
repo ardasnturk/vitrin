@@ -6,10 +6,10 @@
 
 1. Write the first three shots of `shots.json` (what the search result shows: real copy, real screens).
 2. Design for this app: at least one bespoke art direction in `art-direction.json` (own palette, type, background, device; see [custom-designs.md](custom-designs.md)), and a bespoke `template` layout for any shot whose story no archetype tells.
-3. Run `vitrin design --samples --styles <preset>,<preset>,<bespoke-id>,…` (default 4 suggested presets, `--count N`). It renders those shots per design into `metadata/design-samples/<id>/`, a **contact sheet** labelled A/B/C/D and **`store-preview.html`** with store, design and light/dark menus (App Store iPhone, iPad and Google Play when enabled; `--json` prints the paths).
+3. Run `vitrin design --samples --styles <preset>,<preset>,<bespoke-id>,…` (default 4 suggested presets, `--count N`). It renders those shots per design into `metadata/design-samples/<id>/`, a **contact sheet** labelled A/B/C/D and **`store-preview.html`** with store, design and light/dark menus (App Store iPhone, and iPad when enabled; `--json` prints the paths).
 4. Open the store preview for the user, show `store-preview.png` in the chat and ask which design they want (A/B/C/D). Do not pick for them.
 5. Write `art-direction.json` with the chosen design (`selected`), then the full `shots.json`, then `vitrin design`.
-6. Open the rendered PNGs yourself (at least the first three iPhone shots, one iPad, one Android if present) and read `metadata/validation.json` — the quality gate below measures every image.
+6. Open the rendered PNGs yourself (at least the first three iPhone shots and one iPad) and read `metadata/validation.json` — the quality gate below measures every image.
 
 ## art-direction.json
 
@@ -165,6 +165,4 @@ Shrink the first three screenshots to ~220 px wide (`metadata/.cache/thumbs`). I
 ## Store graphics
 
 - **App Store creatives** (header 21:9, search 3:2): caption left, 1–3 devices right; short brand line, not a screenshot headline.
-- **Google Play feature graphic** (1024×500): no device frame — app icon as the hero object, app name + one short line (taken from `creatives.header`, else the hero copy). **Play icon** (512×512): the app icon full-bleed (Google applies the mask).
-- Android screenshots use the Android frames (punch-hole, flat edge) and Android captures; never Apple hardware or iOS UI on Google Play (`image.ios-ui-on-play`). App Store ratings and Apple platform badges are dropped from Play images automatically; ranking words (“#1”, “best”) and Apple names on a shot that reaches Play are errors (`shot.play-superlative`, `shot.play-apple-term`) — restrict App Store-only shots with `targets`.
 - Every screenshot shows the UI in its own language: a fallback to the primary locale's capture is an error in the first three shots (`image.language-mismatch`).

@@ -4,9 +4,8 @@
  */
 export interface EnvKey {
   name: string;
-  group: 'asc' | 'google-play' | 'app' | 'apple-ads' | 'apptweak' | 'fastlane' | 'review';
-  /** `upload-android`: required for upload only when the app ships on Android (profile.app.platforms). */
-  required: 'upload' | 'upload-android' | 'optional';
+  group: 'asc' | 'app' | 'apple-ads' | 'apptweak' | 'review';
+  required: 'upload' | 'optional';
   /** Placeholder written to .env.example. */
   example: string;
   where: string;
@@ -47,30 +46,6 @@ export const ENV_KEYS: EnvKey[] = [
     secret: true,
   },
   {
-    name: 'GOOGLE_PLAY_JSON_KEY_PATH',
-    group: 'google-play',
-    required: 'upload-android',
-    example: './secrets/play-service-account.json',
-    where: 'Google Cloud Console > IAM & Admin > Service Accounts > (account) > Keys > Add key > JSON. Then invite the service account e-mail in Play Console > Users and permissions with at least “Edit store listing” for this app. Keep the file in the git-ignored secrets/ folder. Alternative: GOOGLE_PLAY_JSON_KEY_BASE64.',
-    secret: false,
-  },
-  {
-    name: 'GOOGLE_PLAY_JSON_KEY_BASE64',
-    group: 'google-play',
-    required: 'optional',
-    example: '',
-    where: 'For CI: the output of `base64 -i play-service-account.json`. Not needed when GOOGLE_PLAY_JSON_KEY_PATH is set.',
-    secret: true,
-  },
-  {
-    name: 'GOOGLE_PLAY_PACKAGE_NAME',
-    group: 'google-play',
-    required: 'optional',
-    example: '',
-    where: 'If left empty, the Android applicationId detected by `vitrin analyze` is used.',
-    secret: false,
-  },
-  {
     name: 'APP_BUNDLE_ID',
     group: 'app',
     required: 'optional',
@@ -106,22 +81,6 @@ export const ENV_KEYS: EnvKey[] = [
     secret: true,
   },
   {
-    name: 'FASTLANE_USER',
-    group: 'fastlane',
-    required: 'optional',
-    example: '',
-    where: 'Apple ID email, only for creating the app record with `fastlane produce`. Not needed in the normal flow.',
-    secret: true,
-  },
-  {
-    name: 'FASTLANE_PASSWORD',
-    group: 'fastlane',
-    required: 'optional',
-    example: '',
-    where: 'Only for `produce`. Your Apple ID password, not an app-specific password (requires 2FA).',
-    secret: true,
-  },
-  {
     name: 'REVIEW_DEMO_USER',
     group: 'review',
     required: 'optional',
@@ -141,11 +100,9 @@ export const ENV_KEYS: EnvKey[] = [
 
 const GROUP_TITLES: Record<EnvKey['group'], string> = {
   asc: 'App Store Connect API (required for upload)',
-  'google-play': 'Google Play Developer API (required for upload when the app ships on Android)',
   app: 'App',
   'apple-ads': 'Optional: Apple Ads (keyword popularity)',
   apptweak: 'Optional: AppTweak',
-  fastlane: 'Optional: only for creating the app record (fastlane produce)',
   review: 'Optional: App Review demo account',
 };
 

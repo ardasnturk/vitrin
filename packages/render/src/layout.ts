@@ -43,7 +43,7 @@ export interface PageInput {
   captionPosition?: 'top' | 'bottom';
   callouts?: Callout[];
   quotes?: Quote[];
-  /** file:// URL of the app icon (statement slides, tags, feature graphic). */
+  /** file:// URL of the app icon (statement slides, tags). */
   icon?: string;
   /** Position in the set (rhythm, alternation, index labels). */
   index?: number;
@@ -80,7 +80,7 @@ export function frameFamily(target: RenderTarget, screen?: ScreenImage): DeviceF
   if (!fromTarget) return screen?.family ?? 'iphone';
   if (!screen) return fromTarget;
   // Mac/TV/Vision/Watch screens have fixed shapes; a phone capture there keeps its phone frame.
-  if ((CONTAINED_FAMILIES.has(fromTarget) || fromTarget === 'ipad' || fromTarget === 'android-tablet') && screen.family !== fromTarget && Math.abs(screen.aspect - 1.5) > 0.4 && screen.aspect > 1.6) return screen.family;
+  if ((CONTAINED_FAMILIES.has(fromTarget) || fromTarget === 'ipad') && screen.family !== fromTarget && Math.abs(screen.aspect - 1.5) > 0.4 && screen.aspect > 1.6) return screen.family;
   return fromTarget;
 }
 
@@ -88,7 +88,7 @@ export function frameVariant(target: RenderTarget, index = 0): FrameVariant {
   return { duo: /inner/.test(target.id) ? 'inner' : 'outer', mac: index % 2 === 1 ? 'window' : 'laptop', tv: 'bezel' };
 }
 
-const isTabletFamily = (f: DeviceFamily) => f === 'ipad' || f === 'android-tablet' || f === 'duo';
+const isTabletFamily = (f: DeviceFamily) => f === 'ipad' || f === 'duo';
 
 /**
  * Framing for every shot of a set. Explicit framings are kept; `auto` follows the archetype, then the preset's
@@ -426,16 +426,9 @@ export function buildPage(input: PageInput): string {
   const { surface: sf, index: surfaceIndex } = surfaceFor(t, p.index, p.inverted);
   const fonts = fontSetup(t.fonts.headline, t.fonts.body, p.locale, [t.fonts.label, ...(t.fonts.script ? [t.fonts.script] : [])]);
   const landscape = W > H * 1.05;
-  const special = p.target.id === 'play-feature-graphic' ? 'feature-graphic' : p.target.id === 'play-icon' ? 'icon' : '';
   let body: string;
   let layout: string;
-  if (special === 'feature-graphic') {
-    body = featureGraphic(p, ad, sf, surfaceIndex, W, H);
-    layout = 'feature-graphic';
-  } else if (special === 'icon') {
-    body = iconPage(p, sf, W, H);
-    layout = 'icon';
-  } else if (landscape) {
+  if (landscape) {
     body = landscapeLayout(p, ad, sf, surfaceIndex, W, H);
     layout = 'landscape';
   } else {
@@ -746,7 +739,7 @@ function callouts(p: PageInput & { callouts: Callout[] }, d: DevicePlacement, W:
   for (const c of p.callouts) {
     const src = p.screens[c.screen] ?? s0;
     // Rects are fractions of one capture; another family's UI has a different layout.
-    const rect = src.family === 'iphone' || src.family === 'android-phone' ? c.rect : src.family === 'ipad' || src.family === 'duo' ? c.rects[src.family] : undefined;
+    const rect = src.family === 'iphone' ? c.rect : src.family === 'ipad' || src.family === 'duo' ? c.rects[src.family] : undefined;
     if (!rect) continue;
     const cw = Math.min(W * 0.94, rect.w * g.screen.w * c.scale);
     const ch = cw * ((rect.h * src.aspect) / rect.w);
@@ -938,48 +931,6 @@ function input(p: PageInput): { quotes: Quote[] } {
 function visionEnvironment(sf: Surface, W: number, H: number): string {
   const ridge = (y: number, c: string, o: number) => `<svg aria-hidden="true" style="position:absolute;left:0;top:0" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><path d="M0 ${y} C ${W * 0.15} ${y - H * 0.08}, ${W * 0.3} ${y + H * 0.02}, ${W * 0.45} ${y - H * 0.05} S ${W * 0.8} ${y - H * 0.1}, ${W} ${y - H * 0.03} L ${W} ${H} L 0 ${H} Z" fill="${c}" opacity="${o}"/></svg>`;
   return `<div aria-hidden="true" style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 58%,${withAlpha(mix(sf.accent, '#FFFFFF', 0.6), 0.35)},transparent 70%)"></div>${ridge(H * 0.72, mix(sf.bg[0]!, sf.accent, 0.25), 0.55)}${ridge(H * 0.8, mix(sf.bg[0]!, '#000000', 0.2), 0.6)}`;
-}
-
-// ---------------------------------------------------------------- Google Play feature graphic and icon
-
-function featureGraphic(p: PageInput & { index: number; total: number }, ad: ResolvedDirection, sf: Surface, surfaceIndex: number, W: number, H: number): string {
-  const t = ad.tokens;
-  const captionBox = { x: W * 0.06, y: H * 0.14, w: W * 0.54, h: H * 0.72 };
-  const ctx = decorContext(p, t, sf, surfaceIndex, W, H, { caption: captionBox, captionSide: 'top', device: undefined, framing: 'no-device', landscape: true });
-  const iconSize = H * 0.66;
-  const icon = p.icon
-    ? `<img src="${p.icon}" style="width:100%;height:100%;border-radius:22.5%;display:block">`
-    : `<div style="width:100%;height:100%;border-radius:22.5%;background:linear-gradient(150deg,${sf.accent},${mix(sf.accent, '#000000', 0.3)});display:flex;align-items:center;justify-content:center;font-family:var(--headline);font-weight:800;font-size:${(iconSize * 0.5).toFixed(0)}px;color:#FFFFFF">${esc([...(p.appName ?? '•')][0] ?? '•')}</div>`;
-  // No device frame (Google Play shows the banner small and over video); the icon is the hero object.
-  const art = `<div data-content style="position:absolute;left:${(W * 0.94 - iconSize).toFixed(1)}px;top:${((H - iconSize) / 2).toFixed(1)}px;width:${iconSize.toFixed(1)}px;height:${iconSize.toFixed(1)}px;transform:rotate(-8deg);filter:drop-shadow(0 ${(H * 0.06).toFixed(1)}px ${(H * 0.1).toFixed(1)}px ${sf.shadow});z-index:5">${icon}</div>
-    <div aria-hidden="true" style="position:absolute;left:${(W * 0.6).toFixed(1)}px;top:${(-H * 0.2).toFixed(1)}px;width:${(W * 0.5).toFixed(1)}px;height:${(H * 1.4).toFixed(1)}px;border-radius:50%;background:${withAlpha(sf.accent, sf.dark ? 0.28 : 0.22)};filter:blur(${(H * 0.12).toFixed(1)}px)"></div>`;
-  const hs = Math.round(H * 0.15);
-  const caption = CaptionBlock({
-    t,
-    sf,
-    headline: p.headline,
-    kicker: p.appName ?? p.kicker,
-    subheadline: p.subheadline,
-    appName: p.appName ?? '',
-    headlineSize: hs,
-    minHeadlineSize: Math.round(hs * 0.6),
-    subSize: Math.round(H * 0.052),
-    canvasWidth: W,
-    align: 'start',
-    box: captionBox,
-    bottom: false,
-    justify: 'center',
-  });
-  return [backgroundLayer(ctx), canvasDecor(ctx), art, grainLayer(t.grain), caption].join('\n');
-}
-
-function iconPage(p: PageInput, sf: Surface, W: number, H: number): string {
-  // Google Play applies its own mask: the icon is drawn full-bleed and square.
-  const inner = p.icon
-    ? `<img src="${p.icon}" style="position:absolute;inset:0;width:100%;height:100%">`
-    : `<div style="position:absolute;inset:0;background:linear-gradient(150deg,${sf.accent},${mix(sf.accent, '#000000', 0.35)});display:flex;align-items:center;justify-content:center;font-family:var(--headline);font-weight:800;font-size:${(W * 0.5).toFixed(0)}px;color:#FFFFFF">${esc([...(p.appName ?? '•')][0] ?? '•')}</div>`;
-  return `<div class="bg" style="position:absolute;inset:0;background:${sf.bg[0]}"></div>${inner}<div class="caption" style="display:none"><h1 class="headline"></h1></div>`;
-  void H;
 }
 
 /**

@@ -53,22 +53,22 @@ export const SIGNAL_RULES: SignalRule[] = [
 ];
 
 /**
- * Rules for Dart (Flutter), JavaScript/TypeScript (React Native, Expo) and Kotlin/Java (Android) sources.
+ * Rules for Dart (Flutter) and JavaScript/TypeScript (React Native, Expo) sources.
  * Swift rules above match Apple frameworks; these match the common packages of each ecosystem instead.
  */
 export const CROSS_PLATFORM_RULES: SignalRule[] = [
   { id: 'demo-mode', pattern: /VitrinDemo|vitrinDemo|vitrin_demo/, signal: 'vitrin.demo-mode' },
-  { id: 'xp-health', pattern: /package:health\/|react-native-health\b|expo-health|androidx\.health\.connect|HealthConnectClient/, feature: { id: 'health-data', title: 'Health data integration', kind: 'integration', description: 'Reads and writes health data (HealthKit / Health Connect).' }, category: 'HEALTH_AND_FITNESS' },
-  { id: 'xp-iap', pattern: /package:in_app_purchase|package:purchases_flutter|react-native-iap|react-native-purchases|expo-in-app-purchases|BillingClient/, signal: 'monetization.storekit' },
-  { id: 'xp-ads', pattern: /package:google_mobile_ads|react-native-google-mobile-ads|expo-ads-admob|com\.google\.android\.gms\.ads|MobileAds\./, signal: 'monetization.ads' },
+  { id: 'xp-health', pattern: /package:health\/|react-native-health\b|expo-health/, feature: { id: 'health-data', title: 'Health data integration', kind: 'integration', description: 'Reads and writes health data (HealthKit).' }, category: 'HEALTH_AND_FITNESS' },
+  { id: 'xp-iap', pattern: /package:in_app_purchase|package:purchases_flutter|react-native-iap|react-native-purchases|expo-in-app-purchases/, signal: 'monetization.storekit' },
+  { id: 'xp-ads', pattern: /package:google_mobile_ads|react-native-google-mobile-ads|expo-ads-admob|MobileAds\./, signal: 'monetization.ads' },
   { id: 'xp-analytics', pattern: /firebase_analytics|@react-native-firebase\/analytics|FirebaseAnalytics|\b(amplitude|mixpanel|posthog)\b/i, signal: 'privacy.analytics-sdk' },
-  { id: 'xp-notifications', pattern: /flutter_local_notifications|firebase_messaging|expo-notifications|@notifee\/|NotificationCompat/, feature: { id: 'reminders', title: 'Reminder notifications', kind: 'capability', description: 'Sends reminders with notifications.' } },
-  { id: 'xp-webview', pattern: /webview_flutter|react-native-webview|android\.webkit\.WebView/, signal: 'age.unrestricted-web' },
-  { id: 'xp-network', pattern: /package:http\/|package:dio\/|\bfetch\(|\baxios\b|Retrofit|OkHttpClient/, signal: 'network.remote' },
-  { id: 'xp-maps', pattern: /google_maps_flutter|react-native-maps|expo-maps|com\.google\.android\.gms\.maps/, feature: { id: 'maps', title: 'Map', kind: 'core', description: 'Shows locations on a map.' }, category: 'NAVIGATION' },
-  { id: 'xp-charts', pattern: /package:fl_chart|package:syncfusion_flutter_charts|victory-native|react-native-chart-kit|react-native-gifted-charts|MPAndroidChart|patrykandpatrick\.vico/, feature: { id: 'charts', title: 'Charts', kind: 'core', description: 'Visualizes data with charts.' } },
-  { id: 'xp-biometric', pattern: /package:local_auth|react-native-biometrics|expo-local-authentication|BiometricPrompt/, feature: { id: 'biometric-lock', title: 'Biometric lock', kind: 'capability', description: 'Locks the app with Face ID/Touch ID or fingerprint.' } },
-  { id: 'xp-share', pattern: /package:share_plus|react-native-share|expo-sharing|\bShare\.share\(|Intent\.ACTION_SEND/, feature: { id: 'sharing', title: 'Sharing', kind: 'core', description: 'Shares content through the share sheet.' } },
+  { id: 'xp-notifications', pattern: /flutter_local_notifications|firebase_messaging|expo-notifications|@notifee\//, feature: { id: 'reminders', title: 'Reminder notifications', kind: 'capability', description: 'Sends reminders with notifications.' } },
+  { id: 'xp-webview', pattern: /webview_flutter|react-native-webview/, signal: 'age.unrestricted-web' },
+  { id: 'xp-network', pattern: /package:http\/|package:dio\/|\bfetch\(|\baxios\b/, signal: 'network.remote' },
+  { id: 'xp-maps', pattern: /google_maps_flutter|react-native-maps|expo-maps/, feature: { id: 'maps', title: 'Map', kind: 'core', description: 'Shows locations on a map.' }, category: 'NAVIGATION' },
+  { id: 'xp-charts', pattern: /package:fl_chart|package:syncfusion_flutter_charts|victory-native|react-native-chart-kit|react-native-gifted-charts/, feature: { id: 'charts', title: 'Charts', kind: 'core', description: 'Visualizes data with charts.' } },
+  { id: 'xp-biometric', pattern: /package:local_auth|react-native-biometrics|expo-local-authentication/, feature: { id: 'biometric-lock', title: 'Biometric lock', kind: 'capability', description: 'Locks the app with Face ID or Touch ID.' } },
+  { id: 'xp-share', pattern: /package:share_plus|react-native-share|expo-sharing|\bShare\.share\(/, feature: { id: 'sharing', title: 'Sharing', kind: 'core', description: 'Shares content through the share sheet.' } },
 ];
 
 export interface SignalHit {

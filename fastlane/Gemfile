@@ -1,4 +1,0 @@
-# Vitrin — fastlane supply for Google Play listings. App Store uploads use the asc CLI, not fastlane.
-source "https://rubygems.org"
-
-gem "fastlane", ">= 2.241.1"

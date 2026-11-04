@@ -1,7 +1,7 @@
 {
   "name": "vitrin",
-  "version": "2.0.1",
-  "description": "App Store Connect and Google Play listings from your app repository: ASO metadata, HTML-rendered screenshots, Remotion App Previews, validation, a review gallery and approved upload. Run /vitrin in your app project.",
+  "version": "2.1.0",
+  "description": "App Store Connect listings from your app repository: ASO metadata, HTML-rendered screenshots, Remotion App Previews, validation, a review gallery and approved upload. Run /vitrin in your app project.",
   "author": {
     "name": "Arda Sentürk",
     "url": "https://github.com/ardasnturk"
@@ -9,5 +9,5 @@
   "homepage": "https://github.com/ardasnturk/vitrin#readme",
   "repository": "https://github.com/ardasnturk/vitrin",
   "license": "MIT",
-  "keywords": ["app-store", "app-store-connect", "google-play", "aso", "screenshots", "app-preview", "remotion", "fastlane", "ios"]
+  "keywords": ["app-store", "app-store-connect", "aso", "screenshots", "app-preview", "remotion", "ios"]
 }

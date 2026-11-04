@@ -10,7 +10,7 @@ describe('enabledTargets', () => {
   it('keeps the iOS-only default without a profile', () => {
     const list = ids(configWith());
     expect(list).toEqual(expect.arrayContaining(['iphone-6.3', 'iphone-6.9', 'ipad-13', 'duo-outer', 'duo-inner', 'preview-iphone', 'header', 'search']));
-    expect(list.some((id) => /^(play-|mac-|watch-|appletv|vision-)/.test(id))).toBe(false);
+    expect(list.some((id) => /^(mac-|watch-|appletv|vision-)/.test(id))).toBe(false);
   });
 
   it('gates iPad and Duo by their flags', () => {
@@ -21,22 +21,16 @@ describe('enabledTargets', () => {
 
   it('enables exactly the detected platforms', () => {
     const cases: Array<[Platform[], string[], string[]]> = [
-      [['macos'], ['mac-16x10'], ['iphone-6.3', 'header', 'play-phone']],
+      [['macos'], ['mac-16x10'], ['iphone-6.3', 'header']],
       [['ios', 'watchos'], ['iphone-6.3', 'watch-ultra'], ['watch-series', 'mac-16x10']],
       [['tvos'], ['appletv-4k'], ['iphone-6.3', 'preview-tv']],
       [['ios', 'visionos'], ['iphone-6.3', 'vision-pro'], ['appletv-4k']],
-      [['android'], ['play-phone', 'play-feature-graphic', 'play-icon'], ['iphone-6.3', 'play-tablet-7', 'header']],
     ];
     for (const [platforms, on, off] of cases) {
       const list = ids(configWith(), profileWith({ platforms, supportsIPhone: platforms.includes('ios') }));
       for (const id of on) expect(list, `${platforms} → ${id}`).toContain(id);
       for (const id of off) expect(list, `${platforms} ✗ ${id}`).not.toContain(id);
     }
-  });
-
-  it('enables Google Play tablets only with tablet layouts', () => {
-    const p = profileWith({ platforms: ['android'], supportsIPhone: false, supportsAndroidTablet: true });
-    expect(ids(configWith(), p)).toEqual(expect.arrayContaining(['play-tablet-7', 'play-tablet-10']));
   });
 
   it('skips iPhone targets for apps that do not run on iPhone', () => {
@@ -58,7 +52,7 @@ describe('enabledTargets', () => {
 });
 
 describe('selection', () => {
-  const multi = profileWith({ platforms: ['ios', 'watchos', 'android'], supportsIPhone: true, supportsIPad: true });
+  const multi = profileWith({ platforms: ['ios', 'watchos', 'macos'], supportsIPhone: true, supportsIPad: true });
 
   it('limits targets to the selected platforms', () => {
     const list = ids(configWith({ selection: { platforms: ['watchos'] } }), multi);
@@ -71,15 +65,15 @@ describe('selection', () => {
     const previews = ids(configWith({ selection: { platforms: ['ios'], assets: ['previews'] } }), multi);
     // Explicitly chosen previews include the opt-in iPad preview for an iPad app.
     expect(previews.sort()).toEqual(['preview-ipad', 'preview-iphone']);
-    const creatives = ids(configWith({ selection: { platforms: ['android'], assets: ['creatives'] } }), multi);
-    expect(creatives.sort()).toEqual(['play-feature-graphic', 'play-icon']);
+    const creatives = ids(configWith({ selection: { platforms: ['ios'], assets: ['creatives'] } }), multi);
+    expect(creatives.sort()).toEqual(['header', 'search']);
     const events = ids(configWith({ selection: { platforms: ['ios'], assets: ['events'] } }), multi);
     expect(events.sort()).toEqual(['event-card', 'event-detail']);
   });
 
   it('beats targets.enable', () => {
-    const list = ids(configWith({ selection: { platforms: ['ios'] }, targets: { enable: ['play-phone'], disable: [] } }), multi);
-    expect(list).not.toContain('play-phone');
+    const list = ids(configWith({ selection: { platforms: ['ios'] }, targets: { enable: ['mac-16x10'], disable: [] } }), multi);
+    expect(list).not.toContain('mac-16x10');
   });
 
   it('includes selected platforms that were not detected, and reports them', () => {
@@ -88,16 +82,16 @@ describe('selection', () => {
     expect(selectedPlatforms(config, p)).toEqual({ platforms: ['ios', 'tvos'], undetected: ['tvos'] });
     expect(ids(config, p)).toEqual(expect.arrayContaining(['iphone-6.3', 'appletv-4k']));
     // An undetected iOS still gets its required iPhone set.
-    expect(ids(configWith({ selection: { platforms: ['ios'] } }), profileWith({ platforms: ['android'], supportsIPhone: false }))).toContain('iphone-6.3');
+    expect(ids(configWith({ selection: { platforms: ['ios'] } }), profileWith({ platforms: ['macos'], supportsIPhone: false }))).toContain('iphone-6.3');
   });
 
   it('limits formats to selection.targets unless allFormats is asked for', () => {
     const config = configWith({ selection: { targets: ['iphone-6.9', 'watch-ultra'] } });
     expect(ids(config, multi).sort()).toEqual(['iphone-6.9', 'watch-ultra']);
-    expect(enabledTargets(config, multi, { allFormats: true }).map((t) => t.id)).toEqual(expect.arrayContaining(['iphone-6.3', 'ipad-13', 'play-phone']));
+    expect(enabledTargets(config, multi, { allFormats: true }).map((t) => t.id)).toEqual(expect.arrayContaining(['iphone-6.3', 'ipad-13', 'mac-16x10']));
   });
 
   it('unset selection keeps the detected platforms', () => {
-    expect(selectedPlatforms(configWith(), multi)).toEqual({ platforms: ['ios', 'watchos', 'android'], undetected: [] });
+    expect(selectedPlatforms(configWith(), multi)).toEqual({ platforms: ['ios', 'watchos', 'macos'], undetected: [] });
   });
 });

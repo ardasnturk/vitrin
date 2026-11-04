@@ -207,7 +207,7 @@ export async function startReviewServer(ctx: Ctx, opts: { port?: number; host?: 
         return void res.end();
       }
       if (path === '/api/state') {
-        return sendJson(res, 200, { overallHash: inv.overallHash, summary: summarize(inv).lines, items: inv.items.map(({ id, kind, store, platform, locale, target, label }) => ({ id, kind, store, platform, locale, target, label })) });
+        return sendJson(res, 200, { overallHash: inv.overallHash, summary: summarize(inv).lines, items: inv.items.map(({ id, kind, platform, locale, target, label }) => ({ id, kind, platform, locale, target, label })) });
       }
       const file = await resolveServedFile(ctx.root, path, profileIcon ? [profileIcon] : []);
       if (!file) return sendJson(res, 404, { error: 'Not found.' });

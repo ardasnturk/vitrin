@@ -1399,3 +1399,119 @@ label.mini {
 .nav .sdot.info {
   background: var(--info);
 }
+
+/* ---------------------------------------------------------------- phone: the sidebar becomes a bottom tab strip */
+@media (max-width: 760px) {
+  html,
+  body,
+  #root {
+    height: 100dvh;
+  }
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+  }
+  .topbar {
+    gap: 8px;
+    min-height: 44px;
+    padding: 6px 12px;
+    flex-wrap: wrap;
+  }
+  .topbar .brand,
+  .topbar .app .mono,
+  .topbar > .pill:last-of-type {
+    display: none;
+  }
+  .sidebar {
+    grid-row: 4;
+    grid-column: 1;
+    flex-direction: row;
+    gap: 0;
+    padding: 2px 4px calc(2px + env(safe-area-inset-bottom));
+    border-right: 0;
+    border-top: 1px solid var(--line);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .sidebar::-webkit-scrollbar {
+    display: none;
+  }
+  .sidebar .nav {
+    position: relative;
+    flex: 1 0 64px;
+    width: auto;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 2px;
+    font-size: 11px;
+    text-align: center;
+  }
+  .sidebar .nav .ico {
+    font-size: 16px;
+  }
+  .sidebar .nav .badge,
+  .sidebar .nav .sdot {
+    position: absolute;
+    top: 3px;
+    right: 12px;
+    margin: 0;
+  }
+  .sidebar .foot {
+    display: none;
+  }
+  .main {
+    grid-column: 1;
+    padding: 14px 14px 24px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .console {
+    grid-row: 3;
+  }
+  .drawer {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    width: 100%;
+    max-width: none;
+    background: var(--bg);
+  }
+  .drawer.hidden {
+    display: none;
+  }
+  .row {
+    flex-wrap: wrap;
+  }
+  .design-grid,
+  .video-grid,
+  .pipeline-grid,
+  .beat,
+  .tools,
+  .grid.two-side {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .main iframe {
+    max-width: 100%;
+  }
+  table.plain {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  .pill {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .input,
+  input,
+  select,
+  textarea {
+    max-width: 100%;
+    font-size: 16px; /* iOS zooms into anything smaller */
+  }
+  .toasts {
+    left: 12px;
+    right: 12px;
+    bottom: calc(70px + env(safe-area-inset-bottom));
+  }
+}

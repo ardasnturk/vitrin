@@ -41,7 +41,7 @@ const text = (file: string, value: string) => {
   writeFileSync(file, value);
 };
 
-export async function makeFixture(opts: { realVideo?: boolean; android?: boolean } = {}): Promise<Fixture> {
+export async function makeFixture(opts: { realVideo?: boolean; oldPlayFiles?: boolean } = {}): Promise<Fixture> {
   const root = mkdtempSync(join(tmpdir(), 'vitrin-review-'));
   const locales = ['en-US', 'tr'];
   text(join(root, 'vitrin.config.yaml'), `app:\n  bundleId: com.example.ritim\n  primaryLocale: en-US\n  locales: [en-US, tr]\nurls:\n  support: https://example.com/support\n  privacy: https://example.com/privacy\ncopyrightHolder: Example Ltd\n`);
@@ -107,14 +107,14 @@ export async function makeFixture(opts: { realVideo?: boolean; android?: boolean
     ],
     measurements: {},
   });
-  if (opts.android !== false) {
+  if (opts.oldPlayFiles) {
+    // What a Vitrin before 2.1 left for Google Play.
     const play = join(root, 'metadata', 'store', 'metadata', 'android', 'en-US');
     text(join(play, 'title.txt'), 'Ritim: Habit Tracker\n');
-    text(join(play, 'short_description.txt'), 'Build streaks that stick, one day at a time.\n');
-    text(join(play, 'full_description.txt'), 'Ritim helps you build habits that last.\n');
-    text(join(play, 'changelogs', '42.txt'), 'Widgets.\n');
-    for (let i = 1; i <= 2; i++) await png(join(play, 'images', 'phoneScreenshots', `${i}_shot${i}.png`), 1080, 1920, `Android ${i}`, COLORS[i]!);
-    await png(join(play, 'images', 'featureGraphic.png'), 1024, 500, 'Feature graphic', '#2B8A3E');
+    await png(join(play, 'images', 'phoneScreenshots', '1_shot1.png'), 1080, 1920, 'Android', COLORS[1]!);
+    await png(join(root, 'metadata', 'store', 'screenshots', 'en-US', '01_shot1_play-phone.png'), 1080, 1920, 'Android', COLORS[1]!);
+    await png(join(root, 'metadata', 'creative', 'en-US', 'play-feature-graphic_feature-graphic.png'), 1024, 500, 'Feature graphic', '#2B8A3E');
+    text(join(root, 'metadata', 'listing', 'play', 'en-US.json'), '{}\n');
   }
   return { root, shot: shotFile };
 }

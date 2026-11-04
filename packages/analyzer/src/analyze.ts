@@ -3,7 +3,7 @@ import type { AppProfile, Evidence, Feature, Platform, ProjectTarget } from '@vi
 import { readdir, readFile } from 'node:fs/promises';
 import { basename, dirname, join, relative } from 'node:path';
 import { scanAssetCatalogs } from './assets.js';
-import { detectFramework, readAndroidProject } from './framework.js';
+import { detectFramework } from './framework.js';
 import { expandSetting, readPbxproj, settingsOf, type PbxProject, type PbxTarget } from './pbxproj.js';
 import { detectDuo, deviceFamilies, sortPlatforms, targetPlatforms } from './platforms.js';
 import { readPlistFile } from './plist-file.js';
@@ -77,6 +77,10 @@ function literal(v: unknown): string | undefined {
 
 const SKIP_DIRS = ['node_modules', '.git', 'DerivedData', 'build', '.build', 'Pods', '.vitrin', 'fastlane', '.dart_tool', '.gradle', '.expo'];
 
+const APPLE_ONLY = 'Vitrin supports Apple platforms only (iOS, iPadOS, macOS, watchOS, tvOS, visionOS).';
+/** What gives away a native Android project, which Vitrin does not support. */
+const GRADLE_FILES = ['settings.gradle', 'settings.gradle.kts', 'android/settings.gradle', 'android/settings.gradle.kts'];
+
 export async function analyzeProject(opts: AnalyzeOptions): Promise<AppProfile> {
   const { root } = opts;
   const rel = (p: string) => relative(root, p) || '.';
@@ -96,8 +100,10 @@ export async function analyzeProject(opts: AnalyzeOptions): Promise<AppProfile> 
   }
   if (xcodeproj && !existsSync(join(xcodeproj, 'project.pbxproj'))) xcodeproj = undefined;
   const expoWithoutIos = fw.kind === 'expo' && fw.platforms.some((p) => p.platform === 'ios');
-  if (!xcodeproj && !fw.androidDir && !expoWithoutIos) {
-    throw new Error(`No Xcode project or Android app found (${root}). Set its path with app.project in vitrin.config.yaml.`);
+  if (!xcodeproj && !expoWithoutIos) {
+    if (fw.kind !== 'native') throw new Error(`This ${fw.kind} project has no iOS or macOS host project (${root}). ${APPLE_ONLY}`);
+    if (GRADLE_FILES.some((f) => existsSync(join(root, f)))) throw new Error(`This is an Android project, with no Xcode project (${root}). ${APPLE_ONLY}`);
+    throw new Error(`No Xcode project found (${root}). Set its path with app.project in vitrin.config.yaml.`);
   }
 
   // ---------- Collectors ----------
@@ -229,9 +235,7 @@ export async function analyzeProject(opts: AnalyzeOptions): Promise<AppProfile> 
     }
   }
 
-  // ---------- Framework-declared platforms (Flutter macos/, Expo platforms, Android) ----------
-  const android = fw.androidDir && existsSync(join(root, fw.androidDir)) ? await readAndroidProject(root, fw.androidDir) : undefined;
-  if (android) addPlatform('android', { path: android.manifest, note: `Gradle module :${android.module}` });
+  // ---------- Framework-declared platforms (Flutter macos/, Expo platforms) ----------
   for (const p of fw.platforms) {
     // With an Xcode project, iOS is decided by its targets (an iPad-only or Mac-only host must not gain iPhone).
     if (p.platform === 'ios' && xcodeproj) continue;
@@ -243,7 +247,6 @@ export async function analyzeProject(opts: AnalyzeOptions): Promise<AppProfile> 
     macos: { id: 'mac-app', title: 'Mac app', description: main?.macCatalyst ? 'Runs on the Mac (Mac Catalyst).' : 'A native Mac app.' },
     tvos: { id: 'apple-tv', title: 'Apple TV app', description: 'An app for Apple TV.' },
     visionos: { id: 'vision-pro', title: 'Apple Vision Pro app', description: 'A native visionOS app.' },
-    android: { id: 'android-app', title: 'Android app', description: 'Also available on Android (Google Play).' },
   };
   for (const p of platforms) {
     const f = featureFor[p];
@@ -258,7 +261,6 @@ export async function analyzeProject(opts: AnalyzeOptions): Promise<AppProfile> 
   const duo = pbx && main ? detectDuo({ supportsIPhone, attributes: pbx.attributes, deploymentTarget: main.deploymentTarget, pbxprojPath: pbxPath }) : { supported: false, reason: 'No Xcode project yet.' };
   if (duo.supported) addFeature({ id: 'iphone-duo', title: 'iPhone Duo', kind: 'platform', description: 'Built with the iOS 27.1 SDK, which lays the app out for both iPhone Duo displays.', evidence: [duo.evidence!], confidence: 'medium' });
   else if (supportsIPhone) todo.push(`iPhone Duo targets are off: ${duo.reason} If the app is built with Xcode 27.1+, add duo-outer and duo-inner to targets.enable in vitrin.config.yaml.`);
-  const supportsAndroidTablet = Boolean(android?.tablet);
 
   // ---------- Source scan ----------
   const allFiles = srcRoot ? await listFiles(srcRoot) : [];
@@ -275,8 +277,8 @@ export async function analyzeProject(opts: AnalyzeOptions): Promise<AppProfile> 
     for (const m of text.matchAll(/(?:struct|class)\s+(\w+)\s*:\s*[^{]*\bAppIntent\b/g)) appIntents.push({ name: m[1]!, file: rel(f) });
     if (/AppShortcutsProvider/.test(text)) addSignal('intents.app-shortcuts', { path: rel(f) });
   }
-  // Dart / JS / Kotlin sources of cross-platform and Android apps.
-  for (const f of await crossPlatformSources(root, fw.kind, android ? join(root, android.dir, android.module) : undefined)) {
+  // Dart / JS sources of cross-platform apps.
+  for (const f of await crossPlatformSources(root, fw.kind)) {
     const text = await readFile(f, 'utf8');
     for (const hit of scanSource(rel(f), text, CROSS_PLATFORM_RULES)) {
       if (hit.rule.feature) addFeature({ ...hit.rule.feature, evidence: [hit.evidence] });
@@ -340,11 +342,10 @@ export async function analyzeProject(opts: AnalyzeOptions): Promise<AppProfile> 
   }
   // Flutter documents CFBundleLocalizations as the way to declare iOS languages.
   if (Array.isArray(info.CFBundleLocalizations)) for (const l of info.CFBundleLocalizations) if (typeof l === 'string') regions.add(l);
-  for (const l of [...fw.locales, ...(android?.locales ?? [])]) {
+  for (const l of fw.locales) {
     regions.add(l.code);
     localeEvidence.push(l.path);
   }
-  if (!regions.size && android) todo.push('Android resources have no language qualifiers (values-xx); set app.locales in vitrin.config.yaml.');
   const locales = [...regions].sort().map((r) => ({ xcode: r, asc: xcodeToAsc(r) }));
   for (const l of locales) if (!l.asc) todo.push(`Region "${l.xcode}" has no ASC locale; metadata cannot be written in this language.`);
   if (locales.length > 1) {
@@ -362,7 +363,6 @@ export async function analyzeProject(opts: AnalyzeOptions): Promise<AppProfile> 
     .map((f) => /^(.*?\.xcassets)\//.exec(f)?.[1])
     .filter((x): x is string => Boolean(x));
   const catalogScan = await scanAssetCatalogs([...new Set(catalogs)]);
-  const androidIcon = android ? ['xxxhdpi', 'xxhdpi', 'xhdpi'].map((d) => join(root, android.dir, android.module, 'src', 'main', 'res', `mipmap-${d}`, 'ic_launcher.png')).find((p) => existsSync(p)) : undefined;
 
   // ---------- Docs & git ----------
   const readme = await readExcerpt(root, ['README.md', 'Readme.md', 'readme.md']);
@@ -384,18 +384,15 @@ export async function analyzeProject(opts: AnalyzeOptions): Promise<AppProfile> 
     todo.push('The app has no -VitrinDemo seed-data mode. For capture, show the user which file to add it to (the /vitrin skill’s references/troubleshooting.md).');
   }
   if (fw.needsPrebuild) {
-    todo.push('Expo app without native folders: capture runs `npx expo prebuild` first (capture.reactNative.prebuild), which creates ios/ and android/.');
-  }
-  if (platforms.includes('android') && !(android?.applicationId ?? fw.androidApplicationId)) {
-    todo.push('Android applicationId not found (build.gradle applicationId / app.json expo.android.package).');
+    todo.push('Expo app without native folders: capture runs `npx expo prebuild` first (capture.reactNative.prebuild), which creates ios/.');
   }
 
   // ---------- Identity: Xcode first, then framework files ----------
   const frameworkName = fw.displayName?.value;
   const displayName =
-    (fw.kind === 'expo' ? (frameworkName ?? xcodeDisplayName) : (xcodeDisplayName ?? android?.label?.value ?? frameworkName)) ?? android?.label?.value ?? basename(root);
-  const version = literal(ms.MARKETING_VERSION) ?? literal(info.CFBundleShortVersionString) ?? fw.version?.value ?? android?.versionName?.value;
-  const build = literal(ms.CURRENT_PROJECT_VERSION) ?? literal(info.CFBundleVersion) ?? fw.build?.value ?? android?.versionCode?.value;
+    (fw.kind === 'expo' ? (frameworkName ?? xcodeDisplayName) : (xcodeDisplayName ?? frameworkName)) ?? basename(root);
+  const version = literal(ms.MARKETING_VERSION) ?? literal(info.CFBundleShortVersionString) ?? fw.version?.value;
+  const build = literal(ms.CURRENT_PROJECT_VERSION) ?? literal(info.CFBundleVersion) ?? fw.build?.value;
 
   return {
     schemaVersion: 1,
@@ -404,8 +401,6 @@ export async function analyzeProject(opts: AnalyzeOptions): Promise<AppProfile> 
       root,
       kind: fw.kind,
       iosDir: srcRoot ? rel(srcRoot) : fw.iosDir,
-      androidDir: android?.dir ?? fw.androidDir,
-      androidApplicationId: android?.applicationId?.value ?? fw.androidApplicationId?.value,
       macosDir: fw.macosDir,
       needsPrebuild: fw.needsPrebuild,
       xcodeproj: xcodeproj ? rel(xcodeproj) : undefined,
@@ -424,7 +419,6 @@ export async function analyzeProject(opts: AnalyzeOptions): Promise<AppProfile> 
       supportsDuo: duo.supported,
       platforms,
       platformEvidence: Object.fromEntries(platforms.map((p) => [p, [platformEvidence.get(p)!]])),
-      supportsAndroidTablet,
       developmentRegion: pbx?.developmentRegion,
       knownRegions: pbx?.knownRegions ?? [],
       locales,
@@ -437,7 +431,7 @@ export async function analyzeProject(opts: AnalyzeOptions): Promise<AppProfile> 
     brand: {
       accentColor: catalogScan.accentColor,
       colors: catalogScan.colors.map(({ name, hex }) => ({ name, hex })),
-      appIcon: catalogScan.appIcon ? rel(catalogScan.appIcon) : androidIcon ? rel(androidIcon) : undefined,
+      appIcon: catalogScan.appIcon ? rel(catalogScan.appIcon) : undefined,
     },
     revenueModel,
     categorySuggestion,
@@ -447,16 +441,13 @@ export async function analyzeProject(opts: AnalyzeOptions): Promise<AppProfile> 
   };
 }
 
-/** Dart (lib/), JS/TS (outside native folders) and Kotlin/Java (Android module) sources to scan. */
-async function crossPlatformSources(root: string, kind: AppProfile['project']['kind'], androidModule?: string): Promise<string[]> {
+/** Dart (lib/) and JS/TS (outside native folders) sources to scan. */
+async function crossPlatformSources(root: string, kind: AppProfile['project']['kind']): Promise<string[]> {
   const out: string[] = [];
   if (kind === 'flutter' && existsSync(join(root, 'lib'))) out.push(...(await listFiles(join(root, 'lib'))).filter((f) => f.endsWith('.dart')));
   if (kind === 'react-native' || kind === 'expo') {
     const skip = new Set([...SKIP_DIRS, 'ios', 'android', 'macos', 'windows', 'dist', 'web-build', 'coverage', '__tests__']);
     out.push(...(await listFiles(root, { skip, maxDepth: 8 })).filter((f) => /\.(m?[jt]sx?)$/.test(f) && !/\.(test|spec|config)\.[jt]sx?$/.test(f)));
-  }
-  if (androidModule && existsSync(join(androidModule, 'src'))) {
-    out.push(...(await listFiles(join(androidModule, 'src'), { skip: new Set([...SKIP_DIRS, 'test', 'androidTest']) })).filter((f) => /\.(kt|java)$/.test(f)));
   }
   return out;
 }

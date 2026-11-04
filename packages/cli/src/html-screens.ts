@@ -14,10 +14,10 @@ import type { Ctx } from './context.js';
  * writes (`metadata/raw/<locale>/<family>/<id>.png`), so design, video and review work unchanged.
  */
 
-export type ScreenFamily = 'iphone' | 'ipad' | 'duo' | 'mac' | 'watch' | 'tv' | 'vision' | 'android-phone' | 'android-tablet';
+export type ScreenFamily = 'iphone' | 'ipad' | 'duo' | 'mac' | 'watch' | 'tv' | 'vision';
 
 /** Safe areas (CSS px) the status bar and home indicator take; exposed as --safe-top / --safe-bottom. */
-const SAFE_AREA: Record<ScreenFamily, { top: number; bottom: number; statusBar: 'ios' | 'ipados' | 'android' | 'none' }> = {
+const SAFE_AREA: Record<ScreenFamily, { top: number; bottom: number; statusBar: 'ios' | 'ipados' | 'none' }> = {
   iphone: { top: 62, bottom: 34, statusBar: 'ios' },
   duo: { top: 62, bottom: 34, statusBar: 'ios' },
   ipad: { top: 24, bottom: 20, statusBar: 'ipados' },
@@ -25,8 +25,6 @@ const SAFE_AREA: Record<ScreenFamily, { top: number; bottom: number; statusBar: 
   watch: { top: 0, bottom: 0, statusBar: 'none' },
   tv: { top: 0, bottom: 0, statusBar: 'none' },
   vision: { top: 0, bottom: 0, statusBar: 'none' },
-  'android-phone': { top: 24, bottom: 0, statusBar: 'android' },
-  'android-tablet': { top: 24, bottom: 0, statusBar: 'android' },
 };
 
 export function screenViewport(family: ScreenFamily): RenderTarget['logical'] & { width: number; height: number } {
@@ -91,9 +89,6 @@ export function statusBarHtml(family: ScreenFamily): string {
   const kind = SAFE_AREA[family].statusBar;
   if (kind === 'none') return '';
   const h = SAFE_AREA[family].top;
-  if (kind === 'android') {
-    return `<div id="vitrin-status-bar" style="position:fixed;left:0;right:0;top:0;height:${h}px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font:500 13px Roboto,system-ui,sans-serif;z-index:2147483647;pointer-events:none"><span>9:41</span><span style="display:flex;gap:6px;align-items:center;transform:scale(.8);transform-origin:right center">${IOS_ICONS}</span></div>`;
-  }
   const time = kind === 'ios' ? `font:600 17px -apple-system,'SF Pro Text',system-ui,sans-serif;width:33%;text-align:center` : `font:600 13px -apple-system,'SF Pro Text',system-ui,sans-serif`;
   const pad = kind === 'ios' ? '0 26px 0 6px' : '0 20px';
   return `<div id="vitrin-status-bar" style="position:fixed;left:0;right:0;top:0;height:${kind === 'ios' ? 54 : h}px;display:flex;align-items:center;justify-content:space-between;padding:${pad};z-index:2147483647;pointer-events:none"><span style="${time}">9:41</span><span style="display:flex;gap:6px;align-items:center;fill:currentColor">${IOS_ICONS}</span></div>`;
@@ -107,7 +102,7 @@ export function wrapScreen(html: string, opts: { dir: string; family: ScreenFami
   return /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, (m) => m + head) : `<!doctype html><html><head><meta charset="utf-8">${head}</head><body>${html}</body></html>`;
 }
 
-/** The native UI kit (iOS, Material 3, watchOS, macOS CSS) screens link to as `kit/<name>.css`; kept current by Vitrin. */
+/** The native UI kit (iOS, watchOS, macOS CSS) screens link to as `kit/<name>.css`; kept current by Vitrin. */
 export async function installScreenKit(screensDir: string): Promise<string[]> {
   const src = join(DATA_DIR, 'screen-kit');
   if (!existsSync(src)) return [];

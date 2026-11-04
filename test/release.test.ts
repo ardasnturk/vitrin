@@ -196,8 +196,6 @@ describe.skipIf(!existsSync(CLI))('packed @ardasnturk/vitrin tarball', () => {
       'README.md',
       'LICENSE',
       'dist/bin.js',
-      'fastlane/Fastfile',
-      'fastlane/Gemfile',
       'scripts/ocr.swift',
       'src/types.ts',
       ...readdirSync(join(ROOT, 'data')).filter((f) => f.endsWith('.json')).map((f) => `data/${f}`),

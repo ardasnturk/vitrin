@@ -39,7 +39,7 @@ When the story needs a composition the archetypes cannot draw — two devices in
   "featureIds": ["weekly-plan"], "copy": { "en-US": { "headline": "Plan your *week*", "subheadline": "Drag habits onto days" } } }
 ```
 
-`metadata/designs/plan.html` (and optionally `plan.ipad.html`, `plan.android-phone.html` … for another device family):
+`metadata/designs/plan.html` (and optionally `plan.ipad.html`, `plan.watch.html` … for another device family):
 
 ```html
 <style>
@@ -56,7 +56,7 @@ When the story needs a composition the archetypes cannot draw — two devices in
 <vitrin-device screen="week" x="170" y="410" width="250" tilt="4" z="2"></vitrin-device>
 ```
 
-The canvas is the format's logical size (iPhone 6.9": 440×956, iPad 13": 1032×1376, Google Play phone: 360×640, …; `{{width}}`/`{{height}}` and `--w`/`--h` hold it). Write positions for the main format and use `<name>.<family>.html` where another family needs its own composition.
+The canvas is the format's logical size (iPhone 6.9": 440×956, iPad 13": 1032×1376, …; `{{width}}`/`{{height}}` and `--w`/`--h` hold it). Write positions for the main format and use `<name>.<family>.html` where another family needs its own composition.
 
 ### Placeholders
 | Placeholder | Becomes |

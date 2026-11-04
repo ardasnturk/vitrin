@@ -427,11 +427,12 @@ export async function startStudioServer(root: string, opts: { port?: number; hos
       if (path === '/api/remotion') return sendJson(res, 200, { running: remotion.running, url: remotion.url ?? null, log: remotion.log.slice(-40) });
       if (path === '/api/review') {
         const { inv, approval } = await reviewState();
-        return sendJson(res, 200, { overallHash: inv.overallHash, approval, summary: summarize(inv).lines, items: inv.items.map(({ id, kind, store, platform, locale, target, label }) => ({ id, kind, store, platform, locale, target, label })), report: 'metadata/report.html' });
+        // `files`, `bytes`, `durationSec` and `fields` let an app draw the gallery itself.
+        return sendJson(res, 200, { overallHash: inv.overallHash, approval, summary: summarize(inv).lines, items: inv.items.map(({ id, kind, platform, locale, target, label, files, bytes, durationSec, fields }) => ({ id, kind, platform, locale, target, label, files, bytes, durationSec, fields })), report: 'metadata/report.html' });
       }
       if (path === '/api/state') {
         const { inv } = await reviewState();
-        return sendJson(res, 200, { overallHash: inv.overallHash, summary: summarize(inv).lines, items: inv.items.map(({ id, kind, store, platform, locale, target, label }) => ({ id, kind, store, platform, locale, target, label })) });
+        return sendJson(res, 200, { overallHash: inv.overallHash, summary: summarize(inv).lines, items: inv.items.map(({ id, kind, platform, locale, target, label }) => ({ id, kind, platform, locale, target, label })) });
       }
       if (path.startsWith('/files/')) {
         let rel: string;

@@ -81,7 +81,7 @@ export function ClaudePanel({ onClose }: { onClose: () => void }) {
   return (
     <>
       <div className="head">
-        <h3>✳ {t('claude')}</h3>
+        <h3>✳︎ {t('claude')}</h3>
         {state.claudeRunning ? (
           <Pill tone="accent">
             <span className="dot busy" /> {t('running')}
@@ -104,7 +104,7 @@ export function ClaudePanel({ onClose }: { onClose: () => void }) {
                 <div className="row wrap">
                   {briefs.map((b) => (
                     <Button key={b.name} size="sm" kind="primary" disabled={busy} onClick={() => start({ stage: b.name })}>
-                      ✳ {briefTitle(b.name)}
+                      ✳︎ {briefTitle(b.name)}
                     </Button>
                   ))}
                 </div>
@@ -160,7 +160,7 @@ function RunTitle({ run }: { run: RunInfo }) {
   if (l?.kind === 'brief')
     return (
       <div className="msg user">
-        ✳ {t('runBrief', { stage: briefTitle(l.stage) })}
+        ✳︎ {t('runBrief', { stage: briefTitle(l.stage) })}
         {l.extra ? ` — ${l.extra}` : ''}
       </div>
     );

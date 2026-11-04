@@ -26,7 +26,7 @@ struct VitrinMacApp: App {
                 Button(L.t("claude.toggle")) { model.showClaude.toggle() }.keyboardShortcut("k", modifiers: [.command, .shift])
             }
             CommandGroup(after: .appInfo) {
-                Button(L.t("updates.checkNow")) { Task { await model.updates.check() } }
+                Button(L.t("updates.check")) { Task { await model.updates.check(notify: false) } }
             }
             CommandGroup(replacing: .help) {
                 Button(L.t("onb.showAgain")) { settings.onboardingDone = false }

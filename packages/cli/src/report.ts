@@ -50,24 +50,10 @@ const ASC_FIELDS: Record<string, FieldSpec> = {
   copyright: { label: 'Copyright', issueField: 'copyright' },
   'review_information/notes': { label: 'Review notes', max: TEXT_LIMITS.reviewNotes.max, unit: 'bytes', issueField: 'reviewNotes' },
 };
-/** Google Play listing limits (Play Console, Oct 2026). */
-const PLAY_FIELDS: Record<string, FieldSpec> = {
-  title: { label: 'Title', max: 30, unit: 'chars', issueField: 'title' },
-  short_description: { label: 'Short description', max: 80, unit: 'chars', issueField: 'shortDescription' },
-  full_description: { label: 'Full description', max: 4000, unit: 'chars', issueField: 'fullDescription' },
-  video: { label: 'Promo video URL', issueField: 'video' },
-};
-const PLAY_CHANGELOG: FieldSpec = { label: 'Changelog', max: 500, unit: 'chars', issueField: 'changelog' };
 /** In-App Event text limits. */
 
-const STORE_LABEL: Record<string, string> = { 'app-store': 'App Store', 'google-play': 'Google Play' };
-const PLATFORM_LABEL: Record<string, string> = { ios: 'iOS / iPadOS', macos: 'macOS', watchos: 'watchOS', tvos: 'tvOS', visionos: 'visionOS', android: 'Android' };
+const PLATFORM_LABEL: Record<string, string> = { ios: 'iOS / iPadOS', macos: 'macOS', watchos: 'watchOS', tvos: 'tvOS', visionos: 'visionOS' };
 const natural = (a: string, b: string) => a.localeCompare(b, 'en', { numeric: true });
-
-function fieldSpec(store: string, key: string): FieldSpec | undefined {
-  if (store === 'google-play') return key.startsWith('changelogs/') ? { ...PLAY_CHANGELOG, label: `Changelog ${key.slice(11)}` } : PLAY_FIELDS[key];
-  return ASC_FIELDS[key];
-}
 
 function counter(value: string, spec?: FieldSpec): string {
   const chars = graphemeLength(value);
@@ -183,12 +169,12 @@ export async function buildReport(ctx: Ctx, opts: { inventory?: Inventory; text?
   const metadataCard = (it: InventoryItem): string => {
     const issues = issuesFor.get(it.id) ?? [];
     const dir = it.locale ? (localeInfo(it.locale)?.dir ?? 'ltr') : 'ltr';
-    const known = Object.keys(it.store === 'google-play' ? PLAY_FIELDS : ASC_FIELDS);
-    const rank = (k: string) => (known.indexOf(k) < 0 ? known.length + (k.startsWith('changelogs/') ? 0 : 1) : known.indexOf(k));
+    const known = Object.keys(ASC_FIELDS);
+    const rank = (k: string) => (known.indexOf(k) < 0 ? known.length : known.indexOf(k));
     const rows = [...(it.fields ?? [])]
       .sort((a, b) => rank(a.key) - rank(b.key) || natural(a.key, b.key))
       .map((f) => {
-        const spec = fieldSpec(it.store, f.key);
+        const spec = ASC_FIELDS[f.key];
         const own = issues.filter((i) => spec?.issueField && i.field === spec.issueField);
         const value =
           f.key === 'keywords'
@@ -197,7 +183,7 @@ export async function buildReport(ctx: Ctx, opts: { inventory?: Inventory; text?
         return `<tr><th>${esc(spec?.label ?? f.key)}<div class="muted small mono">${esc(f.file)}</div></th><td dir="${dir}">${value}${issueList(own)}</td><td class="num">${counter(f.value, spec)}</td></tr>`;
       })
       .join('');
-    const fieldIssues = new Set(Object.values({ ...ASC_FIELDS, ...PLAY_FIELDS }).map((s) => s.issueField));
+    const fieldIssues = new Set(Object.values(ASC_FIELDS).map((s) => s.issueField));
     const rest = issues.filter((i) => !i.field || !fieldIssues.has(i.field));
     return `<div class="meta card-wide" data-item="${esc(it.id)}"><div class="scroll"><table class="fields">${rows || `<tr><td class="muted">${esc(T.noTextFiles)}</td></tr>`}</table></div>${issueList(rest)}${rejectControl(it)}</div>`;
   };
@@ -295,28 +281,28 @@ export async function buildReport(ctx: Ctx, opts: { inventory?: Inventory; text?
   };
 
   // ---------------------------------------------------------------- group store → platform → locale → target
-  type Group = { store: string; platform: string; locale?: string; items: InventoryItem[] };
+  type Group = { platform: string; locale?: string; items: InventoryItem[] };
   const groups = new Map<string, Group>();
   for (const it of inv.items) {
-    const key = `${it.store}|${it.platform}|${it.locale ?? ''}`;
-    const g = groups.get(key) ?? { store: it.store, platform: it.platform, locale: it.locale, items: [] };
+    const key = `${it.platform}|${it.locale ?? ''}`;
+    const g = groups.get(key) ?? { platform: it.platform, locale: it.locale, items: [] };
     g.items.push(it);
     groups.set(key, g);
   }
   const ordered = [...groups.values()].sort(
-    (a, b) => (a.store === b.store ? 0 : a.store === 'app-store' ? -1 : 1) || platformOrder(a.platform) - platformOrder(b.platform) || localeOrder(a.locale) - localeOrder(b.locale) || natural(a.locale ?? '', b.locale ?? ''),
+    (a, b) => platformOrder(a.platform) - platformOrder(b.platform) || localeOrder(a.locale) - localeOrder(b.locale) || natural(a.locale ?? '', b.locale ?? ''),
   );
 
   const KIND_TITLE: Record<string, string> = { screenshot: T.kindScreenshot, preview: T.kindPreview, creative: T.kindCreative, event: T.kindEvent };
   const sections: string[] = [];
   const toc: string[] = [];
   for (const g of ordered) {
-    const anchor = `s-${g.store}-${g.platform}-${g.locale ?? 'all'}`.replace(/[^a-zA-Z0-9-]/g, '_');
+    const anchor = `s-${g.platform}-${g.locale ?? 'all'}`.replace(/[^a-zA-Z0-9-]/g, '_');
     const localeName = g.locale ? `${localeInfo(g.locale)?.name ?? g.locale} <small>${esc(g.locale)}</small>` : esc(T.allLocales);
-    toc.push(`<a href="#${anchor}">${esc(STORE_LABEL[g.store] ?? g.store)} · ${esc(PLATFORM_LABEL[g.platform] ?? g.platform)} · ${esc(g.locale ?? 'all')}</a>`);
+    toc.push(`<a href="#${anchor}">App Store · ${esc(PLATFORM_LABEL[g.platform] ?? g.platform)} · ${esc(g.locale ?? 'all')}</a>`);
     const parts: string[] = [];
     const meta = g.items.filter((i) => i.kind === 'metadata');
-    if (g.store === 'app-store' && g.locale && g.platform === 'ios' && (meta.length || g.items.some((i) => i.kind === 'screenshot'))) parts.push(searchAndProductPage(g.locale, g.items, meta[0]));
+    if (g.locale && g.platform === 'ios' && (meta.length || g.items.some((i) => i.kind === 'screenshot'))) parts.push(searchAndProductPage(g.locale, g.items, meta[0]));
     for (const m of meta) parts.push(`<h3>${esc(T.metadata)}</h3>${metadataCard(m)}`);
     for (const kind of ['screenshot', 'preview', 'creative', 'event'] as const) {
       const media = g.items.filter((i) => i.kind === kind && i.abs);
@@ -337,23 +323,21 @@ export async function buildReport(ctx: Ctx, opts: { inventory?: Inventory; text?
     if (cpps.length) parts.push(`<h3>${esc(T.cppSuggestions)}</h3>${cpps.map(cppCard).join('')}`);
     const tests = g.items.filter((i) => i.kind === 'experiment' && !i.abs);
     if (tests.length) parts.push(`<h3>${esc(T.experiments)}</h3>${tests.map(experimentCard).join('')}`);
-    sections.push(`<section class="locale" id="${anchor}" dir="ltr"><h2><span class="crumb">${esc(STORE_LABEL[g.store] ?? g.store)} › ${esc(PLATFORM_LABEL[g.platform] ?? g.platform)} ›</span> ${localeName}</h2>${parts.join('\n')}</section>`);
+    sections.push(`<section class="locale" id="${anchor}" dir="ltr"><h2><span class="crumb">App Store › ${esc(PLATFORM_LABEL[g.platform] ?? g.platform)} ›</span> ${localeName}</h2>${parts.join('\n')}</section>`);
   }
 
   // ---------------------------------------------------------------- summary: exactly what goes where
   const uploader = 'asc CLI (text and media) + App Asset Library (iPhone Duo)';
-  const dest = (store: string, kind: string) =>
-    store === 'google-play'
-      ? 'Google Play · fastlane supply'
-      : kind === 'creative'
-        ? 'App Asset Library · only with --creatives'
-        : kind === 'cpp'
-          ? 'Custom Product Pages · only with --cpp'
-          : kind === 'experiment'
-            ? 'Product Page Optimization · only with --experiment'
-            : kind === 'event'
-              ? 'In-App Events (draft) · only with --events'
-              : `App Store Connect · ${uploader}`;
+  const dest = (kind: string) =>
+    kind === 'creative'
+      ? 'App Asset Library · only with --creatives'
+      : kind === 'cpp'
+        ? 'Custom Product Pages · only with --cpp'
+        : kind === 'experiment'
+          ? 'Product Page Optimization · only with --experiment'
+          : kind === 'event'
+            ? 'In-App Events (draft) · only with --events'
+            : `App Store Connect · ${uploader}`;
   const sumRows: string[] = [];
   for (const g of ordered) {
     const byKind = new Map<string, InventoryItem[]>();
@@ -364,7 +348,7 @@ export async function buildReport(ctx: Ctx, opts: { inventory?: Inventory; text?
     for (const [kind, list] of byKind) {
       const bytes = list.reduce((n, i) => n + (i.bytes ?? 0), 0);
       const detail = kind === 'metadata' ? `${list.reduce((n, i) => n + (i.fields?.length ?? 0), 0)} fields` : bytes ? fmtBytes(bytes) : '';
-      sumRows.push(`<tr><td>${esc(STORE_LABEL[g.store] ?? g.store)}</td><td>${esc(g.platform)}</td><td>${esc(g.locale ?? 'all')}</td><td>${esc(kind)}</td><td class="num">${list.length}</td><td class="num">${detail}</td><td>${esc(dest(g.store, kind.split(' ')[0]!))}</td></tr>`);
+      sumRows.push(`<tr><td>App Store</td><td>${esc(g.platform)}</td><td>${esc(g.locale ?? 'all')}</td><td>${esc(kind)}</td><td class="num">${list.length}</td><td class="num">${detail}</td><td>${esc(dest(kind.split(' ')[0]!))}</td></tr>`);
     }
   }
   const approvalPill = approval.ok

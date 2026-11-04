@@ -5,7 +5,7 @@ certificate, and attached to the same release.
 
 1. Bump the version: `package.json` and the packages, `plugins/vitrin/.claude-plugin/plugin.json`,
    `.claude-plugin/marketplace.json`, `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in `apps/VitrinMac/project.yml`,
-   the site, and `CHANGELOG.md`. Run `pnpm release:checksum`.
+   the site (`site-src/index.html`, then `pnpm site:build`), and `CHANGELOG.md`. Run `pnpm release:checksum`.
 2. Commit, then build the DMG:
 
    ```bash

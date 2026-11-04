@@ -38,7 +38,7 @@ xcodebuild -project Ritim.xcodeproj -scheme Ritim -configuration Debug \
 ## What Vitrin produced
 
 This is a `/vitrin` run as the developer of Ritim would do it: the conversation in English, the App
-Store for iPhone and iPad, the store languages en-US and tr, every kind of content, fastlane as the
+Store for iPhone and iPad, the store languages en-US and tr, every kind of content, the asc CLI as the
 uploader. It stops where the developer's own part begins — approving the review gallery and adding the
 App Store Connect key for the upload. Nothing here was uploaded.
 

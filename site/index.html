@@ -4,8 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Vitrin — Your store listing, built from your code</title>
-  <meta name="description" content="Free and open source. Vitrin reads your app's code and makes the metadata, screenshots and App Previews for the App Store and Google Play, then runs your whole App Store Connect from one Mac app.">
+  <script>(function(){try{if(localStorage.getItem('vitrin-language'))return;var o=["tr","de","es","fr","it","ja","ko","pt-BR","zh-Hans"];var w=(navigator.languages||[navigator.language]);for(var i=0;i<w.length;i++){var c=w[i].toLowerCase();if(c.indexOf('en')===0)return;var h=c.indexOf('zh')===0?'zh-Hans':c.indexOf('pt')===0?'pt-BR':c.slice(0,2);if(o.indexOf(h)>=0){location.replace(h+'/');return}}}catch(e){}})()</script>
+  <meta name="description" content="Free and open source. Vitrin reads your app's code and makes the metadata, screenshots and App Previews for the App Store, then runs your whole App Store Connect from one Mac app.">
   <link rel="canonical" href="https://vitrin.ardasnturk.com/">
+  <link rel="alternate" hreflang="en" href="https://vitrin.ardasnturk.com/">
+  <link rel="alternate" hreflang="tr" href="https://vitrin.ardasnturk.com/tr/">
+  <link rel="alternate" hreflang="de" href="https://vitrin.ardasnturk.com/de/">
+  <link rel="alternate" hreflang="es" href="https://vitrin.ardasnturk.com/es/">
+  <link rel="alternate" hreflang="fr" href="https://vitrin.ardasnturk.com/fr/">
+  <link rel="alternate" hreflang="it" href="https://vitrin.ardasnturk.com/it/">
+  <link rel="alternate" hreflang="ja" href="https://vitrin.ardasnturk.com/ja/">
+  <link rel="alternate" hreflang="ko" href="https://vitrin.ardasnturk.com/ko/">
+  <link rel="alternate" hreflang="pt-BR" href="https://vitrin.ardasnturk.com/pt-BR/">
+  <link rel="alternate" hreflang="zh-Hans" href="https://vitrin.ardasnturk.com/zh-Hans/">
+  <link rel="alternate" hreflang="x-default" href="https://vitrin.ardasnturk.com/">
   <meta name="theme-color" content="#FFF8F3" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#140D11" media="(prefers-color-scheme: dark)">
   <link rel="icon" href="favicon.ico" sizes="32x32">
@@ -16,7 +28,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Vitrin">
   <meta property="og:title" content="Vitrin — Your store listing, built from your code">
-  <meta property="og:description" content="Metadata, screenshots and App Previews from your code, checked against the stores' rules, uploaded after your approval. Plus App Store Connect in one Mac app.">
+  <meta property="og:description" content="Metadata, screenshots and App Previews from your code, checked against the App Store's rules, uploaded after your approval. Plus App Store Connect in one Mac app.">
   <meta property="og:url" content="https://vitrin.ardasnturk.com/">
   <meta property="og:image" content="https://vitrin.ardasnturk.com/assets/og.png">
   <meta property="og:image:width" content="1200">
@@ -35,11 +47,11 @@
     "name": "Vitrin",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "macOS",
-    "description": "Open-source Mac app and Claude Code plugin that generates, validates and uploads store listings for the App Store and Google Play, and manages App Store Connect.",
+    "description": "Open-source Mac app and Claude Code plugin that generates, validates and uploads App Store listings, and manages App Store Connect.",
     "url": "https://vitrin.ardasnturk.com/",
     "codeRepository": "https://github.com/ardasnturk/vitrin",
     "license": "https://opensource.org/licenses/MIT",
-    "softwareVersion": "2.0.1",
+    "softwareVersion": "2.1.0",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
   }
   </script>
@@ -71,6 +83,7 @@
       <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14-4.500L4 9m0-5v5h5M4 13a8 8 0 0 0 14 4.500l2-2.500m0 5v-5h-5"/></symbol>
       <symbol id="i-text" viewBox="0 0 24 24"><path d="M5 6h14M5 11h14M5 16h9"/></symbol>
       <symbol id="i-window" viewBox="0 0 24 24"><rect x="3" y="4.500" width="18" height="15" rx="3"/><path d="M3 9h18M6.500 6.800h.1M9 6.800h.1"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.500 2.700 3.800 5.700 3.800 9s-1.300 6.300-3.800 9c-2.500-2.700-3.800-5.700-3.800-9s1.300-6.300 3.800-9z"/></symbol>
       <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.500v13l10.500-6.500z"/></symbol>
       <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 18a9.500 9.500 0 1 1 16 0M12 15l4-5.500"/><circle cx="12" cy="15.500" r="1.200"/></symbol>
       <symbol id="i-devices" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2.500"/><path d="M11 18h2"/></symbol>
@@ -102,8 +115,9 @@
         <a href="#faq">FAQ</a>
       </nav>
       <div class="nav-end">
+        <details class="lang" translate="no"><summary aria-label="Language"><svg class="ico"><use href="#i-globe"/></svg><span>English</span></summary><div class="lang-list"><a href="./" hreflang="en" lang="en" translate="no" aria-current="page">English</a><a href="tr/" hreflang="tr" lang="tr" translate="no">Türkçe</a><a href="de/" hreflang="de" lang="de" translate="no">Deutsch</a><a href="es/" hreflang="es" lang="es" translate="no">Español</a><a href="fr/" hreflang="fr" lang="fr" translate="no">Français</a><a href="it/" hreflang="it" lang="it" translate="no">Italiano</a><a href="ja/" hreflang="ja" lang="ja" translate="no">日本語</a><a href="ko/" hreflang="ko" lang="ko" translate="no">한국어</a><a href="pt-BR/" hreflang="pt-BR" lang="pt-BR" translate="no">Português (Brasil)</a><a href="zh-Hans/" hreflang="zh-Hans" lang="zh-Hans" translate="no">简体中文</a></div></details>
         <a class="icon-link" href="https://github.com/ardasnturk/vitrin" aria-label="Vitrin on GitHub"><svg class="ico"><use href="#i-github"/></svg></a>
-        <a class="btn btn-primary btn-sm" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.0.1.dmg">Download</a>
+        <a class="btn btn-primary btn-sm" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg">Download</a>
         <button class="menu" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-links"><svg class="ico"><use href="#i-menu"/></svg></button>
       </div>
     </div>
@@ -113,11 +127,11 @@
     <!-- Hero -->
     <section class="hero" id="top">
       <div class="wrap hero-copy">
-        <p class="pill load" style="--d:0"><span class="dot"></span>Vitrin 2.0 · Free and open source</p>
+        <p class="pill load" style="--d:0"><span class="dot"></span>Vitrin 2.1 · Free and open source</p>
         <h1 class="load" style="--d:1">Your store listing,<br><span class="shine">built from your code.</span></h1>
         <p class="lead load" style="--d:2">Vitrin reads your app, makes the text, screenshots and App Previews, and uploads only what you approve. Then it runs your whole App Store Connect from one Mac app.</p>
         <div class="cta load" style="--d:3">
-          <a class="btn btn-primary" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.0.1.dmg"><svg class="ico"><use href="#i-download"/></svg>Download for Mac</a>
+          <a class="btn btn-primary" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg"><svg class="ico"><use href="#i-download"/></svg>Download for Mac</a>
           <a class="btn btn-ghost" href="#start"><svg class="ico"><use href="#i-terminal"/></svg>Use it in Claude Code</a>
         </div>
         <p class="fine load" style="--d:4">macOS 15 or newer · Notarized · MIT license · No extra AI keys</p>
@@ -220,7 +234,7 @@
     <!-- Numbers -->
     <section class="numbers" aria-label="At a glance">
       <div class="wrap numbers-row reveal">
-        <p><strong data-count="2">2</strong>stores</p>
+        <p><strong data-count="6">6</strong>Apple platforms</p>
         <p><strong data-count="16">16</strong>style presets</p>
         <p><strong data-count="50">50</strong>App Store locales</p>
         <p><strong data-count="1300" data-sep>1,300</strong>App Store Connect commands</p>
@@ -245,7 +259,7 @@
               <li>Name, subtitle, keywords, description, What's New</li>
               <li>Screenshots for every device, in every language</li>
               <li>App Previews, creatives and In-App Event cards</li>
-              <li>Checked against the stores' rules, then uploaded</li>
+              <li>Checked against the App Store's rules, then uploaded</li>
             </ul>
           </article>
           <article class="job reveal" style="--stagger:1">
@@ -280,6 +294,7 @@
               <p>Every stage is a command. <code>vitrin studio</code> opens the same flow in a local web page.</p>
             </article>
           </div>
+          <p class="also reveal center">On the road? With <a href="https://github.com/ardasnturk/remote-code">Remote Code</a>, Vitrin is a native tab on your iPhone: projects, every stage and App Store Connect.</p>
         </div>
       </div>
     </section>
@@ -298,7 +313,7 @@
               <span class="num">1</span>
               <h3>Analyze</h3>
               <p>Vitrin finds your platforms, languages and features in the code. Every feature points to the file that proves it, so your listing only claims what your app really does.</p>
-              <p class="also">Swift, Flutter, React Native, Expo and native Android, detected automatically.</p>
+              <p class="also">Swift, Flutter, React Native and Expo, detected automatically.</p>
             </li>
             <li class="step" data-step="1">
               <span class="num">2</span>
@@ -310,13 +325,13 @@
               <span class="num">3</span>
               <h3>Create</h3>
               <p>Claude recreates your screens from the code, with no build and no simulator. Then Vitrin renders the screenshots and videos, and you choose from real samples of your own app.</p>
-              <p class="also">Need real captures? It can also build and shoot your app in simulators or an Android emulator.</p>
+              <p class="also">Need real captures? It can also build and shoot your app in simulators.</p>
             </li>
             <li class="step" data-step="3">
               <span class="num">4</span>
               <h3>Review and upload</h3>
               <p>You see everything in one gallery and approve it, or reject a single item with a comment. Vitrin uploads exactly what you approved and reads back what the store saved.</p>
-              <p class="also">The asc CLI uploads to the App Store, fastlane supply to Google Play.</p>
+              <p class="also">The asc CLI does the uploading, so there is no Ruby to install.</p>
             </li>
           </ol>
           <div class="scene" aria-hidden="true">
@@ -390,9 +405,9 @@
             <h3>Every platform you ship on</h3>
             <p>Exact pixel sizes with realistic device frames. Only the platforms you select are made.</p>
             <ul class="chips">
-              <li>iPhone</li><li>iPad</li><li>Mac</li><li>Apple Watch</li><li>Apple TV</li><li>Vision Pro</li><li>iPhone Duo</li><li>Google Play</li>
+              <li>iPhone</li><li>iPad</li><li>Mac</li><li>Apple Watch</li><li>Apple TV</li><li>Vision Pro</li><li>iPhone Duo</li>
             </ul>
-            <p class="also">Also the 21:9 product page header, 3:2 search creatives, and the Play feature graphic and icon.</p>
+            <p class="also">Also the 21:9 product page header and 3:2 search creatives.</p>
           </div>
           <div class="reveal" style="--stagger:1">
             <h3>Measured, not eyeballed</h3>
@@ -477,7 +492,7 @@
           <p class="sub">Vitrin is built to be trusted with a live listing.</p>
           <ul class="points">
             <li><svg class="ico"><use href="#i-shield"/></svg><div><b>Truthful by design</b><span>Every headline and claim must point to a feature in your code. Ratings come from the live App Store, and testimonials only from your own reviews.</span></div></li>
-            <li><svg class="ico"><use href="#i-gauge"/></svg><div><b>Caught before Apple does</b><span>One command checks text, images and videos against the stores' rules, and tells Claude exactly what to fix.</span></div></li>
+            <li><svg class="ico"><use href="#i-gauge"/></svg><div><b>Caught before Apple does</b><span>One command checks text, images and videos against the App Store's rules, and tells Claude exactly what to fix.</span></div></li>
             <li><svg class="ico"><use href="#i-image"/></svg><div><b>Approval tied to the files</b><span>Your approval records a hash of every file. If anything changes afterwards, even by Claude, it needs a new approval.</span></div></li>
             <li><svg class="ico"><use href="#i-upload"/></svg><div><b>Partial uploads stay partial</b><span>A dry-run plan comes first. What you didn't select is never deleted or overwritten, and every upload is read back.</span></div></li>
           </ul>
@@ -502,7 +517,7 @@
           <article class="reveal" style="--stagger:2"><svg class="ico"><use href="#i-refresh"/></svg><h3>Resumable</h3><p>Stages skip what hasn't changed. Missing keys don't stop the work; only the upload waits for them.</p></article>
           <article class="reveal"><svg class="ico"><use href="#i-folder"/></svg><h3>A tidy repository</h3><p>Everything lives in one <code>metadata/</code> folder, kept out of git. Keys stay in <code>.env</code> and are masked in every log.</p></article>
           <article class="reveal" style="--stagger:1"><svg class="ico"><use href="#i-store"/></svg><h3>Custom Product Pages</h3><p>Upload Custom Product Pages, In-App Events and the App Asset Library alongside your listing.</p></article>
-          <article class="reveal" style="--stagger:2"><svg class="ico"><use href="#i-text"/></svg><h3>Both stores</h3><p>App Store and Google Play text, each with its own limits and policies. On Play, only the listing and images are touched.</p></article>
+          <article class="reveal" style="--stagger:2"><svg class="ico"><use href="#i-text"/></svg><h3>Store rules built in</h3><p>Character limits, keyword rules and App Review policies are checked for every language before you see the result.</p></article>
         </div>
       </div>
     </section>
@@ -519,7 +534,7 @@
             <span class="badge" style="--a:#FF9E33;--b:#ED5C9E"><svg class="ico"><use href="#i-window"/></svg></span>
             <h3>Vitrin for Mac</h3>
             <p>Download, drag to Applications and follow the welcome tour. It checks your Mac and installs what's missing with a click.</p>
-            <a class="btn btn-primary" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.0.1.dmg"><svg class="ico"><use href="#i-download"/></svg>Download for Mac</a>
+            <a class="btn btn-primary" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg"><svg class="ico"><use href="#i-download"/></svg>Download for Mac</a>
             <p class="fine">Or with Homebrew:</p>
             <div class="code"><code>brew tap ardasnturk/vitrin https://github.com/ardasnturk/vitrin
 brew install --cask vitrin</code><button class="copy" type="button" data-copy="brew tap ardasnturk/vitrin https://github.com/ardasnturk/vitrin && brew install --cask vitrin">Copy</button></div>
@@ -544,12 +559,16 @@ brew install --cask vitrin</code><button class="copy" type="button" data-copy="b
         </div>
         <div class="qa reveal">
           <details>
-            <summary>Does it work with Flutter, React Native or Android apps?</summary>
-            <p>Yes. Swift and SwiftUI come first, and Flutter, React Native, Expo and native Android projects are detected automatically. Their screens are recreated from the code without a build, or built with their own tools and captured in simulators or an Android emulator if you prefer.</p>
+            <summary>Does it work with Flutter or React Native apps?</summary>
+            <p>Yes. Swift and SwiftUI come first, and Flutter, React Native and Expo projects are detected automatically. Their screens are recreated from the code without a build, or built with their own tools and captured in simulators if you prefer. Vitrin is for the App Store, so only their Apple apps are covered.</p>
           </details>
           <details>
             <summary>Do I need an OpenAI or Anthropic API key?</summary>
             <p>No. The creative work happens inside your Claude Code session, and the CLI makes no AI calls. Without Claude you can follow the briefs by hand.</p>
+          </details>
+          <details>
+            <summary>Can I use it from my iPhone?</summary>
+            <p>Yes. With <a href="https://github.com/ardasnturk/remote-code">Remote Code</a> 1.6 on your Mac, Vitrin is a tab on your iPhone. You can add project folders, run every stage and manage App Store Connect in native screens, and Vitrin for Mac doesn't have to be open. Projects stay in step between the phone and the Mac.</p>
           </details>
           <details>
             <summary>Do I need the terminal for the Mac app?</summary>
@@ -569,7 +588,7 @@ brew install --cask vitrin</code><button class="copy" type="button" data-copy="b
           </details>
           <details>
             <summary>What exactly gets uploaded?</summary>
-            <p>Only the platforms and content you selected, after your approval. Selected screenshot sets are replaced per display type, and everything else stays as it is. On Google Play, Vitrin uploads listing text and images only, never binaries, tracks or rollouts.</p>
+            <p>Only the platforms and content you selected, after your approval. Selected screenshot sets are replaced per display type, and everything else stays as it is. Vitrin never uploads a build.</p>
           </details>
           <details>
             <summary>Does it need to build my app?</summary>
@@ -584,8 +603,8 @@ brew install --cask vitrin</code><button class="copy" type="button" data-copy="b
             <p>Vitrin is MIT licensed. It bundles OFL fonts and Lucide icons, and the style presets are adapted from <a href="https://github.com/ParthJadhav/app-store-screenshots">ParthJadhav/app-store-screenshots</a> (MIT). App Previews are rendered with Remotion, which is free for individuals and companies with up to three employees. Larger teams need a <a href="https://www.remotion.dev/license">Remotion company license</a>.</p>
           </details>
           <details>
-            <summary>Is this an Apple or Google product?</summary>
-            <p>No. Vitrin is an independent open-source project, and it isn't affiliated with, endorsed by or sponsored by Apple Inc. or Google LLC.</p>
+            <summary>Is this an Apple product?</summary>
+            <p>No. Vitrin is an independent open-source project, and it isn't affiliated with, endorsed by or sponsored by Apple Inc.</p>
           </details>
         </div>
       </div>
@@ -599,7 +618,7 @@ brew install --cask vitrin</code><button class="copy" type="button" data-copy="b
           <h2 id="closing-title">Open your shop window</h2>
           <p>Vitrin is free, open source and yours to read.</p>
           <div class="cta">
-            <a class="btn btn-light" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.0.1.dmg"><svg class="ico"><use href="#i-download"/></svg>Download for Mac</a>
+            <a class="btn btn-light" href="https://github.com/ardasnturk/vitrin/releases/latest/download/Vitrin-2.1.0.dmg"><svg class="ico"><use href="#i-download"/></svg>Download for Mac</a>
             <a class="btn btn-outline" href="https://github.com/ardasnturk/vitrin"><svg class="ico"><use href="#i-github"/></svg>View on GitHub</a>
           </div>
         </div>
@@ -611,7 +630,7 @@ brew install --cask vitrin</code><button class="copy" type="button" data-copy="b
     <div class="wrap footer-inner">
       <div class="footer-top">
         <a class="brand" href="#top"><img src="assets/logo.svg" alt="" width="26" height="26"><span>Vitrin</span></a>
-        <a class="version" href="https://github.com/ardasnturk/vitrin/blob/main/CHANGELOG.md">v2.0.1</a>
+        <a class="version" href="https://github.com/ardasnturk/vitrin/blob/main/CHANGELOG.md">v2.1.0</a>
         <nav aria-label="Footer">
           <a href="https://github.com/ardasnturk/vitrin">GitHub</a>
           <a href="https://github.com/ardasnturk/vitrin/releases">Releases</a>
@@ -621,7 +640,7 @@ brew install --cask vitrin</code><button class="copy" type="button" data-copy="b
           <a href="https://github.com/ardasnturk/vitrin/blob/main/LICENSE">MIT License</a>
         </nav>
       </div>
-      <p class="legal">App Store, App Store Connect, iPhone, iPad, Mac, Apple Watch, Apple TV and Apple Vision Pro are trademarks of Apple Inc. Google Play and Android are trademarks of Google LLC. Vitrin is not affiliated with Apple or Google.</p>
+      <p class="legal">App Store, App Store Connect, iPhone, iPad, Mac, Apple Watch, Apple TV and Apple Vision Pro are trademarks of Apple Inc. Vitrin is not affiliated with Apple.</p>
     </div>
   </footer>
 

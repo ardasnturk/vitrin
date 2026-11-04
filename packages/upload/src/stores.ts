@@ -1,4 +1,4 @@
-import { enabledTargets, exec, existsSync, loadTargets, log, readJsonIfExists, type AppPaths } from '@vitrin/core';
+import { enabledTargets, existsSync, loadTargets, log, readJsonIfExists, type AppPaths } from '@vitrin/core';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { RenderManifest, type AppProfile, type Platform, type PreviewType, type RenderTarget, type ScreenshotDisplayType, type VitrinConfig } from '@vitrin/schemas';
@@ -7,20 +7,9 @@ import { AssetLibraryClient, type PlacementSpec } from './asset-library.js';
 import { classicTypeFor, displayTypesFor, perTypeRoute } from './display-types.js';
 import { ClassicMediaClient } from './screenshot-sets.js';
 import type { PollOptions } from './upload-operations.js';
-import { runSupplyLane, type CommandRunner } from './supply.js';
-import { isActive, type PlanItem, type PlayPlanInput, type UploadPlan } from './plan.js';
+import { isActive, type UploadPlan } from './plan.js';
 import { collectRenderedAssets, platformsFromConfig, type RenderedAsset } from './platforms.js';
-import { checkPlayImages, exportPlayMetadata, loadPlayInputs, playExportDir, playImageSets, readPlayImageInfo, strayPlayLocaleDirs, type PlayInputs } from './play.js';
-import { PlayClient, playKeyFromEnv, type PlayKeySource } from './play-client.js';
-import { perDisplayTypeAssetsFor, type PlatformScope, type PlayScope } from './scope.js';
-
-export interface PlayContext {
-  packageName?: string;
-  inputs: PlayInputs;
-  key?: PlayKeySource;
-  client?: PlayClient;
-  plan: PlayPlanInput;
-}
+import { perDisplayTypeAssetsFor, type PlatformScope } from './scope.js';
 
 export interface StoreContext {
   /** Platforms the app ships on: profile.app.platforms, or the legacy config.upload.platform. */
@@ -28,50 +17,23 @@ export interface StoreContext {
   assets: RenderedAsset[];
   /** Targets enabled for this app on its platforms (decides whether a run carries a complete set). */
   enabledTargets: RenderTarget[];
-  /** Present when Android is one of the platforms. */
-  play?: PlayContext;
 }
 
-/**
- * Collects everything the multi-store upload needs: platforms, rendered files routed by target, and (for Android)
- * the Play listings, image checks and — when a valid key is present and `online` — the remote Play state.
- */
+/** Collects what an upload needs: platforms and rendered files routed by target. */
 export async function prepareStores(opts: {
   paths: AppPaths;
   config: VitrinConfig;
   profile?: AppProfile;
-  env: NodeJS.ProcessEnv;
-  online: boolean;
   targets?: RenderTarget[];
-  fetchImpl?: typeof fetch;
 }): Promise<StoreContext> {
-  const { paths, config, profile, env } = opts;
+  const { paths, config, profile } = opts;
   const platforms = profile?.app.platforms?.length ? profile.app.platforms : platformsFromConfig(config.upload.platform);
   const manifest = await readJsonIfExists(paths.renderManifest, RenderManifest).catch(() => undefined);
   const { assets, unknown } = await collectRenderedAssets(paths, opts.targets ?? loadTargets(), manifest);
   for (const f of unknown) log.dim(`  ${f}: target not in data/targets.json, not uploaded`);
   // Every format of the selected platforms, so a run limited by selection.targets counts as partial (never overwrites).
   const enabled = (opts.targets ?? enabledTargets(config, profile, { allFormats: true })).filter((t) => platforms.includes(t.platform));
-  const ctx: StoreContext = { platforms, assets, enabledTargets: enabled };
-  if (!platforms.includes('android')) return ctx;
-
-  const inputs = await loadPlayInputs(paths, config.app.locales);
-  const packageName = env.GOOGLE_PLAY_PACKAGE_NAME?.trim() || profile?.project.androidApplicationId;
-  const sets = playImageSets(assets, inputs.listings);
-  const imageIssues = checkPlayImages(sets, await readPlayImageInfo(sets));
-  const stray = await strayPlayLocaleDirs(paths, inputs);
-  const key = playKeyFromEnv(env, paths.root);
-  const play: PlayContext = { packageName, inputs, key, plan: { packageName, inputs, sets, imageIssues, stray } };
-  if (key?.account) play.client = new PlayClient(key.account, opts.fetchImpl);
-  if (play.client && packageName && opts.online) {
-    try {
-      play.plan.remote = await play.client.readState(packageName, inputs.app.track);
-    } catch (err) {
-      log.warn(`Google Play state could not be read: ${(err as Error).message}`);
-    }
-  }
-  ctx.play = play;
-  return ctx;
+  return { platforms, assets, enabledTargets: enabled };
 }
 
 function scopeOf(plan: UploadPlan, platform: string): PlatformScope | undefined {
@@ -185,49 +147,4 @@ export async function uploadVersionCreatives(client: AscClient, plan: UploadPlan
     }
   }
   return n;
-}
-
-/**
- * Exports the supply tree and runs the Play lane (metadata, changelog and images; never a release). With a scope,
- * unselected kinds get no files and their supply steps are skipped, so Google Play keeps them as they are.
- */
-export async function runPlayUpload(
-  paths: AppPaths,
-  play: PlayContext,
-  assets: RenderedAsset[],
-  opts: { validateOnly: boolean; skipScreenshots?: boolean; scope?: PlayScope },
-  runner: CommandRunner = exec,
-): Promise<{ written: string[] }> {
-  if (opts.scope && !opts.scope.selected) return { written: [] };
-  if (!play.packageName) throw new Error('No Android application id (profile.project.androidApplicationId or GOOGLE_PLAY_PACKAGE_NAME).');
-  if (!play.key) throw new Error('No Google Play key: set GOOGLE_PLAY_JSON_KEY_PATH or GOOGLE_PLAY_JSON_KEY_BASE64 in .env.');
-  if (play.key.problems.length) throw new Error(`Google Play key (${play.key.from}): ${play.key.problems.join('; ')}`);
-  const screenshots = !opts.skipScreenshots && (opts.scope?.screenshots ?? true);
-  const creatives = !opts.skipScreenshots && (opts.scope?.creatives ?? true);
-  const metadata = opts.scope?.metadata ?? true;
-  const exported = await exportPlayMetadata(paths, play.inputs, assets, undefined, { screenshots, creatives });
-  for (const s of exported.skipped) log.warn(`${s}: no Google Play language; not uploaded to Google Play.`);
-  log.step(`fastlane supply ${play.packageName}${opts.validateOnly ? ' (validate only)' : ''}…`);
-  await runSupplyLane(
-    paths,
-    {
-      packageName: play.packageName,
-      metadataPath: playExportDir(paths),
-      track: play.inputs.app.track,
-      versionCode: play.inputs.app.versionCode,
-      validateOnly: opts.validateOnly,
-      jsonKeyPath: play.key.path,
-      skipMetadata: !metadata,
-      skipChangelogs: !metadata,
-      skipScreenshots: !screenshots,
-      skipImages: !creatives,
-    },
-    runner,
-  );
-  return { written: exported.written };
-}
-
-/** Plan items of one store (for the approval summary). */
-export function itemsOfStore(plan: UploadPlan, store: 'app-store' | 'google-play'): PlanItem[] {
-  return plan.items.filter((i) => (i.store ?? 'app-store') === store);
 }

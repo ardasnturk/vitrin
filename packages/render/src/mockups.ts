@@ -23,8 +23,6 @@ export const SCREEN_TARGET: Record<DeviceFamily, string> = {
   watch: 'watch-ultra',
   tv: 'appletv-4k',
   vision: 'vision-pro',
-  'android-phone': 'play-phone',
-  'android-tablet': 'play-tablet-10',
 };
 
 export interface MockupSpec {
@@ -54,9 +52,6 @@ export const MOCKUPS: MockupSpec[] = [
   { id: 'mac-window', label: 'Mac — app window', family: 'mac', screenTarget: 'mac-16x10', rawFamily: 'mac', variant: { mac: 'window' } },
   { id: 'tv', label: 'Apple TV', family: 'tv', screenTarget: 'appletv-4k', rawFamily: 'tv', variant: { tv: 'bezel' } },
   { id: 'vision', label: 'Apple Vision Pro window', family: 'vision', screenTarget: 'vision-pro', rawFamily: 'vision' },
-  { id: 'android-phone', label: 'Android phone', family: 'android-phone', screenTarget: 'play-phone', rawFamily: 'android-phone', finish: 'black' },
-  { id: 'android-phone-silver', label: 'Android phone — silver', family: 'android-phone', screenTarget: 'play-phone', rawFamily: 'android-phone', finish: 'silver' },
-  { id: 'android-tablet', label: 'Android tablet', family: 'android-tablet', screenTarget: 'play-tablet-10', rawFamily: 'android-tablet', finish: 'black' },
 ];
 
 export function mockupSpec(id: string): MockupSpec {

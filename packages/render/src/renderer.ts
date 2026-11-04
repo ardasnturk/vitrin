@@ -35,8 +35,6 @@ const FALLBACK: Record<DeviceFamily, DeviceFamily[]> = {
   iphone: [],
   ipad: ['iphone'],
   duo: ['iphone'],
-  'android-phone': ['iphone'],
-  'android-tablet': ['android-phone', 'ipad', 'iphone'],
   mac: ['ipad', 'iphone'],
   tv: ['mac', 'ipad', 'iphone'],
   vision: ['mac', 'ipad', 'iphone'],
@@ -52,7 +50,7 @@ export interface RenderOptions {
   shots: ShotList;
   /** Only render these shot ids (default: all). */
   onlyShots?: string[];
-  /** Absolute path of the app icon (statement slides, tags, feature graphic). */
+  /** Absolute path of the app icon (statement slides, tags). */
   appIcon?: string;
   /** App name for wordmarks, index rows and mastheads (default: app_profile.json displayName). */
   appName?: string;
@@ -286,8 +284,7 @@ export async function renderDesign(opts: RenderOptions): Promise<RenderResult> {
             archetype: shot.archetype,
             headline: copy.headline,
             subheadline: copy.subheadline,
-            // App Store proof (ratings, awards) and Apple platform badges do not belong on a Google Play image.
-            badges: target.store === 'google-play' ? shot.badges.filter((b) => b.type !== 'proof' && b.type !== 'platform') : shot.badges,
+            badges: shot.badges,
             stat: shot.stat?.value,
             kicker: copy.kicker,
             captionPosition: shot.captionPosition,
@@ -333,15 +330,11 @@ export async function renderDesign(opts: RenderOptions): Promise<RenderResult> {
       await context.close();
     }
 
-    // Creatives (product page header 21:9, search 3:2, in-app events, Google Play feature graphic and icon)
+    // Creatives (product page header 21:9, search 3:2, in-app events)
     for (const target of creativeTargets) {
       const specs: Array<{ key: string; spec: CreativeSpec }> = [];
-      const first = ordered[0];
-      const fallback: CreativeSpec | undefined = shots.creatives.header ?? shots.creatives.search ?? (first ? { copy: first.copy, screens: first.screens.length ? first.screens : ['home'], featureIds: first.featureIds, badges: [] } : undefined);
       if (target.id === 'header' && shots.creatives.header) specs.push({ key: 'header', spec: shots.creatives.header });
       if (target.id === 'search' && shots.creatives.search) specs.push({ key: 'search', spec: shots.creatives.search });
-      if (target.id === 'play-feature-graphic' && fallback) specs.push({ key: 'feature-graphic', spec: fallback });
-      if (target.id === 'play-icon' && fallback) specs.push({ key: 'icon', spec: fallback });
       for (const e of shots.creatives.events) {
         if (target.id === 'event-card') specs.push({ key: `event-${e.id}-card`, spec: e.card });
         if (target.id === 'event-detail') specs.push({ key: `event-${e.id}-detail`, spec: e.detail });
@@ -349,16 +342,15 @@ export async function renderDesign(opts: RenderOptions): Promise<RenderResult> {
       if (!specs.length) continue;
       const context = await browser.newContext({ viewport: { width: target.logical.width, height: target.logical.height }, deviceScaleFactor: target.logical.scale });
       const page = await context.newPage();
-      for (const locale of target.id === 'play-icon' ? [opts.primaryLocale] : opts.locales) {
+      for (const locale of opts.locales) {
         for (const { key, spec } of specs) {
           const copy = spec.copy[locale] ?? spec.copy[opts.primaryLocale];
           if (!copy) throw new Error(`shots.json creatives.${key}: no ${locale} copy.`);
-          const needsScreens = target.id !== 'play-feature-graphic' && target.id !== 'play-icon';
-          const screens = needsScreens ? await Promise.all(spec.screens.map((id) => raw.get(locale, 'iphone', id))) : [];
+          const screens = await Promise.all(spec.screens.map((id) => raw.get(locale, 'iphone', id)));
           const input: PageInput = { target, locale, ad, archetype: 'hero', headline: copy.headline, subheadline: copy.subheadline, kicker: copy.kicker, badges: spec.badges as Badge[], screens, icon, appName, index: 0, total: 1 };
           const out = join(paths.creative, locale, `${target.id}_${key}.png`);
           const m = await renderOne(page, buildPage(input), join(htmlDir, locale, target.id, `${key}.html`), out, target, { preset: ad.tokens.id, framing: 'creative', family: frameFamily(target, screens[0]), hasDevice: screens.length > 0 });
-          images.push({ file: out, target: target.id, locale, shot: key, width: target.width, height: target.height, overflow: m.overflow, headlinePx: m.headlineCssPx * target.logical.scale, minContrast: target.id === 'play-icon' ? undefined : Math.min(m.minContrast, badgeContrast), safeAreaViolations: m.safeAreaViolations, quality: target.id === 'play-icon' ? undefined : m.quality });
+          images.push({ file: out, target: target.id, locale, shot: key, width: target.width, height: target.height, overflow: m.overflow, headlinePx: m.headlineCssPx * target.logical.scale, minContrast: Math.min(m.minContrast, badgeContrast), safeAreaViolations: m.safeAreaViolations, quality: target.id === 'play-icon' ? undefined : m.quality });
           log.dim(`  ${locale} ${target.id} ${key}`);
         }
       }
@@ -441,7 +433,7 @@ export interface SampleOptions {
   primaryLocale: string;
   /** The main iPhone target (iphone-6.9 when enabled). */
   target: RenderTarget;
-  /** More formats the store preview can switch to (Google Play phone, iPad); the same shots and designs. */
+  /** More formats the store preview can switch to (iPad); the same shots and designs. */
   extraTargets?: RenderTarget[];
   shots: ShotList;
   /** Base direction to tint/override from (optional; presets only when absent). */
@@ -474,7 +466,6 @@ export interface StorePreviewLabels {
   allThemes: string;
   light: string;
   dark: string;
-  install: string;
   choose: string;
 }
 
@@ -491,7 +482,6 @@ const STORE_PREVIEW_EN: StorePreviewLabels = {
   allThemes: 'All designs (compare)',
   light: 'Light',
   dark: 'Dark',
-  install: 'Install',
   choose: 'Tell Claude “{letter}” to use this design.',
 };
 
@@ -591,20 +581,14 @@ export async function renderDesignSamples(opts: SampleOptions): Promise<SampleRe
 }
 
 /** Store views the preview page offers, from the rendered formats. */
-function previewStores(targets: RenderTarget[]): Array<{ id: string; label: string; kind: 'app-store' | 'google-play'; target: string; landscape: boolean }> {
-  const out: Array<{ id: string; label: string; kind: 'app-store' | 'google-play'; target: string; landscape: boolean }> = [];
-  for (const t of targets) {
-    const play = t.store === 'google-play';
-    const device: Record<string, string> = { iphone: 'iPhone', ipad: 'iPad', duo: 'iPhone Duo', mac: 'Mac', watch: 'Apple Watch', tv: 'Apple TV', vision: 'Vision Pro', 'android-phone': 'Phone', 'android-tablet': 'Tablet' };
-    out.push({ id: t.id, label: `${play ? 'Google Play' : 'App Store'} — ${device[t.family] ?? t.label}`, kind: play ? 'google-play' : 'app-store', target: t.id, landscape: t.width > t.height });
-  }
-  return out;
+function previewStores(targets: RenderTarget[]): Array<{ id: string; label: string; target: string; landscape: boolean }> {
+  const device: Record<string, string> = { iphone: 'iPhone', ipad: 'iPad', duo: 'iPhone Duo', mac: 'Mac', watch: 'Apple Watch', tv: 'Apple TV', vision: 'Vision Pro' };
+  return targets.map((t) => ({ id: t.id, label: `App Store — ${device[t.family] ?? t.label}`, target: t.id, landscape: t.width > t.height }));
 }
 
 /**
- * The choice page: menus for the store (App Store iPhone/iPad, Google Play), the design (A, B, C… or all side
- * by side) and the store's light/dark appearance. Each view mimics that store: the App Store search result and
- * product page, or the Google Play listing. Relative image paths, so the HTML opens in any browser; the PNG is
+ * The choice page: menus for the device (App Store iPhone/iPad), the design (A, B, C… or all side by side) and
+ * the store's light/dark appearance. Each view mimics the App Store search result and product page. Relative image paths, so the HTML opens in any browser; the PNG is
  * the comparison view of the first store.
  */
 async function renderStorePreview(browser: Browser, r: SampleResult, o: { appName: string; subtitle?: string; icon?: string; labels: StorePreviewLabels; targets: RenderTarget[] }): Promise<void> {
@@ -628,9 +612,9 @@ async function renderStorePreview(browser: Browser, r: SampleResult, o: { appNam
   const json = JSON.stringify(data).replace(/</g, '\\u003c');
   const opt = (v: string, label: string) => `<option value="${esc(v)}">${esc(label)}</option>`;
   const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(L.title)} — ${esc(data.app.name)}</title><style>
-  :root{--page:#F2F2F7;--card:#fff;--ink:#1D1D1F;--muted:#6E6E73;--line:#E5E5EA;--chip:#EEF0F4;--blue:#0A84FF;--play:#01875F}
-  [data-appearance=dark]{--page:#000;--card:#1C1C1E;--ink:#F5F5F7;--muted:#98989D;--line:#38383A;--chip:#2C2C2E;--blue:#0A84FF;--play:#5BD9A6}
-  *{box-sizing:border-box}body{margin:0;background:var(--page);color:var(--ink);font:15px/1.4 -apple-system,BlinkMacSystemFont,'Helvetica Neue',Roboto,Arial,sans-serif;padding:28px 20px 48px}
+  :root{--page:#F2F2F7;--card:#fff;--ink:#1D1D1F;--muted:#6E6E73;--line:#E5E5EA;--chip:#EEF0F4;--blue:#0A84FF}
+  [data-appearance=dark]{--page:#000;--card:#1C1C1E;--ink:#F5F5F7;--muted:#98989D;--line:#38383A;--chip:#2C2C2E;--blue:#0A84FF}
+  *{box-sizing:border-box}body{margin:0;background:var(--page);color:var(--ink);font:15px/1.4 -apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;padding:28px 20px 48px}
   header{max-width:1500px;margin:0 auto 18px}h1{margin:0 0 6px;font-size:28px}header p{margin:0;color:var(--muted);max-width:780px}
   .menus{display:flex;flex-wrap:wrap;gap:12px 20px;margin-top:16px}.menus label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
   select{font:inherit;font-size:15px;text-transform:none;letter-spacing:0;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:220px}
@@ -648,8 +632,6 @@ async function renderStorePreview(browser: Browser, r: SampleResult, o: { appNam
   .get{background:var(--chip);color:var(--blue);font-weight:700;border-radius:999px;padding:5px 16px;font-size:14px;align-self:center;flex:none}.pp .get{align-self:flex-start;margin-top:8px}
   .shots{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}.shots img{width:100%;border-radius:8px;display:block;border:1px solid rgba(0,0,0,.05)}.shots.land{grid-template-columns:1fr}
   .strip{display:flex;gap:8px;overflow:hidden;margin-top:12px}.strip img{height:300px;border-radius:12px;flex:none;border:1px solid rgba(0,0,0,.05)}.strip.land img{height:150px}.single .strip img{height:520px}.single .strip.land img{height:260px}
-  .gp .icon{border-radius:22%}.gp .dev{color:var(--play);font-size:13px;font-weight:600}  .install{display:block;text-align:center;background:var(--play);color:#fff;font-weight:600;border-radius:10px;padding:9px;margin-top:14px}[data-appearance=dark] .install{color:#00381F}
-  .gp .strip img{border-radius:10px;height:260px}.single .gp .strip img{height:460px}
   .hint{margin:12px 0 0;color:var(--muted);font-size:13px}
   </style></head><body data-appearance="light"><header><h1>${esc(L.title)}</h1><p>${esc(L.intro)}</p>
   <div class="menus"><label>${esc(L.store)}<select id="store">${stores.map((s) => opt(s.id, s.label)).join('')}</select></label>
@@ -665,12 +647,10 @@ const imgs=(list)=>list.map((f)=>'<img src="'+f+'" alt="">').join('');
 function appStore(s,store){const shots=s.shots[store.target]||[];const land=store.landscape?' land':'';
   return '<h3>'+esc(L.searchResult)+'</h3><div class="phone"><div class="sr"><div class="row">'+icon(false)+'<div class="meta"><b>'+esc(D.app.name)+'</b>'+(D.app.subtitle?'<span>'+esc(D.app.subtitle)+'</span>':'')+'<i>★★★★★</i></div><span class="get">'+esc(L.get)+'</span></div><div class="shots'+land+'">'+imgs(shots)+'</div></div></div>'
    +'<h3>'+esc(L.productPage)+'</h3><div class="phone"><div class="pp"><div class="row">'+icon(true)+'<div class="meta"><b class="big">'+esc(D.app.name)+'</b>'+(D.app.subtitle?'<span>'+esc(D.app.subtitle)+'</span>':'')+'<span class="get">'+esc(L.get)+'</span></div></div><div class="strip'+land+'">'+imgs(shots)+'</div></div></div>';}
-function play(s,store){const shots=s.shots[store.target]||[];
-  return '<h3>Google Play</h3><div class="phone gp"><div class="row">'+icon(true)+'<div class="meta"><b class="big">'+esc(D.app.name)+'</b><span class="dev">'+esc(D.app.name)+'</span>'+(D.app.subtitle?'<span>'+esc(D.app.subtitle)+'</span>':'')+'</div></div><span class="install">'+esc(L.install)+'</span><div class="strip'+(store.landscape?' land':'')+'">'+imgs(shots)+'</div></div>';}
 function render(){const store=D.stores.find((s)=>s.id===document.getElementById('store').value)||D.stores[0];const theme=document.getElementById('theme').value;
   document.body.dataset.appearance=document.getElementById('appearance').value;
   const list=theme==='all'?D.samples:D.samples.filter((s)=>s.letter===theme);const view=document.getElementById('view');view.className='grid'+(theme==='all'?'':' single');
-  view.innerHTML=list.map((s)=>'<section class="opt"><h2><span class="letter">'+s.letter+'</span><span>'+esc(L.option.replace('{letter}',s.letter))+(s.bespoke?'<span class="tag">✦</span>':'')+'<small>'+esc(s.name)+'</small></span></h2>'+(store.kind==='google-play'?play(s,store):appStore(s,store))+(theme==='all'?'':'<p class="hint">'+esc(L.choose.replace('{letter}',s.letter))+'</p>')+'</section>').join('');}
+  view.innerHTML=list.map((s)=>'<section class="opt"><h2><span class="letter">'+s.letter+'</span><span>'+esc(L.option.replace('{letter}',s.letter))+(s.bespoke?'<span class="tag">✦</span>':'')+'<small>'+esc(s.name)+'</small></span></h2>'+appStore(s,store)+(theme==='all'?'':'<p class="hint">'+esc(L.choose.replace('{letter}',s.letter))+'</p>')+'</section>').join('');}
 for(const id of ['store','theme','appearance'])document.getElementById(id).addEventListener('change',render);
 const q=new URLSearchParams(location.search);for(const id of ['store','theme','appearance'])if(q.get(id))document.getElementById(id).value=q.get(id);
 render();

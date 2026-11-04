@@ -2,7 +2,7 @@
 // Builds the publishable `@ardasnturk/vitrin` npm package and packs it into <out>/ardasnturk-vitrin-<version>.tgz.
 //
 // The package holds one bundled CLI (dist/bin.js: packages/cli with every internal @vitrin/* workspace package
-// inlined by esbuild), the runtime files the code reads from disk (data/, fastlane/ templates, the Remotion
+// inlined by esbuild), the runtime files the code reads from disk (data/, the Remotion
 // sources that @remotion/bundler compiles at render time, the Swift OCR script), LICENSE and README.
 // Third-party packages (sharp, playwright, remotion, @remotion/*, fonts, zod, …) stay real `dependencies`
 // with the same version ranges as the workspace packages declare.
@@ -78,14 +78,12 @@ if (strays.length) {
 }
 
 // 3. Runtime files, at the same paths relative to dist/ as in the monorepo:
-//    - core finds data/ and fastlane/ by walking up from dist/ to the folder with data/targets.json;
+//    - core finds data/ by walking up from dist/ to the folder with data/targets.json;
 //    - video bundles <dist>/../src/remotion/index.ts; research runs <dist>/../scripts/ocr.swift.
 const copy = (from, to) => cpSync(join(ROOT, from), join(STAGE, to), { recursive: true });
 for (const f of readdirSync(join(ROOT, 'data')).filter((f) => f.endsWith('.json'))) copy(join('data', f), join('data', f));
 // The native UI kit Claude's HTML screens link to (copied into metadata/screens/kit/ by `vitrin capture`).
 for (const f of readdirSync(join(ROOT, 'data', 'screen-kit'))) copy(join('data', 'screen-kit', f), join('data', 'screen-kit', f));
-copy('fastlane/Fastfile', 'fastlane/Fastfile');
-copy('fastlane/Gemfile', 'fastlane/Gemfile');
 copy('packages/video/src/remotion', 'src/remotion');
 copy('packages/video/src/types.ts', 'src/types.ts');
 copy('packages/research/scripts/ocr.swift', 'scripts/ocr.swift');
@@ -101,13 +99,13 @@ copy('scripts/npm-readme.md', 'README.md');
 const pkg = {
   name: PKG_NAME,
   version,
-  description: 'Vitrin CLI: App Store Connect and Google Play metadata, HTML-rendered screenshots and Remotion App Previews, driven by the /vitrin Claude Code skill',
+  description: 'Vitrin CLI: App Store Connect metadata, HTML-rendered screenshots and Remotion App Previews, driven by the /vitrin Claude Code skill',
   type: 'module',
   bin: { vitrin: 'dist/bin.js' },
-  files: ['dist', 'data', 'fastlane', 'src', 'scripts', 'studio'],
+  files: ['dist', 'data', 'src', 'scripts', 'studio'],
   engines: { node: '>=22' },
   dependencies: sortedDeps,
-  keywords: ['app-store', 'app-store-connect', 'google-play', 'aso', 'fastlane', 'screenshots', 'app-preview', 'remotion', 'ios', 'claude-code'],
+  keywords: ['app-store', 'app-store-connect', 'aso', 'screenshots', 'app-preview', 'remotion', 'ios', 'claude-code'],
   author: rootPkg.author,
   license: rootPkg.license,
   homepage: rootPkg.homepage,

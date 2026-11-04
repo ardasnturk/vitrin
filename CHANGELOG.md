@@ -2,6 +2,23 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 2.1.0 — 2026-11-04
+
+Vitrin on your phone, and a Mac app that updates itself.
+
+### Removed
+- **Breaking: Android and Google Play support.** Vitrin is now for Apple platforms: iOS, iPadOS, macOS, watchOS, tvOS and visionOS. Gone are the Google Play listing and upload (fastlane supply, `Gemfile`, `fastlane/Fastfile`), Android capture, frames and mockups, the feature graphic and Play icon, and the `GOOGLE_PLAY_*` and `FASTLANE_*` keys. Flutter, React Native and Expo projects still work for their iOS side; a native Android project stops with a clear message. A `vitrin.config.yaml` that still names `android` or a `play-*` target keeps working: those entries are ignored with one warning, and files an older Vitrin left for Google Play are never reviewed or uploaded.
+
+### Added
+- **Vitrin for Mac updates itself.** When a release is newer, the sidebar and Settings → Updates offer **Install and Relaunch**: the app downloads the DMG, checks its checksum, signature, Team ID and Gatekeeper, swaps itself and opens the new version. The matching CLI follows on the first launch. The update check also runs while the app stays open, and it now compares the app's version: a Mac with a newer CLI than app never heard about a new app. It replaces the Sparkle placeholder.
+- **`vitrin hub`:** a local control API on 127.0.0.1 for programs that run Vitrin for you, with projects, Studios, `asc`, the App Store Connect key and Apple Account sign-in. It shares its project list and key with Vitrin for Mac, which doesn't need to be running. See `docs/HUB_API.md`.
+- **Vitrin in Remote Code:** with Remote Code 1.6.0, a native tab on the iPhone adds projects, runs every stage and manages App Store Connect. Projects added on the phone or on the Mac show up on the other right away.
+- **The website speaks every language the app does:** English, Turkish, German, Spanish, French, Italian, Japanese, Korean, Brazilian Portuguese and Simplified Chinese, each a real page with a language menu.
+- **Vitrin Studio in a narrow window:** below 760 points wide the sidebar becomes a bottom tab strip and the editors stack.
+
+### Fixed
+- **Vitrin for Mac: a failed Studio request no longer closes the app.** Any error the Studio answered with, such as a stage that can't start, crashed the app instead of showing a message.
+
 ## 2.0.1 — 2026-11-04
 
 Vitrin for Mac sets itself up with no terminal, and the website is new.

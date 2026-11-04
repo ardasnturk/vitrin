@@ -1,4 +1,4 @@
-import { existsSync, log, readJson, readJsonIfExists, selectedPlatforms, writeJson } from '@vitrin/core';
+import { existsSync, log, readJson, readJsonIfExists, writeJson } from '@vitrin/core';
 import { AppMetadata, CppSuggestions, ExperimentPlan, ShotList, type Experiment } from '@vitrin/schemas';
 import {
   ascClientFor,
@@ -17,18 +17,16 @@ import {
   credentialsFromEnv,
   exportStoreMetadata,
   formatPlan,
-  installFastlaneTemplates,
   placeCustomProductPageMedia,
   placeEventMedia,
   prepareStores,
   readBack,
   runAscForPlatforms,
-  runPlayUpload,
   uploadPerDisplayType,
   uploadVersionCreatives,
 } from '@vitrin/upload';
 import { exec } from '@vitrin/core';
-import { validateAll, validatePlayText } from '@vitrin/validate';
+import { validateAll } from '@vitrin/validate';
 import { rm } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { createInterface } from 'node:readline/promises';
@@ -72,7 +70,6 @@ async function confirm(question: string): Promise<boolean> {
 export async function uploadCommand(ctx: Ctx, opts: UploadOptions): Promise<number> {
   if (opts.uploader && opts.uploader !== 'asc') throw new NeedsInput(`--uploader ${opts.uploader} was removed: App Store uploads always use the asc CLI (${ASC_INSTALL_HINT}).`);
   const profile = await loadProfile(ctx);
-  const shipping = selectedPlatforms(ctx.config, profile).platforms;
   const bundleId = bundleIdOf(ctx, profile);
   const metadata = await loadLocaleMetadata(ctx);
   if (!existsSync(ctx.paths.appMetadata) || metadata.length !== ctx.config.app.locales.length) throw new NeedsInput('Metadata is missing; run `vitrin write` first.');
@@ -86,12 +83,8 @@ export async function uploadCommand(ctx: Ctx, opts: UploadOptions): Promise<numb
     if (!approval.ok) log.warn(`Not approved for upload yet: ${approval.reason} (a real upload needs \`vitrin review\` + the user's approval).`);
   }
   // App Store: the asc CLI, always. Its absence stops a real upload here, before anything is sent.
-  if (!opts.dryRun && shipping.some((p) => p !== 'android') && !(await ascVersion())) {
+  if (!opts.dryRun && !(await ascVersion())) {
     throw new NeedsInput('The asc CLI is not installed; every App Store upload uses it.', [`Ask the user, then install it: ${ASC_INSTALL_HINT}`]);
-  }
-  // Google Play only: fastlane supply's Gemfile and Fastfile.
-  if (shipping.includes('android')) {
-    for (const f of await installFastlaneTemplates(ctx.paths)) log.ok(`Wrote ${relative(ctx.root, f)}`);
   }
 
   const validation = await validateAll(ctx.paths, ctx.config);
@@ -104,26 +97,15 @@ export async function uploadCommand(ctx: Ctx, opts: UploadOptions): Promise<numb
     log.warn('There are validation errors; showing the plan anyway.');
   }
 
-  // Every store/platform the app ships on: rendered files routed by target, and the Google Play listing for Android.
-  const stores = await prepareStores({ paths: ctx.paths, config: ctx.config, profile, env: ctx.env, online: true });
-  const hasApple = stores.platforms.some((p) => p !== 'android');
-  if (stores.play) {
-    const playText = validatePlayText({ config: ctx.config, profile, listings: new Map(stores.play.inputs.listings.map((l) => [l.locale, l])), app: stores.play.inputs.app });
-    if (playText.issues.errors.length) {
-      printIssues(playText.issues.errors);
-      if (!opts.dryRun) {
-        log.error('Not uploading while the Google Play listing has validation errors.');
-        return EXIT.FAIL;
-      }
-    }
-  }
+  // Every platform the app ships on, with the rendered files routed by target.
+  const stores = await prepareStores({ paths: ctx.paths, config: ctx.config, profile });
 
   // Early warning vs. late gate: a dry run works without keys (remote state unknown); a real upload does not.
   // Without a Vitrin ASC key, asc's own login (`asc auth login`) is used, for the asc CLI and for Vitrin's API calls.
-  const ascLogin = hasApple && ascEnv(ctx.env, ctx.root).source === 'asc-login' && (await ascHasOwnAuth());
-  const missing = missingUploadKeys(ctx.env, stores.platforms, { ascLogin });
+  const ascLogin = ascEnv(ctx.env, ctx.root).source === 'asc-login' && (await ascHasOwnAuth());
+  const missing = missingUploadKeys(ctx.env, { ascLogin });
   let client: AscClient | undefined;
-  if (!missing.length && hasApple) {
+  if (!missing.length) {
     try {
       const found = await ascClientFor(ctx.env, ctx.root, () => new AscClient(credentialsFromEnv(process.env)));
       client = found.client;
@@ -155,20 +137,10 @@ export async function uploadCommand(ctx: Ctx, opts: UploadOptions): Promise<numb
     platforms: stores.platforms,
     assets: stores.assets,
     enabledTargets: stores.enabledTargets,
-    play: stores.play?.plan,
   });
   await writeJson(ctx.paths.uploadPlan, plan);
   log.info('\n' + formatPlan(plan) + '\n');
   if (opts.dryRun) {
-    // Google Play: supply validate_only uploads into a throw-away edit that Google validates and never commits.
-    if (stores.play?.client && stores.play.packageName && existsSync(join(ctx.root, 'Gemfile'))) {
-      try {
-        await runPlayUpload(ctx.paths, stores.play, stores.assets, { validateOnly: true, skipScreenshots: opts.skipScreenshots, scope: plan.scope?.play });
-        log.ok('Google Play accepted the listing (validate_only, nothing was published).');
-      } catch (err) {
-        log.warn(`Google Play validate_only: ${(err as Error).message}`);
-      }
-    }
     // asc's own dry run of the text (and of each --replace) changes nothing.
     if (plan.appId && !plan.blockers.length && (await ascVersion())) {
       try {
@@ -206,15 +178,11 @@ export async function uploadCommand(ctx: Ctx, opts: UploadOptions): Promise<numb
   }
   // Per selected App Store version (iOS incl. Apple Watch, macOS, tvOS, visionOS): the asc CLI uploads the text and
   // replaces each selected classic display type; iPhone Duo sets go through the App Asset Library.
-  if (hasApple) {
-    await runAscForPlatforms(ctx.paths, plan, stores.assets, client, { languages, env: ctx.env, skipScreenshots: opts.skipScreenshots });
-    if (!opts.skipScreenshots && client) {
-      const n = await uploadPerDisplayType(client, plan, stores.assets, languages, { classic: 'skip' });
-      if (n) log.ok(`${n} files uploaded; only the selected display types were replaced.`);
-    }
+  await runAscForPlatforms(ctx.paths, plan, stores.assets, client, { languages, env: ctx.env, skipScreenshots: opts.skipScreenshots });
+  if (!opts.skipScreenshots && client) {
+    const n = await uploadPerDisplayType(client, plan, stores.assets, languages, { classic: 'skip' });
+    if (n) log.ok(`${n} files uploaded; only the selected display types were replaced.`);
   }
-  // Google Play: listing text, release notes and images only (never a binary, track change or rollout).
-  if (stores.play) await runPlayUpload(ctx.paths, stores.play, stores.assets, { validateOnly: false, skipScreenshots: opts.skipScreenshots, scope: plan.scope?.play });
 
   // Unselected asset kinds (config.selection.assets) stay untouched in the store.
   const kindOn = (k: 'creatives' | 'events') => plan.scope?.assets.includes(k) ?? true;
@@ -254,15 +222,14 @@ export async function uploadCommand(ctx: Ctx, opts: UploadOptions): Promise<numb
     }
   }
 
-  log.step('Reading back from the stores…');
-  const play = stores.play?.client && stores.play.packageName ? { client: stores.play.client, packageName: stores.play.packageName, inputs: stores.play.inputs } : undefined;
-  const diffs = await readBack({ paths: ctx.paths, config: ctx.config, bundleId, metadata, client, platforms: stores.platforms, play });
+  log.step('Reading back from App Store Connect…');
+  const diffs = await readBack({ paths: ctx.paths, config: ctx.config, bundleId, metadata, client, platforms: stores.platforms });
   await recordUpload(ctx, approved, diffs);
   if (diffs.length) {
     for (const d of diffs) log.warn(d);
     return EXIT.FAIL;
   }
-  log.ok('Text in the stores matches the local files.');
+  log.ok('Text in App Store Connect matches the local files.');
   log.info('Next: show the user the read-back above; once they confirm the listing, ask whether to delete the research data and run `vitrin finalize --checked --delete-research` or `--keep-research`.');
   await ctx.state.mark('upload', plan.generatedAt, [relative(ctx.root, ctx.paths.uploadPlan)]);
   log.info('Reminder: final approval of the privacy labels and age rating questionnaire is yours; check the App Store tags (US) after the upload.');

@@ -41,9 +41,7 @@ export function Upload() {
       });
   }, [state.job, doctor, planJob]);
 
-  // App Store: always the asc CLI. An Android-only app needs fastlane (supply) instead.
-  const apple = !o.app?.platforms.length || o.app.platforms.some((p) => p !== 'android');
-  const uploaderOk = Boolean(apple ? o.tools.asc : o.tools.fastlane);
+  const uploaderOk = Boolean(o.tools.asc);
   const keysOk = o.missingKeys.length === 0;
   const approved = Boolean(o.approval?.valid);
   const planOk = planJob?.status === 'ok';
@@ -63,14 +61,12 @@ export function Upload() {
       <div className="checklist">
         <Step n={1} ok={uploaderOk} title={t('uploadStepUploader')}>
           <div className="stack tight">
-            {apple && (
-              <div>
-                asc CLI {o.tools.asc ? <Pill tone="ok">{`${t('installed')} ${o.tools.asc}`}</Pill> : <Pill tone="warn">{t('missing')}</Pill>}
-                <div className="dim small">{t('uploaderAscHint')}</div>
-              </div>
-            )}
+            <div>
+              asc CLI {o.tools.asc ? <Pill tone="ok">{`${t('installed')} ${o.tools.asc}`}</Pill> : <Pill tone="warn">{t('missing')}</Pill>}
+              <div className="dim small">{t('uploaderAscHint')}</div>
+            </div>
           </div>
-          {!uploaderOk && <CopyCode text={apple ? 'brew install asc' : 'bundle install'} />}
+          {!uploaderOk && <CopyCode text="brew install asc" />}
         </Step>
 
         <Step

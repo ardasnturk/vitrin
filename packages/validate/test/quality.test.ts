@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
-import { alphaAllowed, maxScreenshots, previewFamily, qualityIssues, storeName, validateScreenshots } from '../src/index.js';
+import { previewFamily, qualityIssues, validateScreenshots } from '../src/index.js';
 
 const good: ImageQuality = {
   preset: 'liquid-glass-aurora',
@@ -54,7 +54,7 @@ describe('quality gate', () => {
     mkdirSync(join(dir, 'en-US'));
     const file = join(dir, 'en-US', '01_hero_iphone-6.9.png');
     await sharp({ create: { width: 1320, height: 2868, channels: 3, background: '#112233' } }).png().toFile(file);
-    const target: RenderTarget = { id: 'iphone-6.9', kind: 'screenshot', label: 'iPhone 6.9"', family: 'iphone', store: 'app-store', platform: 'ios', width: 1320, height: 2868, logical: { width: 440, height: 956, scale: 3 }, acceptedSizes: [], requirement: 'optional', defaultEnabled: true, formats: ['png'] };
+    const target: RenderTarget = { id: 'iphone-6.9', kind: 'screenshot', label: 'iPhone 6.9"', family: 'iphone', platform: 'ios', width: 1320, height: 2868, logical: { width: 440, height: 956, scale: 3 }, acceptedSizes: [], requirement: 'optional', defaultEnabled: true, formats: ['png'] };
     const manifest: RenderManifest = {
       generatedAt: '',
       artDirection: 'x',
@@ -67,15 +67,6 @@ describe('quality gate', () => {
 });
 
 describe('store rules', () => {
-  it('lets the Google Play icon keep alpha and names the right store', () => {
-    expect(alphaAllowed({ id: 'play-icon' })).toBe(true);
-    expect(alphaAllowed({ id: 'play-phone' })).toBe(false);
-    expect(storeName({ store: 'google-play' })).toBe('Google Play');
-    expect(storeName({ store: 'app-store' })).toBe('the App Store');
-    expect(maxScreenshots({ store: 'google-play' })).toBe(8);
-    expect(maxScreenshots({ store: 'app-store' })).toBe(10);
-  });
-
   it('maps preview file device names to families', () => {
     expect(previewFamily('IPHONE_67')).toBe('iphone');
     expect(previewFamily('IPAD_PRO_3GEN_129')).toBe('ipad');

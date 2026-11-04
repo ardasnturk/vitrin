@@ -6,16 +6,16 @@ import { basename, join } from 'node:path';
 /**
  * Builds the app for capture, per project kind and platform:
  *
- * | kind          | iOS / watchOS / tvOS / visionOS / macOS                     | Android                          |
- * | ------------- | ----------------------------------------------------------- | -------------------------------- |
- * | native        | xcodebuild (simulator SDK; macOS native or Mac Catalyst)    | ./gradlew assembleDebug          |
- * | flutter       | flutter build ios --simulator --debug / flutter build macos | flutter build apk --debug        |
- * | react-native  | pod install → xcodebuild -workspace                         | ./gradlew assembleRelease/Debug  |
- * | expo          | npx expo prebuild (when ios/ is missing) → as React Native  | prebuild (android/) → as RN      |
+ * | kind          | iOS / watchOS / tvOS / visionOS / macOS                     |
+ * | ------------- | ----------------------------------------------------------- |
+ * | native        | xcodebuild (simulator SDK; macOS native or Mac Catalyst)    |
+ * | flutter       | flutter build ios --simulator --debug / flutter build macos |
+ * | react-native  | pod install → xcodebuild -workspace                         |
+ * | expo          | npx expo prebuild (when ios/ is missing) → as React Native  |
  *
- * React Native and Expo default to Release variants: Debug variants load JavaScript from a Metro server and
- * show dev overlays, so screenshots would depend on a running bundler. `capture.reactNative.metro: true` switches
- * to Debug (assembleDebug) for apps whose demo mode only exists in dev builds.
+ * React Native and Expo default to the Release configuration: Debug loads JavaScript from a Metro server and
+ * shows dev overlays, so screenshots would depend on a running bundler. `capture.reactNative.metro: true` switches
+ * to Debug for apps whose demo mode only exists in dev builds.
  *
  * Command construction is pure (`prepareSteps`, `compileSteps`, `artifactDir`) so it can be unit-tested on Linux.
  */
@@ -38,7 +38,6 @@ export interface BuildInput {
   /** Xcode host folder relative to root (`.` native, `ios` for frameworks). */
   iosDir?: string;
   macosDir?: string;
-  androidDir?: string;
   xcodeproj?: string;
   workspace?: string;
   scheme?: string;
@@ -46,13 +45,11 @@ export interface BuildInput {
   configuration: string;
   derivedData: string;
   macCatalyst?: boolean;
-  /** React Native / Expo: Debug variants with a Metro server instead of Release with an embedded bundle. */
+  /** React Native / Expo: Debug with a Metro server instead of Release with an embedded bundle. */
   metro?: boolean;
   podInstall?: boolean;
   /** Expo: allowed to run `npx expo prebuild`. */
   prebuild?: boolean;
-  /** Native Android Gradle task (default assembleDebug). */
-  gradleTask?: string;
 }
 
 const LONG = 30 * 60_000;
@@ -72,8 +69,6 @@ export function xcodeDestination(platform: Platform, macCatalyst = false): { des
       return macCatalyst
         ? { destination: 'platform=macOS,variant=Mac Catalyst', products: (c) => `${c}-maccatalyst` }
         : { destination: 'platform=macOS', products: (c) => c };
-    default:
-      throw new Error(`xcodebuild does not build for ${platform}.`);
   }
 }
 
@@ -81,17 +76,6 @@ export function xcodeDestination(platform: Platform, macCatalyst = false): { des
 export function effectiveConfiguration(input: Pick<BuildInput, 'kind' | 'configuration' | 'metro'>): string {
   if (input.kind === 'react-native' || input.kind === 'expo') return input.metro ? 'Debug' : 'Release';
   return input.configuration;
-}
-
-function gradleTaskOf(input: BuildInput): string {
-  if (input.kind === 'react-native' || input.kind === 'expo') return input.metro ? 'assembleDebug' : 'assembleRelease';
-  return input.gradleTask ?? 'assembleDebug';
-}
-
-/** Gradle variant folder from a task name: assembleDebug → debug, assembleFreeRelease → freeRelease. */
-export function gradleVariant(task: string): string {
-  const v = task.replace(/^:?(?:[\w-]+:)?assemble/, '');
-  return v ? v[0]!.toLowerCase() + v.slice(1) : 'debug';
 }
 
 /**
@@ -102,11 +86,9 @@ export function prepareSteps(input: BuildInput, exists: (p: string) => boolean =
   const steps: BuildStep[] = [];
   const { root } = input;
   const iosDir = join(root, input.iosDir ?? 'ios');
-  const androidDir = join(root, input.androidDir ?? 'android');
   if (input.kind === 'expo') {
-    const missing = input.platform === 'android' ? !exists(androidDir) : input.platform === 'ios' ? !exists(iosDir) : false;
-    if (missing) {
-      if (input.prebuild === false) throw new Error(`Expo: ${input.platform === 'android' ? 'android/' : 'ios/'} is missing and capture.reactNative.prebuild is false. Run \`npx expo prebuild\` yourself.`);
+    if (input.platform === 'ios' && !exists(iosDir)) {
+      if (input.prebuild === false) throw new Error('Expo: ios/ is missing and capture.reactNative.prebuild is false. Run `npx expo prebuild` yourself.');
       steps.push({
         label: `npx expo prebuild (${input.platform})`,
         cmd: 'npx',
@@ -133,23 +115,15 @@ export function prepareSteps(input: BuildInput, exists: (p: string) => boolean =
 }
 
 /** The compile step for a platform. Needs the workspace/project resolved after `prepareSteps` ran. */
-export function compileSteps(input: BuildInput, exists: (p: string) => boolean = existsSync): BuildStep[] {
+export function compileSteps(input: BuildInput): BuildStep[] {
   const { root, kind, platform } = input;
-  if (platform === 'android') {
-    if (kind === 'flutter') return [{ label: 'flutter build apk --debug', cmd: 'flutter', args: ['build', 'apk', '--debug'], cwd: root, timeoutMs: LONG }];
-    const dir = join(root, input.androidDir ?? 'android');
-    const task = gradleTaskOf(input);
-    // Framework templates always ship the wrapper (Expo's appears with prebuild).
-    const gradlew = kind !== 'native' || exists(join(dir, 'gradlew'));
-    return [{ label: `gradle ${task}`, cmd: gradlew ? './gradlew' : 'gradle', args: [task, '--console=plain'], cwd: dir, timeoutMs: LONG }];
-  }
   if (kind === 'flutter') {
     if (platform === 'ios') return [{ label: 'flutter build ios --simulator --debug', cmd: 'flutter', args: ['build', 'ios', '--simulator', '--debug'], cwd: root, timeoutMs: LONG }];
     if (platform === 'macos') return [{ label: 'flutter build macos --debug', cmd: 'flutter', args: ['build', 'macos', '--debug'], cwd: root, timeoutMs: LONG }];
     throw new Error(`Flutter does not build for ${platform}; provide the app via capture.prebuilt.${platform} or use capture.mode: manual.`);
   }
   if ((kind === 'react-native' || kind === 'expo') && !['ios', 'macos'].includes(platform)) {
-    throw new Error(`${kind} capture supports iOS, macOS (react-native-macos) and Android; provide capture.prebuilt.${platform} or use capture.mode: manual.`);
+    throw new Error(`${kind} capture supports iOS and macOS (react-native-macos); provide capture.prebuilt.${platform} or use capture.mode: manual.`);
   }
   const configuration = effectiveConfiguration(input);
   const { destination } = xcodeDestination(platform, input.macCatalyst);
@@ -180,13 +154,8 @@ export function compileSteps(input: BuildInput, exists: (p: string) => boolean =
 }
 
 /** Where the build leaves its artifact and what it is called. */
-export function artifactDir(input: BuildInput): { dir: string; ext: '.app' | '.apk'; preferred?: string } {
+export function artifactDir(input: BuildInput): { dir: string; ext: '.app'; preferred?: string } {
   const { root, kind, platform } = input;
-  if (platform === 'android') {
-    if (kind === 'flutter') return { dir: join(root, 'build', 'app', 'outputs', 'flutter-apk'), ext: '.apk', preferred: 'app-debug.apk' };
-    const variant = gradleVariant(gradleTaskOf(input));
-    return { dir: join(root, input.androidDir ?? 'android', 'app', 'build', 'outputs', 'apk', variant), ext: '.apk', preferred: `app-${variant}.apk` };
-  }
   if (kind === 'flutter') {
     if (platform === 'macos') return { dir: join(root, 'build', 'macos', 'Build', 'Products', 'Debug'), ext: '.app' };
     return { dir: join(root, 'build', 'ios', 'iphonesimulator'), ext: '.app', preferred: 'Runner.app' };
@@ -215,12 +184,12 @@ async function runStep(step: BuildStep, runner: Runner): Promise<void> {
   }
 }
 
-/** Runs the build for one platform and returns the .app or .apk path. */
+/** Runs the build for one platform and returns the .app path. */
 export async function buildApp(input: BuildInput, runner: Runner = exec): Promise<string> {
   for (const step of prepareSteps(input)) await runStep(step, runner);
   let resolved = input;
   // React Native / Expo: the workspace exists only after pod install / prebuild.
-  if ((input.kind === 'react-native' || input.kind === 'expo') && input.platform !== 'android') {
+  if (input.kind === 'react-native' || input.kind === 'expo') {
     const found = await findWorkspace(input.root, input.platform === 'macos' ? (input.macosDir ?? 'macos') : (input.iosDir ?? 'ios'));
     resolved = { ...input, workspace: found.workspace ?? input.workspace, scheme: input.scheme ?? found.scheme };
   }
@@ -232,9 +201,8 @@ export async function buildApp(input: BuildInput, runner: Runner = exec): Promis
   return join(dir, name);
 }
 
-/** Bundle id / application id and Xcode scheme for a platform, from the profile. */
-export function appIdentity(profile: AppProfile, platform: Platform, overrides: { bundleId?: string; scheme?: string; androidApplicationId?: string } = {}): { appId?: string; scheme?: string; macCatalyst: boolean } {
-  if (platform === 'android') return { appId: overrides.androidApplicationId ?? profile.project.androidApplicationId ?? profile.app.bundleId, macCatalyst: false };
+/** Bundle id and Xcode scheme for a platform, from the profile. */
+export function appIdentity(profile: AppProfile, platform: Platform, overrides: { bundleId?: string; scheme?: string } = {}): { appId?: string; scheme?: string; macCatalyst: boolean } {
   if (platform === 'ios') return { appId: overrides.bundleId ?? profile.app.bundleId, scheme: overrides.scheme ?? profile.project.scheme, macCatalyst: false };
   const shipping = profile.project.targets.filter((t) => (t.kind === 'app' || t.kind === 'watch') && t.platforms.includes(platform));
   // Prefer the main (scheme) target when it is multiplatform, otherwise the dedicated platform target.

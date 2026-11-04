@@ -1,5 +1,5 @@
 import { existsSync, parseWith } from '@vitrin/core';
-import { AppMetadata, AppProfile, ArtDirection, CppSuggestions, ExperimentPlan, KeywordPlan, LocaleMetadata, PlayAppMetadata, PlayListing, ShotList, VideoPlan, VitrinConfig } from '@vitrin/schemas';
+import { AppMetadata, AppProfile, ArtDirection, CppSuggestions, ExperimentPlan, KeywordPlan, LocaleMetadata, ShotList, VideoPlan, VitrinConfig } from '@vitrin/schemas';
 import { readFile, writeFile } from 'node:fs/promises';
 import { isAbsolute, join, normalize, relative, resolve, sep } from 'node:path';
 import { parse as parseYaml } from 'yaml';
@@ -36,8 +36,6 @@ interface Rule {
 const RULES: Rule[] = [
   { re: /^vitrin\.config\.yaml$/, kind: 'yaml', schema: VitrinConfig },
   { re: /^metadata\/listing\/app\.json$/, kind: 'json', schema: AppMetadata },
-  { re: /^metadata\/listing\/play\/app\.json$/, kind: 'json', schema: PlayAppMetadata },
-  { re: new RegExp(`^metadata/listing/play/${LOCALE}\\.json$`), kind: 'json', schema: PlayListing },
   { re: new RegExp(`^metadata/listing/${LOCALE}\\.json$`), kind: 'json', schema: LocaleMetadata },
   { re: /^metadata\/art-direction\.json$/, kind: 'json', schema: ArtDirection },
   { re: /^metadata\/shots\.json$/, kind: 'json', schema: ShotList },

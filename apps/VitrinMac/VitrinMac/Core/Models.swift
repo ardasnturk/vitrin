@@ -186,9 +186,6 @@ struct Mockups: Codable, Hashable, Sendable {
 
 struct Tools: Codable, Hashable, Sendable {
     var asc: String?
-    var fastlane: String?
-    var ruby: String?
-    var bundler: String?
     var brew: String?
     var claude: String?
     var ffmpeg: String?
@@ -288,7 +285,6 @@ struct ClaudeInfo: Codable, Sendable {
 struct ReviewItem: Codable, Hashable, Identifiable, Sendable {
     var id: String
     var kind: String
-    var store: String?
     var platform: String?
     var locale: String?
     var target: String?
@@ -326,7 +322,6 @@ struct Overview: Codable, Sendable {
     var stages: [String: StageRecord?]
     var files: [String: Bool]
     var listing: [String]
-    var playListing: [String]
     var briefs: [Brief]
     var validation: ValidationSummary?
     var approval: ApprovalSummary?

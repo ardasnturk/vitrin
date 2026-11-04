@@ -11,11 +11,12 @@ import {
   mask,
   onLog,
   renderEnvExample,
+  selectedPlatforms,
   splitKeywords,
   storefrontForLocale,
   xcodeToAsc,
 } from '../src/index.js';
-import { legacyUploaderOf, uploaderOf, VitrinConfig } from '@vitrin/schemas';
+import { androidEntriesOf, AppProfile, legacyUploaderOf, uploaderOf, VitrinConfig } from '@vitrin/schemas';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -140,6 +141,49 @@ describe('removed uploaders', () => {
     }
     expect(legacyUploaderOf(VitrinConfig.parse({ app: {}, urls: {}, upload: { uploader: 'asc' } }))).toBeUndefined();
     expect(uploaderOf(VitrinConfig.parse({ app: {}, urls: {} }))).toBe('asc');
-    expect(VitrinConfig.safeParse({ app: {}, urls: {}, upload: { uploader: 'fastlane' } }).success).toBe(false);
+    expect(VitrinConfig.safeParse({ app: {}, urls: {}, upload: { uploader: 'gem' } }).success).toBe(false);
+  });
+
+  it('ignores Android and Google Play entries of an old config, with one warning', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'vitrin-android-'));
+    const file = join(dir, 'vitrin.config.yaml');
+    writeFileSync(
+      file,
+      [
+        'app: {}',
+        'urls: {}',
+        'selection: { platforms: [ios, android], targets: [iphone-6.9, play-phone, play-icon] }',
+        'targets: { enable: [play-feature-graphic], disable: [play-tablet-7] }',
+        'capture: { prebuilt: { android: app.apk }, android: { avds: { android-phone: Pixel_9 }, gradleTask: assembleDebug } }',
+      ].join('\n'),
+    );
+    const warnings: string[] = [];
+    const off = onLog((e) => {
+      if (e.level === 'warn') warnings.push(e.text);
+    });
+    try {
+      const config = loadConfig(file);
+      expect(config.selection).toEqual({ platforms: ['ios'], targets: ['iphone-6.9'] });
+      expect(config.targets).toEqual({ enable: [], disable: [] });
+      expect(config.capture).not.toHaveProperty('android');
+      loadConfig(file); // once per file
+      expect(warnings).toHaveLength(1);
+      expect(warnings[0]).toMatch(/still names Android \(selection\.platforms, selection\.targets, targets\.enable, targets\.disable, capture\.android, capture\.prebuilt\.android\).*Apple platforms only.*ignored/);
+    } finally {
+      off();
+    }
+  });
+
+  it('falls back to everything detected when an old selection named only Android', () => {
+    const config = VitrinConfig.parse({ app: {}, urls: {}, selection: { platforms: ['android'], targets: ['play-phone'] } });
+    expect(selectedPlatforms(config, { app: { platforms: ['ios'] } } as never).platforms).toEqual(['ios']);
+    expect(enabledTargets(config, undefined, { quiet: true }).map((t) => t.id)).toContain('iphone-6.9');
+    expect(androidEntriesOf({ selection: { platforms: ['ios'], targets: ['iphone-6.9'] } })).toEqual([]);
+  });
+
+  it('reads an app profile that still lists android', () => {
+    const profile = AppProfile.shape.app.parse({ displayName: 'X', platforms: ['android', 'ios'], supportsAndroidTablet: true });
+    expect(profile.platforms).toEqual(['ios']);
+    expect(profile).not.toHaveProperty('supportsAndroidTablet');
   });
 });

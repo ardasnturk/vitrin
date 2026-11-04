@@ -75,7 +75,7 @@ export async function pruneStrayLocales(paths: AppPaths, config: VitrinConfig): 
   if (!existsSync(root)) return [];
   const removed: string[] = [];
   for (const e of await readdir(root, { withFileTypes: true })) {
-    if (!e.isDirectory() || e.name.startsWith('.') || ['default', 'android', 'review_information'].includes(e.name) || config.app.locales.includes(e.name)) continue;
+    if (!e.isDirectory() || e.name.startsWith('.') || ['default', 'review_information'].includes(e.name) || config.app.locales.includes(e.name)) continue;
     const dir = join(root, e.name);
     const files = (await readdir(dir)).filter((f) => !f.startsWith('.'));
     if (files.some((f) => !Object.hasOwn(LOCALE_FILES, f))) continue;

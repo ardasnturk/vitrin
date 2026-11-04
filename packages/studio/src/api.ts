@@ -147,7 +147,6 @@ export interface Overview {
   stages: Record<string, { completedAt: string; status: string; note?: string } | undefined>;
   files: Record<string, boolean>;
   listing: string[];
-  playListing: string[];
   /** Open briefs only. */
   briefs: Array<{ name: string; path: string; modifiedAt: string; stage?: PipelineStage }>;
   validation?: { ok: boolean; counts: { error: number; warning: number; info: number }; generatedAt?: string; issues: Array<{ severity: 'error' | 'warning' | 'info'; code: string; message: string; file?: string; locale?: string; field?: string }> };
@@ -174,7 +173,7 @@ export interface Overview {
   cpp: Record<string, Record<string, RenderedFile[]>>;
   samples?: { styles: string[]; contactSheet?: string; storePreview?: string; generatedAt?: string; options: Array<{ letter: string; style: string; name: string }> };
   mockups?: { index?: string; screens: RenderedFile[] };
-  tools: { asc: string | null; ascLogin?: boolean; fastlane: string | null; ruby: string | null; bundler: string | null; brew?: string | null; claude: string | null; ffmpeg: string | null };
+  tools: { asc: string | null; ascLogin?: boolean; brew?: string | null; claude: string | null; ffmpeg: string | null };
   missingKeys: string[];
   enums: { presets: string[]; emphasis: string[]; archetypes: string[]; framings: string[]; scenes: string[]; videoStyles: string[]; transitions: string[]; badgeTypes: string[] };
   job: JobSummary | null;
@@ -186,7 +185,7 @@ export interface ReviewState {
   overallHash: string;
   approval: { ok: boolean; reason?: string; added: string[]; removed: string[]; changed: string[] };
   summary: string[];
-  items: Array<{ id: string; kind: string; store: string; platform: string; locale?: string; target?: string; label: string }>;
+  items: Array<{ id: string; kind: string; platform: string; locale?: string; target?: string; label: string }>;
   report: string;
 }
 

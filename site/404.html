@@ -13,9 +13,20 @@
   <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
   <main class="wrap narrow" style="min-height: 80vh; display: grid; place-content: center; text-align: center; gap: 18px;">
     <img src="/assets/logo.svg" alt="" width="64" height="64" style="margin: 0 auto; border-radius: 14px;">
-    <h1 style="font-size: 44px;">This page isn’t on the shelf.</h1>
-    <p class="section-lead" style="margin: 0 auto;">The link may be outdated. Everything about Vitrin is on the home page.</p>
-    <p><a class="btn btn-primary" href="/">Back to Vitrin</a></p>
+    <h1 id="t" style="font-size: 44px;">This page isn’t on the shelf.</h1>
+    <p id="d" class="section-lead" style="margin: 0 auto;">The link may be outdated. Everything about Vitrin is on the home page.</p>
+    <p><a id="b" class="btn btn-primary" href="/">Back to Vitrin</a></p>
   </main>
+  <script>
+    const WORDS = {"tr":["Sayfa bulunamadı · Vitrin","Bu sayfa rafta yok.","Bağlantı eskimiş olabilir. Vitrin hakkında her şey ana sayfada.","Vitrin’e dön"],"de":["Seite nicht gefunden · Vitrin","Diese Seite steht nicht im Regal.","Der Link ist vielleicht veraltet. Alles über Vitrin findest du auf der Startseite.","Zurück zu Vitrin"],"es":["Página no encontrada · Vitrin","Esta página no está en el estante.","El enlace puede estar desactualizado. Todo sobre Vitrin está en la página de inicio.","Volver a Vitrin"],"fr":["Page introuvable · Vitrin","Cette page n’est pas en rayon.","Le lien est peut-être périmé. Tout sur Vitrin se trouve sur la page d’accueil.","Retour à Vitrin"],"it":["Pagina non trovata · Vitrin","Questa pagina non è sullo scaffale.","Il link potrebbe essere vecchio. Tutto su Vitrin è nella home page.","Torna a Vitrin"],"ja":["ページが見つかりません — Vitrin","このページは棚に見当たりません。","リンクが古くなっている可能性があります。Vitrin のすべてはホームページでご覧いただけます。","Vitrin に戻る"],"ko":["페이지를 찾을 수 없어요 — Vitrin","이 페이지는 진열대에 없어요.","링크가 오래되었을 수 있어요. Vitrin에 관한 모든 내용은 홈페이지에 있어요.","Vitrin으로 돌아가기"],"pt-BR":["Página não encontrada · Vitrin","Esta página não está na prateleira.","O link pode estar desatualizado. Tudo sobre o Vitrin está na página inicial.","Voltar ao Vitrin"],"zh-Hans":["找不到页面 — Vitrin","货架上没有这个页面。","链接可能已过期。Vitrin 的所有内容都在首页。","返回 Vitrin"]};
+    const path = location.pathname.split('/')[1];
+    const code = navigator.language.toLowerCase();
+    const lang = WORDS[path] ? path : code.startsWith('zh') ? 'zh-Hans' : code.startsWith('pt') ? 'pt-BR' : code.slice(0, 2);
+    if (WORDS[lang]) {
+      document.documentElement.lang = lang;
+      [document.title, t.textContent, d.textContent, b.textContent] = WORDS[lang];
+      b.href = `/${lang}/`;
+    }
+  </script>
 </body>
 </html>

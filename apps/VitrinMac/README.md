@@ -38,7 +38,7 @@ building it yourself; releases are described in [docs/RELEASE.md](docs/RELEASE.m
   4. a developer checkout (Settings → Vitrin checkout, or `VITRIN_DEV`): `packages/cli/dist/bin.js` after `pnpm build`.
 
   A candidate counts only when its `studio --help` knows `--token-file`; older installs are skipped and named in the error.
-- Optional, as for the CLI: `claude` for the creative stages, `ffmpeg` for videos, `asc` for App Store Connect and the upload (Homebrew installs it from the app), fastlane only for Google Play.
+- Optional, as for the CLI: `claude` for the creative stages, `ffmpeg` for videos, `asc` for App Store Connect and the upload (Homebrew installs it from the app).
 
 ## Build
 
@@ -50,7 +50,7 @@ xcodebuild -scheme VitrinMac -destination 'platform=macOS' build
 
 Debug signs ad hoc with the Hardened Runtime on and the App Sandbox off (the app starts Node.js in the user's project
 folders). Release signs with Developer ID for the notarized DMG (`scripts/build-mac.sh`), so build Debug without that
-certificate. A signed Sparkle feed is not set up (see Updates).
+certificate.
 
 To try it with the example: `pnpm build` in the repository, open the app, Settings → Vitrin CLI → Vitrin checkout =
 the repository path, then Add project… → `examples/Ritim`.
@@ -77,7 +77,7 @@ server and removes the file; the app sends it when a project is closed, when it 
 | Models | `Core/Models.swift`, `Core/JSONValue.swift`, `Core/Limits.swift` | The Studio's JSON by hand, statuses kept as strings so a newer server never breaks decoding; the App Store Connect text limits. |
 | UI | `Views/*` | `NavigationSplitView`: projects and their pages in the sidebar, the page as detail, the live log under it (draggable), Claude in a side column (a plain `HStack`: SwiftUI's `.inspector` raised an NSException inside AppKit layout on macOS 15 and 26 the first time the column opened). |
 | Menu bar | `Views/MenuBarView.swift`, `App/AppDelegate.swift` | `MenuBarExtra` with the running or last stage, pending decisions per project and quick actions; the window can close while the app keeps running. |
-| Updates | `Core/UpdateChecker.swift` | GitHub Releases (`ardasnturk/vitrin`, latest tag, assets incl. `SHA256SUMS`) against the CLI and app versions, daily when enabled, with a notification. `SparkleUpdater` is a skeleton with the appcast URL setting. |
+| Updates | `Core/UpdateChecker.swift`, `Core/UpdateInstaller.swift` | GitHub Releases (`ardasnturk/vitrin`) against the app's version, daily when enabled, with a notification; downloads, verifies and swaps in the new version. |
 | Words | `Core/Localization.swift`, `Resources/Localizable.xcstrings` | English and Turkish; "Follow the project" uses `ui.language` from `vitrin.config.yaml`, like the Studio, and switches at runtime. |
 
 ### Pages
@@ -137,15 +137,15 @@ regenerates `metadata/report.html`, as the CLI does; `git checkout examples/Riti
 
 ## Updates
 
-`UpdateChecker` reads `https://api.github.com/repos/ardasnturk/vitrin/releases/latest`, compares the tag with the CLI
-version (or the app's when no CLI is found) and shows a notification and the release page. In-app updates of the app
-itself need Sparkle: add the `sparkle-project/Sparkle` package, an `SUPublicEDKey`, a signed appcast at the URL in
-Settings → Updates (default `https://github.com/ardasnturk/vitrin/releases.atom`), and a signed, notarized build.
-None of that is in this repository yet; `SparkleUpdater` marks where it plugs in.
+`UpdateChecker` reads `https://api.github.com/repos/ardasnturk/vitrin/releases/latest` once a day and compares the tag
+with the app's version. When a release is newer the app says so in the sidebar, in Settings → Updates and with a
+notification. **Install and Relaunch** downloads `Vitrin-<version>.dmg`, checks it against its `.sha256`, copies the app
+out of the image, checks its signature, its Team ID and Gatekeeper, swaps it in once the app has quit and opens the new
+version (`UpdateInstaller`). Nothing is installed if any check fails. The first launch of the new version installs the
+matching Vitrin CLI, unless the CLI is your own (Settings, PATH or a checkout).
 
 ## Not done
 
-- Code signing with a team, notarization, a DMG and a Sparkle feed.
 - App Store Connect management beyond the app list (`asc apps`) and what `vitrin upload` does; the rest of the roadmap
   in `docs/yonetim-paneli-yol-haritasi.md` (live listing, TestFlight, reviews) is not started.
 - Remotion Studio from the app (the Studio's `/api/remotion` is modelled, not shown).

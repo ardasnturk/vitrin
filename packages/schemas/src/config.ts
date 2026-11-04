@@ -1,25 +1,26 @@
 import { z } from 'zod';
 import { AscLocale } from './common.js';
-import { PlatformEnum } from './targets.js';
+import { PlatformList } from './targets.js';
 
 /** Kinds of content a run can produce and upload; the user picks a subset per run. */
 export const AssetKindEnum = z.enum(['metadata', 'screenshots', 'previews', 'creatives', 'events']);
 export type AssetKind = z.infer<typeof AssetKindEnum>;
 
-/**
- * How App Store content is uploaded: always the `asc` CLI (rorkai/App-Store-Connect-CLI). Google Play is separate
- * (fastlane supply, see packages/upload/src/supply.ts).
- */
+/** How App Store content is uploaded: always the `asc` CLI (rorkai/App-Store-Connect-CLI). */
 export const UploaderEnum = z.enum(['asc']);
 export type Uploader = z.infer<typeof UploaderEnum>;
 
 /**
- * Uploader values older configs may still carry. They were removed in 1.3 (fastlane deliver and the App Asset
+ * Uploader values older configs may still carry. They were removed in 1.3 (deliver and the App Asset
  * Library-only mode); they still load so an old vitrin.config.yaml keeps working, behave like `asc`, and the CLI
  * warns once when it reads one (core loadConfig).
  */
 export const LegacyUploaderEnum = z.enum(['deliver', 'asset-library']);
 export type LegacyUploader = z.infer<typeof LegacyUploaderEnum>;
+
+const isRemovedTargetId = (id: unknown) => typeof id === 'string' && id.startsWith('play-');
+/** A target id list read from a file. The Google Play targets (`play-*`) were removed in 2.1; an older file may still name them, and they are dropped. */
+const TargetIdList = z.preprocess((v) => (Array.isArray(v) ? v.filter((id) => !isRemovedTargetId(id)) : v), z.array(z.string()));
 
 export const CaptureScreen = z.object({
   id: z.string().regex(/^[a-z0-9-]+$/),
@@ -36,32 +37,15 @@ export const CaptureRecording = CaptureScreen.extend({
   durationSec: z.number().min(3).max(60).default(12),
 });
 
-export const CaptureAndroid = z.object({
-  /**
-   * AVD per family, e.g. { "android-phone": "Pixel_9_API_36" }. Without one, Vitrin uses or creates
-   * `Vitrin_<device>` from the target's device profile and the newest installed system image.
-   */
-  avds: z.record(z.string(), z.string()).default({}),
-  /** Falls back to the analyzer's applicationId (build.gradle, app.json expo.android.package). */
-  applicationId: z.string().optional(),
-  /** Gradle task for native Android apps (default: assembleDebug; React Native/Expo see `reactNative.metro`). */
-  gradleTask: z.string().optional(),
-  /** Launcher activity (`.MainActivity` or a full class name). Resolved from the device when empty. */
-  activity: z.string().optional(),
-  /** Run the emulator without a window (`-no-window`). */
-  headless: z.boolean().default(true),
-  bootTimeoutSec: z.number().int().positive().default(300),
-});
-
 export const CaptureReactNative = z.object({
   /**
    * false (default): build Release variants that embed the JS bundle, so no Metro server is needed and no dev overlays show.
-   * true: build Debug variants (`assembleDebug`, Debug configuration) and load JS from a Metro server you start yourself.
+   * true: build the Debug configuration and load JS from a Metro server you start yourself.
    */
   metro: z.boolean().default(false),
   /** Run `pod install` in ios/ before xcodebuild. */
   podInstall: z.boolean().default(true),
-  /** Expo: run `npx expo prebuild` when ios/ or android/ is missing. */
+  /** Expo: run `npx expo prebuild` when ios/ is missing. */
   prebuild: z.boolean().default(true),
 });
 
@@ -119,8 +103,8 @@ export const VitrinConfig = z.object({
   targets: z
     .object({
       /** Target ids from data/targets.json to force on or off. */
-      enable: z.array(z.string()).default([]),
-      disable: z.array(z.string()).default([]),
+      enable: TargetIdList.default([]),
+      disable: TargetIdList.default([]),
     })
     .default({ enable: [], disable: [] }),
   /**
@@ -129,13 +113,13 @@ export const VitrinConfig = z.object({
    */
   selection: z
     .object({
-      platforms: z.array(PlatformEnum).optional(),
+      platforms: PlatformList.optional(),
       assets: z.array(AssetKindEnum).optional(),
       /**
        * Formats (target ids from data/targets.json, e.g. iphone-6.9, ipad-13) the user asked for. Unset = every
        * format of the selected platforms. Unselected formats are not rendered, and their store sets stay untouched.
        */
-      targets: z.array(z.string()).optional(),
+      targets: TargetIdList.optional(),
     })
     .default({}),
   /** What happens to generated files after a successful, user-checked upload. Unset = ask the user. */
@@ -143,7 +127,7 @@ export const VitrinConfig = z.object({
     .object({
       /** Ignored since 0.8.0 (everything stays in `metadata/`; finalize asks about the research data). */
       keep: z.boolean().optional(),
-      /** Commit the store outputs in `metadata/` (store/, creative/, mockups/, app-store/, google-play/); otherwise git-ignored. */
+      /** Commit the store outputs in `metadata/` (store/, creative/, mockups/, app-store/); otherwise git-ignored. */
       commit: z.boolean().default(false),
     })
     .default({ commit: false }),
@@ -151,8 +135,8 @@ export const VitrinConfig = z.object({
     .object({
       /**
        * html: Claude recreates each screen in HTML/CSS from the source code (metadata/screens/), rendered at the
-       * device's screen size — no build, no simulator. launch-args: build the app and capture it in simulators /
-       * emulators. xcuitest: fastlane snapshot. manual: you place the raw files yourself.
+       * device's screen size — no build, no simulator. launch-args: build the app and capture it in simulators.
+       * xcuitest: your own UI tests produce the raw files. manual: you place the raw files yourself.
        */
       mode: z.enum(['html', 'launch-args', 'xcuitest', 'manual']).default('launch-args'),
       configuration: z.string().default('Debug'),
@@ -161,12 +145,11 @@ export const VitrinConfig = z.object({
       recordings: z.array(CaptureRecording).default([]),
       /**
        * Override the simulator device type per family, e.g. { iphone: "iPhone 17 Pro", watch: "Apple Watch Series 11 (46mm)" }.
-       * Families: iphone, ipad, duo, watch, tv, vision. Android families use `android.avds`.
+       * Families: iphone, ipad, duo, watch, tv, vision.
        */
       simulators: z.record(z.string(), z.string()).default({}),
-      /** Pre-built artifacts per platform (`ios`, `macos`, `watchos`, `tvos`, `visionos`: .app; `android`: .apk); skips the build. */
+      /** Pre-built .app per platform (`ios`, `macos`, `watchos`, `tvos`, `visionos`); skips the build. */
       prebuilt: z.record(z.string(), z.string()).default({}),
-      android: CaptureAndroid.default({ avds: {}, headless: true, bootTimeoutSec: 300 }),
       reactNative: CaptureReactNative.default({ metro: false, podInstall: true, prebuild: true }),
     })
     .default({
@@ -177,7 +160,6 @@ export const VitrinConfig = z.object({
       recordings: [],
       simulators: {},
       prebuilt: {},
-      android: { avds: {}, headless: true, bootTimeoutSec: 300 },
       reactNative: { metro: false, podInstall: true, prebuild: true },
     }),
   video: z
@@ -203,6 +185,21 @@ export type VitrinConfig = z.infer<typeof VitrinConfig>;
 /** The uploader in effect: always `asc` (unset and the removed `deliver` / `asset-library` values included). */
 export function uploaderOf(_config?: Pick<VitrinConfig, 'upload'>): Uploader {
   return 'asc';
+}
+
+/**
+ * Where a raw vitrin.config.yaml from before 2.1 still names Android or a Google Play target. Android support was
+ * removed: the schema drops these entries (empty lists mean "everything detected"), and core loadConfig warns once.
+ */
+export function androidEntriesOf(raw: unknown): string[] {
+  const at = (...path: string[]): unknown => path.reduce<unknown>((v, k) => (v && typeof v === 'object' ? (v as Record<string, unknown>)[k] : undefined), raw);
+  const lists = (...path: string[]) => (Array.isArray(at(...path)) ? (at(...path) as unknown[]) : []);
+  return [
+    ...(lists('selection', 'platforms').includes('android') ? ['selection.platforms'] : []),
+    ...[['selection', 'targets'], ['targets', 'enable'], ['targets', 'disable']].filter((p) => lists(...p).some(isRemovedTargetId)).map((p) => p.join('.')),
+    ...(at('capture', 'android') !== undefined ? ['capture.android'] : []),
+    ...(at('capture', 'prebuilt', 'android') !== undefined ? ['capture.prebuilt.android'] : []),
+  ];
 }
 
 /** The removed uploader value an old config still names (`deliver`, `asset-library`), or undefined. */
