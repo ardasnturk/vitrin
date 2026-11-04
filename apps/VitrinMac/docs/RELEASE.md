@@ -26,7 +26,8 @@ certificate, and attached to the same release.
    ```
 
    `main` goes last because pushing it deploys the website, and the site's Download buttons link straight to
-   `Vitrin-<version>.dmg`.
+   `Vitrin-<version>.dmg`. They name the tag (`releases/download/v<version>/…`), not `releases/latest`: a site that
+   hasn't deployed yet, or can't, keeps offering the previous DMG instead of a 404.
 
 The DMG background is drawn by `scripts/dmg/make-background.py`; keep its icon centres in sync with
 `scripts/dmg/settings.py`.

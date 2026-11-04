@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased
+
+### Fixed
+- **The website's Download buttons no longer break around a release:** they pointed at `releases/latest` with a versioned file name, so they returned 404 from the moment a new release was published until the site deployed. They now name the release.
+
 ## 2.3.1 — 2026-11-04
 
 Metadata follows how App Store search works, checked against Apple's [App Store search](https://developer.apple.com/app-store/search/) page and an ASO guide.
