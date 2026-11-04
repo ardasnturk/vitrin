@@ -2,7 +2,9 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## Unreleased
+## 2.2.0 — 2026-11-04
+
+Vitrin for Mac stops waiting for App Store Connect, and finds things.
 
 ### Added
 - **Vitrin for Mac, search:** the sidebar finds apps (by name, bundle id or SKU), projects and team pages, and long lists on the App Store Connect pages (builds, reviews, testers, users, devices and every other list) have a filter of their own. It ignores case and accents and needs no request.

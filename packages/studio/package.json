@@ -1,6 +1,6 @@
 {
   "name": "@vitrin/studio",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "private": true,
   "type": "module",
   "description": "Vitrin Studio — the browser UI served by `vitrin studio` (built with esbuild into dist/, shipped prebuilt)",

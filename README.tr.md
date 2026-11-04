@@ -106,7 +106,7 @@ ya da bir terminalden: `claude plugin install vitrin --marketplace ardasnturk/vi
 
 Eklenti, `/vitrin` skill'ini ve Claude için bir `vitrin` komutu ekler. Node.js 22+ dışında baştan başka bir şey gerekmez: skill `vitrin` komutunu ilk çalıştırdığında eklentinin sürümüne ait sürüm arşivini indirir, eklentide kayıtlı sağlama toplamıyla karşılaştırır (`plugins/vitrin/SHA256SUMS`; farklıysa hiçbir şey kurulmaz) ve CLI'yı Playwright Chromium dahil `~/.local/share/vitrin/<version>/` altına kurar (`VITRIN_HOME` ile değiştirilebilir). Bu tek seferlik adım yaklaşık 450 MB indirir ve birkaç dakika sürer; sudo gerektirmez ve global npm paketi kurmaz. `claude plugin update vitrin@vitrin` ile güncelleyin (ya da `/plugin` → Marketplaces → Update); yeni sürüm CLI'sını bir sonraki çalıştırmada kurar.
 
-CLI'yı kendi terminalinizde de kullanmak için: `npm install -g https://github.com/ardasnturk/vitrin/releases/download/v2.1.0/ardasnturk-vitrin-2.1.0.tgz`.
+CLI'yı kendi terminalinizde de kullanmak için: `npm install -g https://github.com/ardasnturk/vitrin/releases/download/v2.2.0/ardasnturk-vitrin-2.2.0.tgz`.
 
 Skill tek başına [skills CLI](https://github.com/vercel-labs/skills) ile de eklenebilir (`npx skills add ardasnturk/vitrin`), ancak o zaman `vitrin` komutu eksik kalır; eklentiyi tercih edin.
 
