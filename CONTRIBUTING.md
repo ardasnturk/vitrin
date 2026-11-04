@@ -67,6 +67,8 @@ The split of responsibilities matters: **creative decisions** (copy, keyword cho
 
 The landing page at [vitrin.ardasnturk.com](https://vitrin.ardasnturk.com) is plain HTML/CSS in `site/`, deployed to GitHub Pages by `.github/workflows/pages.yml` on every push to `main` that touches `site/`. Preview it with `python3 -m http.server 4173 --directory site`. Its images and videos come from the sample app: after re-rendering `examples/Ritim`, run `node scripts/site-assets.mjs` to rebuild `site/assets`.
 
+`scripts/site-assets.mjs` builds the sample images and videos, and `scripts/site-icons.mjs` builds the favicon set and the social image.
+
 ## Releases
 
 The npm tarball and the GitHub Release come from CI; the Mac app's notarized DMG is built on a Mac with the Developer ID certificate. See [apps/VitrinMac/docs/RELEASE.md](apps/VitrinMac/docs/RELEASE.md).

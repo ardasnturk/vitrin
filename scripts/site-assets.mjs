@@ -9,10 +9,10 @@
 // --review    a folder with screenshots of `vitrin review --serve` (`gallery-desktop.png`, `gallery-reject.png`).
 // --no-video  skip the App Preview clips (they come from examples/Ritim: `vitrin -C examples/Ritim video --styles all`).
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(join(root, 'packages/render/package.json'));
@@ -92,40 +92,5 @@ if (!args.includes('--no-video')) {
     ffmpeg(['-ss', '3.5', '-i', src, '-frames:v', '1', '-vf', 'scale=300:-2', join(out, `style-${style}.jpg`)]);
   }
 }
-
-// Home-screen icon from the logo.
-await sharp(join(out, 'logo.svg'), { density: 300 }).resize(180, 180).flatten({ background: '#0b0a1f' }).png().toFile(join(out, 'apple-touch-icon.png'));
-
-// Social preview card (1200×630), rendered from HTML with the page's own fonts and screenshots.
-const { chromium } = require('playwright');
-const url = (f) => pathToFileURL(join(out, f)).href;
-const card = `<!doctype html><html><head><meta charset="utf-8"><style>
-@font-face{font-family:J;src:url('${url('fonts/plus-jakarta-sans-latin-wght-normal.woff2')}');font-weight:200 800}
-@font-face{font-family:I;src:url('${url('fonts/inter-latin-wght-normal.woff2')}');font-weight:100 900}
-body{margin:0;width:1200px;height:630px;overflow:hidden;background:#0b0a1f;color:#f4f3ff;font-family:I;position:relative}
-.bg{position:absolute;inset:-20%;filter:blur(40px);background:radial-gradient(35% 45% at 75% 35%,rgba(123,108,255,.55),transparent 70%),radial-gradient(30% 40% at 90% 85%,rgba(226,85,122,.45),transparent 70%),radial-gradient(30% 35% at 10% 10%,rgba(58,44,156,.7),transparent 70%)}
-.copy{position:absolute;left:72px;top:92px;width:560px}
-.brand{display:flex;align-items:center;gap:14px;font:700 30px J}
-h1{font:800 56px/1.05 J;letter-spacing:-.02em;margin:34px 0 20px}
-h1 span{background:linear-gradient(90deg,#ff8a6b,#ffb38f);-webkit-background-clip:text;color:transparent}
-p{font-size:22px;color:#b9b5e0;margin:0}
-img.s{position:absolute;width:230px;border-radius:26px;box-shadow:0 30px 70px rgba(0,0,0,.55)}
-</style></head><body><div class="bg"></div>
-<img class="s" src="${url('glass-shot-02.webp')}" style="left:690px;top:120px;rotate:-8deg">
-<img class="s" src="${url('midnight-shot-01.webp')}" style="left:820px;top:60px;z-index:2">
-<img class="s" src="${url('candy-shot-04.webp')}" style="left:955px;top:120px;rotate:8deg">
-<div class="copy"><div class="brand"><img src="${url('logo.svg')}" width="48" height="48">Vitrin</div>
-<h1>Your store listing, <span>built from your code.</span></h1>
-<p>Metadata, screenshots and App Previews for the App Store and Google Play — reviewed by you, then uploaded. Open source.</p></div>
-</body></html>`;
-const browser = await chromium.launch(process.env.VITRIN_CHROMIUM ? { executablePath: process.env.VITRIN_CHROMIUM } : {});
-const page = await browser.newPage({ viewport: { width: 1200, height: 630 } });
-const tmp = join(out, '.og.html');
-writeFileSync(tmp, card);
-await page.goto(pathToFileURL(tmp).href);
-await page.evaluate(() => document.fonts.ready);
-await page.screenshot({ path: join(out, 'og.png') });
-await browser.close();
-rmSync(tmp);
 
 console.log(`✓ Site assets written to ${out}`);

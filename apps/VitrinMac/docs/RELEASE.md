@@ -16,13 +16,17 @@ certificate, and attached to the same release.
    `build-mac.sh` archives, signs with Developer ID, notarizes and staples the app, builds the designed DMG with
    `dmgbuild`, then notarizes and staples the DMG too. `prepare-release.sh` writes the version and checksum into
    `Casks/vitrin.rb`.
-3. Commit the cask, push `main`, and push the tag `v<version>`. The Release workflow builds, tests and creates the
-   GitHub Release.
-4. When it finishes, attach the DMG:
+3. Commit the cask and push the tag `v<version>` only. The Release workflow builds, tests and creates the GitHub
+   Release.
+4. When it finishes, attach the DMG, then push `main`:
 
    ```bash
    apps/VitrinMac/scripts/prepare-release.sh --upload
+   git push origin main
    ```
+
+   `main` goes last because pushing it deploys the website, and the site's Download buttons link straight to
+   `Vitrin-<version>.dmg`.
 
 The DMG background is drawn by `scripts/dmg/make-background.py`; keep its icon centres in sync with
 `scripts/dmg/settings.py`.

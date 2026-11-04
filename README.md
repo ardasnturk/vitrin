@@ -102,7 +102,7 @@ or from a terminal: `claude plugin install vitrin --marketplace ardasnturk/vitri
 
 The plugin adds the `/vitrin` skill and a `vitrin` command for Claude. Nothing else is needed up front besides Node.js 22+: the first time the skill runs `vitrin`, it downloads the release tarball for the plugin's version, checks it against the checksum recorded in the plugin (`plugins/vitrin/SHA256SUMS`; nothing is installed when they differ) and installs the CLI into `~/.local/share/vitrin/<version>/` (override with `VITRIN_HOME`), including Playwright Chromium. That one-time step downloads roughly 450 MB and takes a few minutes; it needs no sudo and no global npm packages. Update with `claude plugin update vitrin@vitrin` (or `/plugin` → Marketplaces → Update); the new version installs its CLI on its next run.
 
-To use the CLI in your own terminal as well: `npm install -g https://github.com/ardasnturk/vitrin/releases/download/v2.0.0/ardasnturk-vitrin-2.0.0.tgz`.
+To use the CLI in your own terminal as well: `npm install -g https://github.com/ardasnturk/vitrin/releases/download/v2.0.1/ardasnturk-vitrin-2.0.1.tgz`.
 
 The skill alone can also be added with the [skills CLI](https://github.com/vercel-labs/skills) (`npx skills add ardasnturk/vitrin`), but then the `vitrin` command is missing; prefer the plugin.
 
@@ -224,7 +224,7 @@ data/               targets.json, asc-display-types.json, asc-locales.json, play
 plugins/vitrin/     Claude Code plugin: .claude-plugin/plugin.json, bin/vitrin (self-installing launcher),
                     skills/vitrin/ (SKILL.md, references/ incl. apple-notes.md and styles/, scripts/install.sh)
 .claude-plugin/     marketplace.json (this repository is the `vitrin` plugin marketplace)
-scripts/            pack.mjs (`pnpm pack:release` → @ardasnturk/vitrin tarball), release-notes.mjs, site-assets.mjs
+scripts/            pack.mjs (`pnpm pack:release` → @ardasnturk/vitrin tarball), release-notes.mjs, site-assets.mjs, site-icons.mjs
 docs/               design/master-prompt.md (original design spec)
 examples/Ritim      SwiftUI sample app (tr + en) with the full output of a /vitrin run
 ```

@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 2.0.1 — 2026-11-04
+
+Vitrin for Mac sets itself up with no terminal, and the website is new.
+
+### Fixed
+- **Vitrin for Mac: the welcome tour no longer sends people to a command that fails.** It showed `npm install -g @ardasnturk/vitrin`, a package that was never published. The same command is gone from Settings.
+
+### Added
+- **Vitrin for Mac installs every missing tool with a click:** Node.js, the Vitrin CLI, Claude Code, the asc CLI and ffmpeg, each with its own button, and "Install everything missing" when more than one is missing. It uses Homebrew where the Mac has it. Without Homebrew, Node.js and asc come from their own releases, checked against the published checksums, and ffmpeg comes from the `ffmpeg-static` and `ffprobe-static` npm packages, all under the Vitrin folder. The same button replaces the copied commands in Settings, Flow, Upload, the Claude panel and the app page, and the install keeps its progress when you leave the page.
+
+### Changed
+- **New website:** the Mac app's amber, coral and pink colors, light and dark themes, a clearer story with fewer sections, and new animations, all of which stop under Reduce Motion. A favicon drawn for small sizes, a web manifest and a new social image (`scripts/site-icons.mjs`).
+
 ## 2.0.0 — 2026-11-04
 
 Vitrin for Mac becomes an App Store Connect panel, and the asc CLI becomes the one App Store uploader.

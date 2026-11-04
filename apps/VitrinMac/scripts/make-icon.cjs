@@ -1,5 +1,5 @@
 const {createRequire}=require('module'),fs=require('fs');
-// Draws the app icon, the README icon and the touch icon from site/assets/logo.svg: node apps/VitrinMac/scripts/make-icon.cjs
+// Draws the app icon and the README icon from site/assets/logo.svg (the site's icons: scripts/site-icons.mjs): node apps/VitrinMac/scripts/make-icon.cjs
 const R=require('path').resolve(__dirname,'../../..');
 const sharp=createRequire(R+'/packages/render/package.json')('sharp');
 const svg=fs.readFileSync(R+'/site/assets/logo.svg','utf8');
@@ -25,6 +25,6 @@ const icon=`<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" v
  for(const [s,k] of sizes){const name=`icon_${s}x${s}${k==2?'@2x':''}.png`;await sharp(master).resize(s*k,s*k).png().toFile(set+name);images.push({idiom:'mac',filename:name,scale:k+'x',size:`${s}x${s}`});}
  fs.writeFileSync(set+'Contents.json',JSON.stringify({images,info:{author:'xcode',version:1}},null,2)+'\n');
  await sharp(master).resize(256,256).png().toFile(R+'/docs/icon.png');
- await sharp(Buffer.from(svg),{density:400}).resize(180,180).flatten({background:'#FA6B61'}).png().toFile(R+'/site/assets/apple-touch-icon.png');
+ 
  console.log('ok');
 })();

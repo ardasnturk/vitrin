@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF9E33"/>
+      <stop offset=".55" stop-color="#FA6B61"/>
+      <stop offset="1" stop-color="#ED5C9E"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7.5" fill="url(#g)"/>
+  <!-- The shop window, drawn for 16 pixels: a three-scallop awning over a front with a door -->
+  <path fill="#fff" d="M8.5 6h15l3 7.500a3.170 3.170 0 0 1-6.330 0 3.170 3.170 0 0 1-6.340 0 3.170 3.170 0 0 1-6.330 0z"/>
+  <path fill="#fff" fill-rule="evenodd" d="M7 18.200c1.100.5 2.600.5 3.700 0v.8h10.600v-.8c1.100.5 2.600.5 3.700 0V25a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2zM18 20.500V27h4v-6.500z"/>
+</svg>
