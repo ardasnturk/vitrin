@@ -5,8 +5,8 @@
 #
 # `version` and `sha256` are updated by apps/VitrinMac/scripts/prepare-release.sh.
 cask "vitrin" do
-  version "2.4.0"
-  sha256 "93af4051f0972af82b9a851e573b385bfef1765d12504d4a064f61b6128c37b7"
+  version "2.4.1"
+  sha256 "b6bd9355f9f628ec02557657cfeefdc3ec6f5d7875dfeb52d283c09428b65c77"
 
   url "https://github.com/ardasnturk/vitrin/releases/download/v#{version}/Vitrin-#{version}.dmg"
   name "Vitrin"
