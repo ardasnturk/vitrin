@@ -6,6 +6,7 @@ import { runDoctor } from '../commands/doctor.js';
 import { initCommand } from '../commands/init.js';
 import { mockupsCommand } from '../commands/mockups.js';
 import { analyzeCommand, captureCommand, designCommand, researchCommand, validateCommand, videoCommand, writeCommand } from '../commands/pipeline.js';
+import { auditCommand } from '../commands/audit.js';
 import { rankCommand } from '../commands/rank.js';
 import { selectCommand } from '../commands/select.js';
 import { submitCommand, uploadCommand } from '../commands/upload.js';
@@ -58,6 +59,7 @@ export const RUNNERS: Record<string, Runner> = {
   research: (ctx, a) => researchCommand(ctx, { skipImages: bool(a.skipImages) }),
   write: (ctx) => writeCommand(ctx),
   rank: (ctx) => rankCommand(ctx),
+  audit: (ctx, a) => auditCommand(ctx, { draft: bool(a.draft) }),
   select: (ctx, a) =>
     selectCommand(ctx, {
       platforms: list(a.platforms),

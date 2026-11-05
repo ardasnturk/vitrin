@@ -1,6 +1,6 @@
 import { ensureDir, existsSync, log, readJsonIfExists, writeJson } from '@vitrin/core';
-import { checkRanks, compareRanks } from '@vitrin/research';
-import { KeywordPlan, RankSnapshot } from '@vitrin/schemas';
+import { checkRanks, compareRanks, rivalsToTrack, storefrontPlan } from '@vitrin/research';
+import { Competitors, KeywordPlan, RankSnapshot } from '@vitrin/schemas';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import pc from 'picocolors';
@@ -18,20 +18,33 @@ export async function rankCommand(ctx: Ctx): Promise<number> {
     const plan = await readJsonIfExists(ctx.paths.keywordFile(locale), KeywordPlan).catch(() => undefined);
     if (plan) plans.set(locale, plan);
   }
-  const snapshot = await checkRanks({ paths: ctx.paths, config: ctx.config, bundleId, plans });
+  const today = new Date().toISOString().slice(0, 10);
+  const previous = await latestSnapshot(ctx.paths.rankings, today);
+  const competitors = await readJsonIfExists(ctx.paths.competitors, Competitors).catch(() => undefined);
+  const rivals = rivalsToTrack(ctx.config.research.rivals, previous, competitors, storefrontPlan(ctx.config).map((p) => p.storefront));
+  const snapshot = await checkRanks({ paths: ctx.paths, config: ctx.config, bundleId, plans, rivals });
   await ensureDir(ctx.paths.rankings);
-  const previous = await latestSnapshot(ctx.paths.rankings, snapshot.date);
   const file = join(ctx.paths.rankings, `${snapshot.date}.json`);
   await writeJson(file, snapshot);
 
   const rank = (r: number | null) => (r === null ? '—' : `#${r}`);
   for (const row of compareRanks(previous, snapshot)) {
     const move = row.delta === null ? (row.before === null && row.after !== null && previous ? pc.green(' new') : '') : row.delta > 0 ? pc.green(` ▲${row.delta}`) : row.delta < 0 ? pc.red(` ▼${-row.delta}`) : pc.dim(' =');
-    log.info(`${pc.dim(row.locale)} ${row.term}: ${rank(row.after)}${previous ? pc.dim(` (was ${rank(row.before)})`) : ''}${move}`);
+    log.info(`${pc.dim(row.locale)} ${row.term}: ${rank(row.after)}${previous ? pc.dim(` (was ${rank(row.before)})`) : ''}${move}${rivalLine(snapshot, row)}`);
   }
   if (snapshot.entries.every((e) => e.rank === null)) log.warn(`The app is not in the first ${ctx.config.research.limit} results for any tracked term (not live yet, or ranked lower).`);
   log.ok(`${previous ? `Compared with ${previous.date}; s` : 'S'}aved metadata/rankings/${snapshot.date}.json`);
   return EXIT.OK;
+}
+
+/** Rivals ahead of the app for this term, nearest first. */
+function rivalLine(snapshot: RankSnapshot, row: { locale: string; term: string; after: number | null }): string {
+  const entry = snapshot.entries.find((e) => e.locale === row.locale && e.term === row.term);
+  const ahead = Object.entries(entry?.rivals ?? {})
+    .filter((e): e is [string, number] => e[1] !== null && (row.after === null || e[1] < row.after))
+    .sort((a, b) => a[1] - b[1])
+    .map(([id, r]) => `${snapshot.rivalNames?.[id] ?? id} #${r}`);
+  return ahead.length ? pc.dim(`  behind ${ahead.join(', ')}`) : '';
 }
 
 /** The newest snapshot written before `date` (a re-run on the same day compares with the day before, not itself). */

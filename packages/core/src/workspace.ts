@@ -63,6 +63,10 @@ export function appPaths(root: string) {
     iconSheet: join(research, 'icons.png'),
     /** The app's own search ranks, one snapshot per day; outside research/ so they survive its deletion. */
     rankings: join(v, 'rankings'),
+    /** `vitrin audit` results, one per day; outside research/ for the same reason. */
+    audits: join(v, 'audits'),
+    /** The price proposal from `vitrin pricing`. */
+    pricingPlan: join(v, 'pricing', 'plan.json'),
     /** The store copy Claude writes (JSON, validated by `vitrin write`). */
     metadataDir: join(v, 'listing'),
     metadataFile: (locale: string) => join(v, 'listing', `${locale}.json`),

@@ -122,6 +122,8 @@ export interface CaptionBlockOptions {
   above?: string;
   below?: string;
   justify?: string;
+  /** Sets the caption on a solid rounded plate that hugs the text, anchored to the box's top or bottom edge. */
+  plate?: string;
 }
 
 /** The kicker as a category chip: accent fill, ink that reads on it, the preset's label face. */
@@ -163,7 +165,8 @@ export function CaptionBlock(o: CaptionBlockOptions): string {
     ? `<p class="subheadline fit" data-min="${Math.round(o.subSize * 0.82)}" style="margin:0;font-family:var(--body);font-size:${o.subSize}px;font-weight:${ty.subWeight};line-height:1.28;letter-spacing:-0.01em;color:${sf.muted};text-wrap:balance;max-width:${o.align === 'center' ? '100%' : '92%'};${t.background === 'magazine' ? 'font-style:italic;' : ''}">${plainWords(o.subheadline, sf.muted)}</p>`
     : '';
   const b = o.box;
-  return `<div class="caption" data-bottom="${o.bottom ? 1 : 0}" style="position:absolute;left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px;display:flex;flex-direction:column;justify-content:${o.justify ?? (o.bottom ? 'flex-end' : 'flex-start')};align-items:${o.align === 'center' ? 'center' : 'flex-start'};text-align:${o.align === 'center' ? 'center' : 'start'};gap:${Math.round(o.subSize * 0.62)}px;z-index:20">
+  const plated = o.plate ? `background:${o.plate};padding:${(o.canvasWidth * 0.05).toFixed(1)}px ${(o.canvasWidth * 0.055).toFixed(1)}px;border-radius:${(o.canvasWidth * 0.06).toFixed(1)}px;box-sizing:border-box;box-shadow:0 ${(o.canvasWidth * 0.015).toFixed(1)}px 0 rgba(0,0,0,.14);align-items:center;text-align:center;height:auto;${o.bottom ? `top:auto;bottom:${(o.canvasWidth * 0.06).toFixed(1)}px;` : ''}` : '';
+  return `<div class="caption" data-bottom="${o.bottom ? 1 : 0}" style="position:absolute;left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px;display:flex;flex-direction:column;justify-content:${o.justify ?? (o.bottom ? 'flex-end' : 'flex-start')};align-items:${o.align === 'center' ? 'center' : 'flex-start'};text-align:${o.align === 'center' ? 'center' : 'start'};gap:${Math.round(o.subSize * 0.62)}px;z-index:20;${plated}">
   ${o.above ?? ''}
   ${kicker}
   ${h1}

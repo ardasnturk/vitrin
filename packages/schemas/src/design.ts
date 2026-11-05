@@ -24,10 +24,14 @@ export const Archetype = z.enum([
   'feature-wall',
   /** Closer: several real screens as a frameless mosaic ("look at everything it does"). */
   'mosaic',
+  /** No device: cropped pieces of real UI (`callouts[].rect`) stacked as cards on the background. */
+  'fragments',
+  /** A phone on its lock screen with the app's real notifications (`bullets`). Drawn, not captured. Portrait only. */
+  'lockscreen',
 ]);
 
 /** Archetypes that show no app UI (best practice: at least 60 % of shots show real UI). */
-export const NON_UI_ARCHETYPES: ReadonlyArray<z.infer<typeof Archetype>> = ['statement', 'testimonial', 'feature-wall'];
+export const NON_UI_ARCHETYPES: ReadonlyArray<z.infer<typeof Archetype>> = ['statement', 'testimonial', 'feature-wall', 'lockscreen'];
 export type Archetype = z.infer<typeof Archetype>;
 
 export const BackgroundStyle = z.enum(['solid', 'linear', 'radial', 'mesh', 'grid', 'dots', 'panoramic']);
@@ -54,6 +58,11 @@ export const StylePreset = z.enum([
   'bold-poster-type',
   'color-block-sequence',
   'noir-gold-luxe',
+  'ink-minimal',
+  'sky-dream',
+  'zine-collage',
+  'retro-sunset',
+  'horizon-block',
 ]);
 export type StylePreset = z.infer<typeof StylePreset>;
 
@@ -138,6 +147,8 @@ export const ArtDirectionOption = z
      * white type, whichever reads better on it. Overrides the preset's surfaces and rhythm.
      */
     cycle: z.array(HexColor).min(2).max(6).optional(),
+    /** One line that runs through every screenshot in order, behind the devices, and meets itself at every seam. */
+    thread: z.enum(['line', 'dashed']).optional(),
   })
   .superRefine((o, ctx) => {
     if (!o.preset && !o.palette) ctx.addIssue({ code: 'custom', path: ['palette'], message: 'Either `preset` or `palette` is required.' });
@@ -256,6 +267,10 @@ export const Shot = z.object({
   bulletStyle: z.enum(['check', 'chips']).default('check'),
   /** The app icon and name above the headline (a brand lockup for the hero or the closer). */
   brandMark: z.boolean().default(false),
+  /** The caption sits on a solid rounded plate over the UI, in the slide's accent color. */
+  captionPlate: z.boolean().default(false),
+  /** A numbered step above the caption, for a set that walks through a flow (1, 2, 3…). */
+  step: z.number().int().min(1).max(9).optional(),
   /**
    * A photo the developer supplied (path under metadata/photos/) as the full-bleed background, with a scrim under
    * the caption. With a device it is the scene the phone sits in; on a `statement` it is a lifestyle slide (not

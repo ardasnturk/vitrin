@@ -44,6 +44,8 @@ export interface DecorContext {
   bridgeIn: boolean;
   badges: Badge[];
   stat?: string;
+  /** One line through the whole set. */
+  thread?: 'line' | 'dashed';
 }
 
 const px = (n: number) => `${Math.round(n * 10) / 10}px`;
@@ -100,6 +102,37 @@ export function squiggle(w: number, h: number, color: string, stroke: number, se
   return `<svg aria-hidden="true" width="${px(w)}" height="${px(h)}" viewBox="0 0 ${w.toFixed(1)} ${h.toFixed(1)}" style="overflow:visible"><path d="${d}" fill="none" stroke="${color}" stroke-width="${stroke.toFixed(1)}" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
+/** A bank of soft clouds; seeded by slide so a set never repeats and a re-render never changes. */
+function clouds(ctx: DecorContext, n: number, y: number, spread: number, layer: 'back' | 'front'): string {
+  const { W, sf } = ctx;
+  const rnd = mulberry32(ctx.index * 31 + (layer === 'back' ? 5 : 11));
+  const color = sf.extras[0] ?? '#FFFFFF';
+  return Array.from({ length: n }, (_, i) => {
+    const d = W * (0.3 + rnd() * 0.3);
+    return blob(W * ((i + rnd()) / n) * 1.2 - W * 0.1, y + rnd() * spread, d, color, 0.92, W * 0.018, layer === 'front' ? 'data-layer="accent"' : '');
+  }).join('');
+}
+
+/**
+ * The line that runs through a whole set, behind the devices. Each slide draws its own piece from a height that
+ * depends only on the slide number, so a slide's exit meets the next slide's entry at the seam.
+ */
+export function threadLayer(ctx: DecorContext): string {
+  if (!ctx.thread) return '';
+  const { W, H, sf, index, total } = ctx;
+  const seam = (i: number) => H * (0.56 + 0.3 * ((i * 0.618) % 1));
+  const a = seam(index);
+  const b = seam(index + 1);
+  const mid = (a + b) / 2 + (index % 2 ? 1 : -1) * H * 0.09;
+  const start = index === 0 ? W * 0.06 : -6;
+  const end = index === total - 1 ? W * 0.94 : W + 6;
+  const stroke = W * 0.012;
+  const dash = ctx.thread === 'dashed' ? ` stroke-dasharray="${(stroke * 0.1).toFixed(1)} ${(stroke * 2.2).toFixed(1)}"` : '';
+  const dot = (x: number, y: number) => `<circle cx="${x}" cy="${y}" r="${stroke * 1.5}" fill="${sf.accent}"/>`;
+  const dots = (index === 0 ? dot(start, a) : '') + (index === total - 1 ? dot(end, b) : '');
+  return `<svg class="thread" aria-hidden="true" viewBox="0 0 ${W} ${H}" style="position:absolute;inset:0;width:${W}px;height:${H}px;z-index:1;overflow:hidden"><path d="M ${start} ${a} C ${W * 0.25} ${a} ${W * 0.25} ${mid} ${W * 0.5} ${mid} S ${W * 0.75} ${b} ${end} ${b}" fill="none" stroke="${sf.accent}" stroke-width="${stroke}" stroke-linecap="round"${dash}/>${dots}</svg>`;
+}
+
 function curvedArrow(x: number, y: number, w: number, h: number, color: string, stroke: number, flip: boolean): string {
   const path = flip ? `M ${w * 0.95} 4 C ${w * 0.9} ${h * 0.6}, ${w * 0.45} ${h * 0.3}, ${w * 0.12} ${h * 0.9}` : `M ${w * 0.05} 4 C ${w * 0.1} ${h * 0.6}, ${w * 0.55} ${h * 0.3}, ${w * 0.88} ${h * 0.9}`;
   const hx = flip ? w * 0.12 : w * 0.88;
@@ -152,6 +185,38 @@ export function backgroundLayer(ctx: DecorContext): string {
         blob(W * (flip ? 0.12 : 0.92), H * 0.95, W * 0.7, rose, 0.8, blur * 1.1) +
         // White halo behind the headline keeps the gradient word above 4.5:1 whatever the blooms do.
         `<div style="position:absolute;left:${px(cap.x + cap.w / 2 - W * 0.42)};top:${px(cap.y + cap.h * 0.45 - W * 0.27)};width:${px(W * 0.84)};height:${px(W * 0.54)};border-radius:50%;background:#FFFFFF;opacity:.6;filter:blur(${px(W * 0.09)})"></div>`;
+      break;
+    }
+    case 'sky': {
+      css = `background:linear-gradient(180deg,${c0} 0%,${c1} 42%,${c2} 100%);`;
+      inner = clouds(ctx, 16, H * 0.8, H * 0.18, 'back');
+      break;
+    }
+    case 'retro': {
+      // A striped sun rising behind the device.
+      const cx = ctx.device ? ctx.device.x + ctx.device.w / 2 : W / 2;
+      // Its top edge stops just above the device, or it would run under the caption.
+      const outer = W * 0.86;
+      const cy = !ctx.device ? H * 0.8 : ctx.captionSide === 'top' ? ctx.device.y + outer - H * 0.03 : ctx.device.y + ctx.device.h - outer + H * 0.03;
+      const rings = sf.extras.slice(0, 3);
+      inner = rings.map((c, i) => {
+        const r = outer - W * 0.2 * i;
+        return `<div style="position:absolute;left:${px(cx - r)};top:${px(cy - r)};width:${px(r * 2)};height:${px(r * 2)};border-radius:50%;background:${c}"></div>`;
+      }).join('');
+      break;
+    }
+    case 'horizon': {
+      // A solid block the device stands in; the caption keeps the plain top.
+      const y = ctx.device ? (ctx.captionSide === 'top' ? Math.max(ctx.device.y + ctx.device.h * 0.28, H * 0.5) : 0) : H * 0.86;
+      const h = ctx.device && ctx.captionSide === 'bottom' ? ctx.device.y + ctx.device.h * 0.72 : H - y;
+      inner = `<div style="position:absolute;left:0;right:0;top:${px(y)};height:${px(h)};background:${sf.accent}"></div>`;
+      break;
+    }
+    case 'zine': {
+      const cell = W * 0.055;
+      const checker = `repeating-conic-gradient(${sf.text} 0 25%,transparent 0 50%) 0 0/${px(cell * 2)} ${px(cell * 2)}`;
+      const dots = `radial-gradient(${withAlpha(sf.extras[0] ?? sf.text, 0.55)} 22%,transparent 24%) 0 0/${px(W * 0.04)} ${px(W * 0.04)}`;
+      inner = `<div style="position:absolute;inset:0;background:${dots};-webkit-mask-image:linear-gradient(${ctx.index % 2 ? 200 : 160}deg,transparent 42%,#000 100%)"></div><div style="position:absolute;left:0;right:0;bottom:0;height:${px(cell * 2)};background:${checker};opacity:.9"></div>`;
       break;
     }
     case 'swiss': {
@@ -296,6 +361,11 @@ export function canvasDecor(ctx: DecorContext): string {
   const { W, H, sf, t } = ctx;
   const out: string[] = [];
   const noDevice = !ctx.device;
+  if (t.background === 'ink' && ctx.device && ctx.captionSide === 'top' && !ctx.landscape) {
+    // One hand-drawn arrow from the caption down to the device, on every other slide.
+    const flip = ctx.index % 2 === 1;
+    if (ctx.index % 2 === 0 || ctx.total < 3) out.push(curvedArrow(flip ? W * 0.02 : W * 0.8, ctx.device.y - H * 0.05, W * 0.17, H * 0.1, sf.text, W * 0.006, !flip));
+  }
   switch (t.background) {
     case 'classic': {
       const y = ctx.captionSide === 'top' ? H * 0.58 : H * 0.42;
@@ -498,6 +568,12 @@ export function stageFront(ctx: DecorContext): string {
   const d = ctx.device;
   if (!d) return '';
   const out: string[] = [];
+  if (t.background === 'sky' && ctx.captionSide === 'top') out.push(clouds(ctx, 8, H * 0.93, H * 0.09, 'front'));
+  if (t.background === 'zine') {
+    const right = ctx.index % 2 === 1;
+    out.push(star5(right ? d.x - W * 0.05 : d.x + d.w - W * 0.08, d.y + d.h * 0.12, W * 0.17, sf.plate ?? sf.accent, ctx.index * 17 - 12, sf.text).replace('<svg', '<svg data-layer="accent"'));
+    out.push(`<div data-layer="accent" style="position:absolute;left:${px(right ? d.x + d.w - W * 0.14 : d.x - W * 0.05)};top:${px(d.y + H * 0.02)};width:${px(W * 0.2)};height:${px(W * 0.055)};transform:rotate(${right ? 32 : -32}deg);background:${withAlpha(sf.extras[1] ?? '#FFFFFF', 0.82)}"></div>`);
+  }
   if (t.background === 'clay' && ctx.captionSide === 'top') out.push(hills(ctx, d.y + d.h * 0.9));
   if (t.background === 'paper') {
     // Washi tape across the device's top corner.

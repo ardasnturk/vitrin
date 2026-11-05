@@ -9,6 +9,9 @@ import { runDoctor } from './commands/doctor.js';
 import { initCommand } from './commands/init.js';
 import { mockupsCommand } from './commands/mockups.js';
 import { analyzeCommand, captureCommand, designCommand, researchCommand, validateCommand, videoCommand, writeCommand } from './commands/pipeline.js';
+import { auditCommand } from './commands/audit.js';
+import { keywordsCommand } from './commands/keywords.js';
+import { pricingCommand } from './commands/pricing.js';
 import { rankCommand } from './commands/rank.js';
 import { platformsCommand, selectCommand, uploaderCommand, type SelectOptions } from './commands/select.js';
 import { submitCommand, uploadCommand } from './commands/upload.js';
@@ -105,6 +108,32 @@ program
   .command('rank')
   .description("the app's own search rank for its chosen terms → metadata/rankings/<date>.json, compared with the previous snapshot")
   .action(action(async () => rankCommand(await createContext(globals()))));
+
+program
+  .command('audit')
+  .description('where the listing stands: a 0–100 score per language, gaps, rivals and the fixes that matter → metadata/audits/<date>.json')
+  .option('--draft', 'judge the listing in metadata/listing instead of the live one')
+  .action(action(async (o: { draft?: boolean }) => auditCommand(await createContext(globals()), { draft: o.draft })));
+
+program
+  .command('keywords <terms...>')
+  .description('volume, difficulty and search-box suggestions for any terms, without an app or a project')
+  .option('--storefront <codes>', 'comma-separated storefronts', 'us')
+  .option('--no-hints', 'only the given terms, without the App Store search suggestions')
+  .option('--max <n>', 'most terms to score per storefront', '20')
+  .option('--json', 'machine-readable output')
+  .action(action(async (terms: string[], o: { storefront: string; hints: boolean; max: string; json?: boolean }) => keywordsCommand({ terms, storefronts: o.storefront.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean), hints: o.hints, max: Number(o.max), json: o.json || globals().json })));
+
+program
+  .command('pricing')
+  .description('a fair price per country from purchasing power, as a proposal; nothing is sent to App Store Connect')
+  .requiredOption('--base <price>', 'price in the base country')
+  .option('--country <code>', 'base country', 'us')
+  .option('--method <method>', 'ppp, or tiers for five price levels', 'ppp')
+  .option('--floor <share>', 'lowest share of the base price', '0.25')
+  .option('--ceiling <share>', 'highest share of the base price', '1')
+  .option('--json', 'machine-readable output')
+  .action(action(async (o: { base: string; country: string; method: string; floor: string; ceiling: string; json?: boolean }) => pricingCommand({ cwd: globals().cwd, base: Number(o.base), country: o.country.toLowerCase(), method: o.method, floor: Number(o.floor), ceiling: Number(o.ceiling), json: o.json || globals().json })));
 
 program
   .command('platforms')

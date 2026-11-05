@@ -52,7 +52,7 @@ const RULES: Rule[] = [
   { re: /^metadata\/design-samples\/samples\.json$/, kind: 'json', readOnly: true },
   { re: /^metadata\/mockups\/mockups\.json$/, kind: 'json', readOnly: true },
   { re: /^metadata\/research\/(competitors|live-listing)\.json$/, kind: 'json', readOnly: true },
-  { re: /^metadata\/rankings\/[\w-]+\.json$/, kind: 'json', readOnly: true },
+  { re: /^metadata\/(rankings|audits)\/[\w-]+\.json$/, kind: 'json', readOnly: true },
 ];
 
 /** Resolves a request path to an editable file, or undefined when it is outside the allowed set. */

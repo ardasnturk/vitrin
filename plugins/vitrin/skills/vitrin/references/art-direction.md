@@ -74,6 +74,8 @@
 | testimonial | Verbatim App Store reviews (no UI) | 0 |
 | feature-wall | Closer: wall of one-line features (`wall`) | 0 |
 | mosaic | Closer: three real screens as frameless tiles | 2–3 |
+| fragments | No device: cropped pieces of real UI as stacked cards (`callouts[].rect`, at least one; `rects.ipad` for iPad; 2–3 work best) | 1–3 |
+| lockscreen | A phone on its lock screen at 9:41 with the app's notifications (`bullets`, up to 3). Drawn, so it counts as no UI and needs a real notification feature in `featureIds`. Portrait only: set `targets` when the set also renders landscape formats | 0 |
 
 At least 60 % of shots show real UI and one of the first three must.
 
@@ -82,6 +84,8 @@ At least 60 % of shots show real UI and one of the first three must.
 | Field | What it draws | Rules |
 |---|---|---|
 | `bullets` + `bulletStyle` | Up to four short benefit lines. `check` (default): a ticked list; next to a device it floats as one card over the device's side edge (the caption keeps its room, the device its height); on slides without a device it sits under the caption. `chips`: a wrapped row of small chips under the caption. | Every line is a real feature in `featureIds`, ≤ 32 characters, localized. With three chips drop the subheadline. Validated like headlines (no prices, CTAs, other platforms). |
+| `captionPlate: true` | The caption on a solid rounded plate in the slide's accent color, over the UI. With `captionPosition: "bottom"` it sits at the foot like a big button, which lets the phone fill the canvas. | Pick it for the whole set or not at all. |
+| `step: 1` | A numbered circle above the caption, for a set that walks through a flow. | Consecutive slides only: 1, 2, 3. |
 | `brandMark: true` | The app icon and name above the kicker — the lockup a hero or a closer opens with. | Once or twice per set. |
 | `photo: "hero.jpg"` | A photo from `metadata/photos/` full-bleed behind the shot, under a scrim in the slide's tone where the caption sits. With a device the phone stands in that scene; on a `statement` it is a lifestyle slide with the line set low. The preset's props stay out of photo slides. | **Only a photo the developer gave you** (ask; never generate, download or use stock). They must own the rights, with a model release for any recognisable person. A photo `statement` is not real UI. |
 
@@ -108,8 +112,30 @@ What the store galleries of popular apps do, and how to get it in Vitrin. Use it
 | Caption under the phone on some slides | `captionPosition: "bottom"` (avoid on light presets: the device's shadow falls on the type) |
 | Two or three phones fanned out | `collage` (3 screens) or `split` |
 | Wall of feature names to close | `feature-wall` |
+| White page, black type, line art, nothing else | `ink-minimal` |
+| Phone standing in clouds or open sky | `sky-dream` |
+| Stickers, tape, halftone, tilted phones, loud type | `zine-collage` |
+| Warm seventies print, striped sun, soft serif | `retro-sunset` |
+| Phone standing in a solid block of color under big caps | `horizon-block` |
+| UI on the canvas with no phone, cards floating on color | `fragments` |
+| Caption in a colored button at the foot, UI filling the slide | `captionPlate` + `captionPosition: "bottom"` |
+| "9:41" lock screen with notifications or reminders | `lockscreen` |
+| Numbered steps ("1 Snap, 2 Review, 3 Cook") | `step`, one per slide |
+| A route or line continuing through every screenshot | `thread` on the art direction: `"dashed"` for travel, `"line"` otherwise |
 
 Not available, and why: hand-held phones and mascots need artwork the app does not have (give a bespoke `template` the developer's own asset if they supply one); press logos and "As seen in" rows need permission and proof; integration logos of other companies are trademarks.
+
+### What 106 popular galleries have in common
+
+Read from a gallery of 106 apps across 13 categories. Treat these as habits of the store, not rules.
+
+- **The first slide sells, the rest explain.** Half of them open differently from the set: a big claim, a photo or proof, then device slides.
+- **Calm apps show almost nothing.** Notes, journals and AI lean on white or black, one line of type and the UI itself. Loud color is for social, money and fitness.
+- **Headlines are two to five words,** usually verb first. Almost none explain a feature in a sentence.
+- **Sets use one framing rule and hold it:** the same caption position and device size across all slides reads as a designed set; variety comes from color or content.
+- **Sequence shows up through color.** Many step through a palette slide by slide (`cycle`, `color-block-sequence`).
+- **Dark UI goes on dark canvases.** Screens and background share a tone so the phone melts away; light UI on light does the same.
+- **Mascots, 3D objects and hand-held photos are used often, but they are the app's own art.** Vitrin cannot invent them: ask the developer for the asset (`photo`, or a bespoke `template`).
 
 ## Cross-canvas moment
 

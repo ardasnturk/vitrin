@@ -95,6 +95,8 @@ export function validateClaims(opts: {
         issues.error('shot.screens', `${where}: ${s.archetype} needs at least ${need[s.archetype] ?? 1} screens.`);
       }
       if (s.archetype === 'callout' && !s.callouts.length) issues.error('shot.callouts', `${where}: the callout archetype needs at least one callouts entry.`);
+      if (s.archetype === 'fragments' && !s.callouts.length) issues.error('shot.callouts', `${where}: the fragments archetype needs at least one callouts entry (the regions to show).`);
+      if (s.archetype === 'lockscreen' && !s.bullets.length) issues.error('shot.lockscreen', `${where}: the lockscreen archetype needs at least one bullets entry (the notification text).`);
       if (s.photo && opts.photosDir && !existsSync(join(opts.photosDir, s.photo))) {
         issues.error('shot.photo-missing', `${where}: the photo ${s.photo} is not in metadata/photos/.`, { file: 'metadata/shots.json', fix: 'Add the developer’s photo there or remove `photo`.' });
       }

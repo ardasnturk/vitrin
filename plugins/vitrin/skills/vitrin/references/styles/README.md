@@ -22,20 +22,25 @@ Use `vitrin design --samples` to show the user several presets side by side befo
 | `bold-poster-type` | [bold-poster-type.md](bold-poster-type.md) | loud, graphic, printed | ink / paper / signal, cycling | upright, hard crop | Habits, fitness, study, music, entertainment |
 | `color-block-sequence` | [color-block-sequence.md](color-block-sequence.md) | friendly, colorful, clean | a new flat color per slide | upright | Education, languages, social, food |
 | `noir-gold-luxe` | [noir-gold-luxe.md](noir-gold-luxe.md) | premium, calm, gilded | black lacquer ↔ cream | upright | Premium subscriptions, reading, finance, lifestyle |
+| `ink-minimal` | [ink-minimal.md](ink-minimal.md) | quiet, confident, empty | white ↔ ink | upright | Notes, journals, AI, tools whose UI carries the color |
+| `sky-dream` | [sky-dream.md](sky-dream.md) | open, aspirational | blue sky ↔ dusk, clouds | upright | Travel, money, planning, "a new way to…" |
+| `zine-collage` | [zine-collage.md](zine-collage.md) | loud, photocopied, young | magenta / yellow / cobalt, cycling | 5° | Social, dating, creators |
+| `retro-sunset` | [retro-sunset.md](retro-sunset.md) | warm, nostalgic, printed | cream / teal / brick + striped sun | upright | Music, food, travel, journaling |
+| `horizon-block` | [horizon-block.md](horizon-block.md) | blunt, legible, sporty | white over a solid block | upright | Fitness, sports, trackers, utilities |
 
 ## Picking by category
 
 | Category | First pick | Also try |
 |---|---|---|
-| Productivity, tasks, notes | hand-drawn-editorial | clean-studio-light, liquid-glass-aurora, quiet-japandi, bento-keynote-grid |
+| Productivity, tasks, notes | hand-drawn-editorial | ink-minimal, clean-studio-light, liquid-glass-aurora, quiet-japandi, bento-keynote-grid |
 | Finance, analytics, business | swiss-grid-bold | clean-studio-light, bento-keynote-grid, midnight-glow-pro, noir-gold-luxe |
 | Developer tools, AI, pro apps | midnight-glow-pro | swiss-grid-bold, liquid-glass-aurora |
-| Utilities, dashboards, smart home | bento-keynote-grid | clean-studio-light, liquid-glass-aurora |
-| Health & fitness, sports, habits | neon-athletic-night | bold-poster-type, soft-clay-wellness, swiss-grid-bold |
+| Utilities, dashboards, smart home | bento-keynote-grid | horizon-block, clean-studio-light, liquid-glass-aurora |
+| Health & fitness, sports, habits | neon-athletic-night | horizon-block, bold-poster-type, soft-clay-wellness, swiss-grid-bold |
 | Meditation, sleep, wellness | soft-clay-wellness | quiet-japandi, liquid-glass-aurora |
-| Food, reading, lifestyle, travel | magazine-cover-editorial | noir-gold-luxe, quiet-japandi, color-block-sequence |
+| Food, reading, lifestyle, travel | magazine-cover-editorial | retro-sunset, sky-dream, noir-gold-luxe, quiet-japandi, color-block-sequence |
 | Shopping, premium memberships | clean-studio-light | noir-gold-luxe, color-block-sequence |
-| Social, music, entertainment | candy-pop-social | bold-poster-type, color-block-sequence, paper-sticker-skeuomorphic |
+| Social, music, entertainment | candy-pop-social | zine-collage, retro-sunset, bold-poster-type, color-block-sequence, paper-sticker-skeuomorphic |
 | Education, languages, students | color-block-sequence | paper-sticker-skeuomorphic, candy-pop-social, bento-keynote-grid |
 
 Then check competitors: if their first screenshots are light pastels, a dark preset stands out (and vice versa).
@@ -44,11 +49,11 @@ Then check competitors: if their first screenshots are light pastels, a dark pre
 
 The renderer applies the preset's palette (contrast-checked), fonts, emphasis treatment, background, decorations, device finish, shadows and framing rhythm; it fits the type and measures the quality bar. You decide the copy (in the preset's tone), the one emphasis word, the archetypes and screens, which shots are `inverted`, and where the one `bridge` goes.
 
-Presets also combine. On any option: `"emphasis"` picks another treatment for the emphasised phrase (`color`, `gradient`, `block`, `box`, `pill`, `italic`, `script`, `kenten`, `underline`, `outline`), `"kicker": "tag"` sets the kicker as a category chip, and `"cycle": ["#…", "#…", …]` gives every screenshot the next of 2–6 background colors with black or white type. `"preset": "midnight-glow-pro", "emphasis": "box"` or `"preset": "clean-studio-light", "cycle": [brand colors]` are directions of their own; sample them next to the plain presets. [`../art-direction.md`](../art-direction.md#pattern-library) maps what top apps do to these settings.
+Presets also combine. On any option: `"emphasis"` picks another treatment for the emphasised phrase (`color`, `gradient`, `block`, `box`, `pill`, `italic`, `script`, `kenten`, `underline`, `outline`), `"kicker": "tag"` sets the kicker as a category chip, and `"cycle": ["#…", "#…", …]` gives every screenshot the next of 2–6 background colors with black or white type, and `"thread": "line"` or `"dashed"` runs one line through the whole set. `"preset": "midnight-glow-pro", "emphasis": "box"` or `"preset": "clean-studio-light", "cycle": [brand colors]` are directions of their own; sample them next to the plain presets. [`../art-direction.md`](../art-direction.md#pattern-library) maps what top apps do to these settings.
 
 ## Credits and licence
 
-`clean-studio-light`, `bold-poster-type`, `color-block-sequence` and `noir-gold-luxe` are Vitrin's own: they distil looks that recur across the store galleries of popular apps; no app's screenshots or assets were copied.
+`clean-studio-light`, `bold-poster-type`, `color-block-sequence`, `noir-gold-luxe`, `ink-minimal`, `sky-dream`, `zine-collage`, `retro-sunset` and `horizon-block` are Vitrin's own: they distil looks that recur across the store galleries of popular apps; no app's screenshots or assets were copied.
 
 The other presets and their specs are condensed from the named deep-spec styles in **[app-store-screenshots](https://github.com/ParthJadhav/app-store-screenshots) by Parth Jadhav**, adapted to Vitrin's HTML templates (fonts are substituted with the OFL families Vitrin bundles; frames are Vitrin's own CSS devices). The original material is used under the MIT licence:
 

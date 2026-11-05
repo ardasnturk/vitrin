@@ -24,6 +24,7 @@ import {
   surfaceFor,
   tintTokens,
   visibleSpan,
+  wallpaper,
   widthForHeight,
   type DeviceFamily,
 } from '../src/index.js';
@@ -367,5 +368,64 @@ describe('quality gate helpers', () => {
     expect(magentaCoverage('#FFFFFF', '#FF00FF')).toBe(255);
     expect(magentaCoverage('#202020', '#202020')).toBe(0);
     expect(magentaCoverage('#000000', '#800080')).toBeGreaterThan(120);
+  });
+});
+
+describe('patterns from store galleries', () => {
+  const target = T('iphone-6.9', 'iphone', 440, 956, 3);
+  const screen = { src: 'file:///s.png', aspect: 2.17, family: 'iphone' as const };
+  const option = (preset: StylePreset, extra = {}) => ({ id: 'x', name: 'x', rationale: '', differentiation: '', preset, ...extra });
+  const page = (o: Partial<Parameters<typeof buildPage>[0]>) => buildPage({ target, locale: 'en-US', ad: option('clean-studio-light'), archetype: 'feature', headline: 'Keep your *streak*', subheadline: '', badges: [], screens: [screen], ...o });
+  const rect = { x: 0.05, y: 0.2, w: 0.9, h: 0.2 };
+
+  it('stacks fragments as cards without a device, and skips a family with no region', () => {
+    const callouts = [{ screen: 0, rect, rects: {}, scale: 1.6, side: 'right' as const, at: 0.5 }, { screen: 0, rect, rects: {}, scale: 1.6, side: 'right' as const, at: 0.5 }];
+    const html = page({ archetype: 'fragments', callouts });
+    expect(html.match(/class="callout /g)).toHaveLength(2);
+    expect(html).not.toContain('class="stage"');
+    expect(page({ archetype: 'fragments', callouts, screens: [{ ...screen, family: 'mac' }] })).not.toContain('class="callout ');
+  });
+
+  it('draws the lock screen from the bullets and never lists them under the caption', () => {
+    const html = page({ archetype: 'lockscreen', screens: [], bullets: ['Time for your walk'], appName: 'Ritim' });
+    expect(html).toContain('9:41');
+    expect(html).toContain('Time for your walk');
+    expect(html).toContain('Tuesday');
+    expect(page({ archetype: 'lockscreen', screens: [], bullets: ['x'], appName: 'R', locale: 'tr' })).toContain('Salı');
+    expect(html.match(/Time for your walk/g)).toHaveLength(1);
+  });
+
+  it('keeps the lock screen dark enough for the white clock, whatever the accent', () => {
+    for (const id of StylePreset.options) {
+      for (const sf of PRESETS[id].surfaces) expect(contrastRatio('#FFFFFF', decodeURIComponent(wallpaper(sf, 'iphone').src).match(/stop-color="(#[0-9A-Fa-f]{6})"/)![1]!), id).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('sets a caption on a plate whose text reads on it', () => {
+    const html = page({ captionPlate: true, captionPosition: 'bottom' });
+    expect(html).toMatch(/class="caption"[^>]*background:#2D5BFF/);
+    expect(html).toContain('data-colors="#FFFFFF"');
+  });
+
+  it('numbers a step above the caption', () => {
+    expect(page({ step: 3 })).toMatch(/class="step"[^>]*>3</);
+    expect(page({})).not.toContain('class="step"');
+  });
+
+  it('meets the thread at the seam between two slides', () => {
+    const ad = option('clean-studio-light', { thread: 'line' });
+    const ends = (index: number) => page({ ad, index, total: 3 }).match(/<path d="M (-?[\d.]+) ([\d.]+) C .* S [\d.]+ ([\d.]+) ([\d.]+) ([\d.]+)"/)!;
+    expect(ends(0)[5]).toBe(ends(1)[2]);
+    expect(ends(1)[5]).toBe(ends(2)[2]);
+    expect(page({})).not.toContain('class="thread"');
+  });
+
+  it('dashes the thread only when asked', () => {
+    expect(page({ ad: option('sky-dream', { thread: 'dashed' }) })).toContain('stroke-dasharray');
+    expect(page({ ad: option('sky-dream', { thread: 'line' }) })).not.toContain('stroke-dasharray');
+  });
+
+  it('offers the new presets for the categories they suit', () => {
+    expect(suggestStyles(4, 'SOCIAL_NETWORKING')).toContain('zine-collage');
   });
 });

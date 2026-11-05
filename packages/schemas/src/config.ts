@@ -98,8 +98,10 @@ export const VitrinConfig = z.object({
       cacheHours: z.number().default(24),
       reviewsPerApp: z.number().int().default(50),
       ocr: z.boolean().default(true),
+      /** App Store ids of rival apps whose rank `vitrin rank` records next to the app's own. */
+      rivals: z.array(z.number().int().positive()).max(5).default([]),
     })
-    .default({ seeds: [], competitors: 15, candidates: 40, limit: 50, cacheHours: 24, reviewsPerApp: 50, ocr: true }),
+    .default({ seeds: [], competitors: 15, candidates: 40, limit: 50, cacheHours: 24, reviewsPerApp: 50, ocr: true, rivals: [] }),
   targets: z
     .object({
       /** Target ids from data/targets.json to force on or off. */

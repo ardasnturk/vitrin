@@ -126,6 +126,8 @@ export interface StudioQuestion {
 export const startLocale = (cfg: { locales: string[]; primaryLocale: string }): string => (cfg.locales.includes(cfg.primaryLocale) ? cfg.primaryLocale : (cfg.locales[0] ?? cfg.primaryLocale));
 
 export interface Overview {
+  /** Newest audit file, when `vitrin audit` ran. */
+  audit?: string;
   version: string;
   root: string;
   initialized: boolean;

@@ -1,7 +1,7 @@
 import { enabledTargets, existsSync, localeInfo, readJsonIfExists, storefrontForLocale, storefrontInfo, writeText } from '@vitrin/core';
-import { Competitors, isKnownBrand, KeywordPlan, keywordReach, LiveListing, StylePreset, type AppProfile, type KeywordCandidate } from '@vitrin/schemas';
+import { AuditReport, Competitors, isKnownBrand, KeywordPlan, keywordReach, LiveListing, StylePreset, type AppProfile, type KeywordCandidate } from '@vitrin/schemas';
 import { PRESETS, suggestStyles } from '@vitrin/render';
-import { rm } from 'node:fs/promises';
+import { readdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Ctx } from './context.js';
 import { sampleLocale, sampleTarget } from './commands/select.js';
@@ -111,11 +111,18 @@ Run \`vitrin capture --locale ${sampleLocale(ctx.config)}\` and open the PNGs wi
   );
 }
 
+async function latestAudit(ctx: Ctx): Promise<AuditReport | undefined> {
+  if (!existsSync(ctx.paths.audits)) return undefined;
+  const last = (await readdir(ctx.paths.audits)).filter((f) => /^\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort().at(-1);
+  return last ? readJsonIfExists(join(ctx.paths.audits, last), AuditReport).catch(() => undefined) : undefined;
+}
+
 export async function metadataBrief(ctx: Ctx, profile: AppProfile): Promise<string> {
   const competitors = await readJsonIfExists(ctx.paths.competitors, Competitors).catch(() => undefined);
   const live = await readJsonIfExists(ctx.paths.liveListing, LiveListing).catch(() => undefined);
   const ownRatings = competitors?.self?.userRatingCount ?? 0;
   const brand = profile.app.displayName;
+  const audit = await latestAudit(ctx);
   const sections: string[] = [];
   for (const locale of ctx.config.app.locales) {
     const kw = await readJsonIfExists(ctx.paths.keywordFile(locale), KeywordPlan).catch(() => undefined);
@@ -154,7 +161,7 @@ export async function metadataBrief(ctx: Ctx, profile: AppProfile): Promise<stri
     `# Brief: write metadata
 
 App: **${profile.app.displayName}** (${profile.app.bundleId}). Audience: ${profile.positioning?.audience ?? '?'}. Job to be done: ${profile.positioning?.jobToBeDone ?? '?'}. Tone: ${profile.positioning?.tone ?? '?'}.
-Developer: ${ctx.config.copyrightHolder ?? '?'} — this name does not go in the keyword field.
+Developer: ${ctx.config.copyrightHolder ?? '?'} — this name does not go in the keyword field.${audit ? `\n\nLast audit (\`vitrin audit\`, ${audit.date}, ${audit.score ?? '?'}/100). Start from these fixes:\n${audit.locales.flatMap((l) => l.takeaways.map((t) => `- ${l.locale}: ${t}`)).join('\n')}` : ''}
 
 ## Rules (validate checks these)
 - Name 2–30 characters, natural, the primary keyword plus the brand. ${
@@ -269,7 +276,7 @@ Copy for every chosen language (\`app.locales\`: ${ctx.config.app.locales.join('
 - **Headlines:** what the user gets, not what the feature is called (“See how much you saved”, not “Advanced analytics dashboard”). One idea; the first shot only has to make people look at the next. ≤ 5 words recommended (7 max), 3–5 words per line, ≤ 2 lines, \`\\n\` for an intentional break, exactly one \`*emphasis*\`. Write them in the preset's copy tone (styles/<preset>.md). Reinforce the main keyword from the name/subtitle. \`kicker\` ≤ 3 words.
 - **Panoramic pair:** \`"archetype": "panoramic", "bridge": true\` puts a large tilted phone on the right edge that continues into the next screenshot, which shows its other half next to its own device (the two read as one image in the store). Use it once, e.g. shots 2→3, and give the next shot a real screen of its own.
 - **Framing varies:** leave \`"framing": "auto"\` (never repeats the previous shot) or set bleed-bottom / bleed-top / offset / tilted / two-devices / no-device yourself; mix at least two framings. 1–2 shots \`"inverted": true\` for rhythm (cycling presets change surface on their own). For 5+ shots set \`"bridge": true\` on one shot to carry a decorative element into the next (never text).
-- **Archetypes:** hero, feature, callout, fullbleed, tilted, split, collage, before-after, stat, social-proof, panoramic, statement, testimonial, feature-wall, mosaic. At least 60 % real UI, one UI shot in the first 3.
+- **Archetypes:** hero, feature, callout, fullbleed, tilted, split, collage, before-after, stat, social-proof, panoramic, statement, testimonial, feature-wall, mosaic, fragments, lockscreen. At least 60 % real UI, one UI shot in the first 3.
 - No calls to action (“Download now”), other platform names, prices or unproven awards. Badges: feature/new need \`featureId\`; proof only a real Lookup rating or documented award, on the hero; platform only if supported. Max 2 badges on the hero.
 - callout: \`"callouts": [{ "screen": 0, "rect": { "x": 0.04, "y": 0.47, "w": 0.92, "h": 0.3 }, "scale": 1.45, "side": "center", "at": 0.6 }]\` — rect in fractions of the iPhone capture; add \`"rects": { "ipad": {…} }\` if the iPad layout differs.
 - **Extras per shot:** \`"bullets": [{ "${ctx.config.app.primaryLocale}": "…" }, …]\` (≤ 4 short benefit lines under the caption, every one a real feature in \`featureIds\`; \`"bulletStyle": "check" | "chips"\`; drop the subheadline when you use three or more), \`"brandMark": true\` (icon + app name above the headline: the hero or the closer), \`"photo": "hero.jpg"\` (only a photo the developer gave you, in metadata/photos/: the device stands in that scene, or a \`statement\` becomes a lifestyle slide; ask before using one, never generate or download stock).

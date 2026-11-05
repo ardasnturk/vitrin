@@ -32,7 +32,7 @@ export type EmphasisKind =
 /** Emphasis kinds drawn on a plate (`plate`/`plateText`) rather than in the emphasis color. */
 export const PLATED_EMPHASIS: ReadonlySet<EmphasisKind> = new Set(['block', 'pill', 'box']);
 
-export type BackgroundRecipe = 'classic' | 'aurora' | 'swiss' | 'beam' | 'clay' | 'washi' | 'bento' | 'magazine' | 'candy' | 'neon' | 'paper' | 'doodle' | 'studio' | 'poster' | 'block' | 'gilded';
+export type BackgroundRecipe = 'classic' | 'aurora' | 'swiss' | 'beam' | 'clay' | 'washi' | 'bento' | 'magazine' | 'candy' | 'neon' | 'paper' | 'doodle' | 'studio' | 'poster' | 'block' | 'gilded' | 'ink' | 'sky' | 'zine' | 'retro' | 'horizon';
 
 /** One slide palette. A preset has one or more; inverted slides and cycling rhythms pick another. */
 export interface Surface {
@@ -450,6 +450,103 @@ export const PRESETS: Record<StylePreset, StyleTokens> = {
     badge: 'darkglass',
     grain: 0.04,
     tint: 'fixed',
+  },
+  'ink-minimal': {
+    id: 'ink-minimal',
+    name: 'Ink Minimal',
+    surfaces: [
+      s({ bg: ['#FFFFFF'], text: '#0E0E10', muted: '#55555C', emphasis: ['#0E0E10'], accent: '#FFD84D', extras: ['#0E0E10', '#EDEDEF', '#FFD84D'], chipBg: '#0E0E10', chipText: '#FFFFFF', shadow: 'rgba(14,14,16,.16)', rule: 'rgba(14,14,16,.12)' }),
+      s({ bg: ['#0E0E10'], text: '#FFFFFF', muted: '#B9B9C0', emphasis: ['#FFFFFF'], accent: '#7A6A1F', extras: ['#FFFFFF', '#26262B', '#FFD84D'], chipBg: '#FFFFFF', chipText: '#0E0E10', shadow: 'rgba(0,0,0,.6)', rule: 'rgba(255,255,255,.14)' }),
+    ],
+    rhythm: 'single',
+    invert: 1,
+    fonts: { headline: 'Inter Tight', body: 'Inter', label: 'Inter' },
+    type: { ...baseType, weight: 600, size: 0.118, tracking: -0.035, leading: 1.04, align: 'start', subWeight: 400 },
+    emphasis: 'underline',
+    background: 'ink',
+    density: 'minimal',
+    device: { tilt: 0, finish: 'black', shadow: 'crisp', rhythm: ['bleed-bottom', 'offset', 'bleed-bottom', 'bleed-top', 'offset'], bleed: 0.06 },
+    badge: 'mono',
+    grain: 0,
+    tint: 'signal',
+  },
+  'sky-dream': {
+    id: 'sky-dream',
+    name: 'Sky Dream',
+    surfaces: [
+      s({ bg: ['#1259C3', '#1F6FE0', '#BFE0FF'], text: '#FFFFFF', muted: '#EAF3FF', emphasis: ['#FFF0A8'], accent: '#FFF0A8', extras: ['#FFFFFF', '#FFF0A8', '#BFE0FF'], chipBg: 'rgba(255,255,255,.9)', chipText: '#0F3F8C', shadow: 'rgba(10,40,110,.4)', rule: 'rgba(255,255,255,.2)', dark: true }),
+      s({ bg: ['#3B2A8C', '#8E3F91', '#FFB27A'], text: '#FFFFFF', muted: '#F6E7FF', emphasis: ['#FFD9A0'], accent: '#FFD9A0', extras: ['#FFE3CC', '#FFD9A0', '#FFB27A'], chipBg: 'rgba(255,255,255,.9)', chipText: '#3B2A8C', shadow: 'rgba(40,10,80,.45)', rule: 'rgba(255,255,255,.2)', dark: true }),
+    ],
+    rhythm: 'single',
+    invert: 1,
+    fonts: { headline: 'Plus Jakarta Sans', body: 'Inter', label: 'Inter' },
+    type: { ...baseType, weight: 800, size: 0.122, tracking: -0.03, leading: 1.02, subWeight: 500 },
+    emphasis: 'color',
+    background: 'sky',
+    density: 'editorial',
+    device: { tilt: 0, finish: 'black', shadow: 'soft', rhythm: ['bleed-bottom', 'offset', 'bleed-bottom', 'two-devices', 'offset'], bleed: 0.08 },
+    badge: 'glass',
+    grain: 0,
+    tint: 'fixed',
+  },
+  'zine-collage': {
+    id: 'zine-collage',
+    name: 'Zine Collage',
+    surfaces: [
+      s({ bg: ['#FF2E93'], text: '#150A12', muted: '#2B0E20', emphasis: ['#150A12'], plate: '#FFE500', plateText: '#150A12', accent: '#FFE500', extras: ['#C20F68', '#FFFFFF', '#FFE500'], chipBg: '#150A12', chipText: '#FFE500', shadow: 'rgba(60,0,30,.45)', rule: 'rgba(21,10,18,.2)' }),
+      s({ bg: ['#FFE500'], text: '#150A12', muted: '#3A3400', emphasis: ['#150A12'], plate: '#FF2E93', plateText: '#150A12', accent: '#FF2E93', extras: ['#F2B800', '#FFFFFF', '#FF2E93'], chipBg: '#150A12', chipText: '#FFE500', shadow: 'rgba(80,60,0,.4)', rule: 'rgba(21,10,18,.2)' }),
+      s({ bg: ['#2B2BFF'], text: '#FFFFFF', muted: '#E2E2FF', emphasis: ['#FFFFFF'], plate: '#FFE500', plateText: '#150A12', accent: '#FFE500', extras: ['#5A5AFF', '#FFFFFF', '#FFE500'], chipBg: '#FFFFFF', chipText: '#2B2BFF', shadow: 'rgba(0,0,80,.5)', rule: 'rgba(255,255,255,.2)' }),
+    ],
+    rhythm: 'cycle',
+    invert: 2,
+    fonts: { headline: 'Anton', body: 'DM Sans', label: 'Barlow Condensed' },
+    type: { ...baseType, weight: 400, case: 'upper', size: 0.15, tracking: 0.01, leading: 1.02, maxLines: 3, rotate: -2, labelCase: 'upper', labelTracking: 0.08, subWeight: 600 },
+    emphasis: 'pill',
+    background: 'zine',
+    density: 'maximal',
+    device: { tilt: 5, finish: 'black', shadow: 'hard', rhythm: ['tilted', 'bleed-bottom', 'tilted', 'offset', 'bleed-bottom'], bleed: 0.1 },
+    badge: 'sticker',
+    grain: 0.05,
+    tint: 'fixed',
+  },
+  'retro-sunset': {
+    id: 'retro-sunset',
+    name: 'Retro Sunset',
+    surfaces: [
+      s({ bg: ['#F6E7C9'], text: '#2A1A12', muted: '#5B4331', emphasis: ['#A8321E'], accent: '#C8402A', extras: ['#E7A928', '#D9682F', '#C8402A'], chipBg: '#2A1A12', chipText: '#F6E7C9', shadow: 'rgba(70,35,10,.35)', rule: 'rgba(42,26,18,.16)' }),
+      s({ bg: ['#0F5F62'], text: '#F6E7C9', muted: '#D9E4CF', emphasis: ['#F5BE4B'], accent: '#F5BE4B', extras: ['#1C7A7A', '#E7A928', '#F6E7C9'], chipBg: '#F6E7C9', chipText: '#0F5F62', shadow: 'rgba(0,30,30,.5)', rule: 'rgba(246,231,201,.18)' }),
+      s({ bg: ['#A8321E'], text: '#FBEFD6', muted: '#F6DFC2', emphasis: ['#F8CF6A'], accent: '#F8CF6A', extras: ['#C8502F', '#E7A928', '#F6E7C9'], chipBg: '#F6E7C9', chipText: '#A8321E', shadow: 'rgba(70,10,0,.5)', rule: 'rgba(251,239,214,.18)' }),
+    ],
+    rhythm: 'cycle',
+    invert: 1,
+    fonts: { headline: 'Fraunces', body: 'DM Sans', label: 'DM Sans' },
+    type: { ...baseType, weight: 700, size: 0.122, tracking: -0.025, leading: 1.04, labelCase: 'upper', labelTracking: 0.14, subWeight: 500, variation: "'SOFT' 60, 'WONK' 1, 'opsz' 144" },
+    emphasis: 'italic',
+    background: 'retro',
+    density: 'editorial',
+    device: { tilt: 0, finish: 'black', shadow: 'soft', rhythm: ['bleed-bottom', 'offset', 'bleed-bottom', 'bleed-top', 'offset'], bleed: 0.08 },
+    badge: 'paper',
+    grain: 0.06,
+    tint: 'fixed',
+  },
+  'horizon-block': {
+    id: 'horizon-block',
+    name: 'Horizon Block',
+    surfaces: [
+      s({ bg: ['#FFFFFF'], text: '#0D1220', muted: '#4B5468', emphasis: ['#2348E8'], accent: '#2F5BFF', extras: ['#2F5BFF', '#E6EBFF', '#0D1220'], chipBg: '#0D1220', chipText: '#FFFFFF', shadow: 'rgba(13,18,60,.3)', rule: 'rgba(13,18,32,.1)' }),
+      s({ bg: ['#0D1220'], text: '#FFFFFF', muted: '#C3CAD9', emphasis: ['#9DB2FF'], accent: '#2F5BFF', extras: ['#2F5BFF', '#1A2238', '#FFFFFF'], chipBg: '#FFFFFF', chipText: '#0D1220', shadow: 'rgba(0,0,0,.6)', rule: 'rgba(255,255,255,.12)' }),
+    ],
+    rhythm: 'single',
+    invert: 1,
+    fonts: { headline: 'Barlow Condensed', body: 'Inter', label: 'Barlow Condensed' },
+    type: { ...baseType, weight: 800, case: 'upper', size: 0.158, tracking: 0, leading: 0.98, maxLines: 3, labelCase: 'upper', labelTracking: 0.1, subWeight: 500 },
+    emphasis: 'color',
+    background: 'horizon',
+    density: 'editorial',
+    device: { tilt: 0, finish: 'black', shadow: 'soft', rhythm: ['bleed-bottom', 'bleed-top', 'bleed-bottom', 'offset', 'bleed-bottom'], bleed: 0.08 },
+    badge: 'mono',
+    grain: 0,
+    tint: 'signal',
   },
 };
 

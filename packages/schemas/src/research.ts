@@ -153,7 +153,61 @@ export const RankSnapshot = z.object({
       /** 1-based; null = not in the first `limit` results. */
       rank: z.number().int().positive().nullable(),
       limit: z.number().int().positive(),
+      /** Rival apps' rank for the same term in the same storefront: trackId → rank, null = not in the first `limit`. */
+      rivals: z.record(z.string(), z.number().int().positive().nullable()).optional(),
     }),
   ),
+  /** trackId → app name for the ids in `rivals`. */
+  rivalNames: z.record(z.string(), z.string()).optional(),
 });
 export type RankSnapshot = z.infer<typeof RankSnapshot>;
+
+export const AuditVerdict = z.enum(['pivot', 'align', 'fine']);
+export type AuditVerdict = z.infer<typeof AuditVerdict>;
+
+/** One keyword as the audit sees it: 0–100 numbers that estimate, never Apple's own search counts. */
+export const AuditTerm = z.object({
+  term: z.string(),
+  /** Audience estimate from the apps that match the term (0–100), or the popularity provider's value. */
+  volume: z.number().int().min(0).max(100),
+  /** How hard the top 10 is to enter (0–100). */
+  difficulty: z.number().int().min(0).max(100),
+  rank: z.number().int().positive().nullable(),
+  reach: z.enum(['ranked', 'reachable', 'stretch']),
+  /** All of the term's words are already in the name, subtitle or keyword field. */
+  covered: z.boolean(),
+});
+export type AuditTerm = z.infer<typeof AuditTerm>;
+
+export const AuditLocale = z.object({
+  locale: z.string(),
+  storefront: z.string(),
+  /** Which listing was judged. */
+  listingSource: z.enum(['live', 'draft', 'none']),
+  /** 0–100; null when nothing with demand was measured. Rankings 50, listing 30, competition 20, at most rankings + 30. */
+  score: z.number().int().min(0).max(100).nullable(),
+  verdict: AuditVerdict.nullable(),
+  sections: z.object({
+    rankings: z.number().int().min(0).max(100).nullable(),
+    listing: z.number().int().min(0).max(100).nullable(),
+    competition: z.number().int().min(0).max(100).nullable(),
+  }),
+  /** Terms with demand the app holds in the top 10. */
+  ranked: z.array(AuditTerm),
+  /** Terms with demand where the app is outside the top 30, biggest first. */
+  gaps: z.array(AuditTerm),
+  /** Apps found most often in the top 10 of the seeds, most frequent first. */
+  rivals: z.array(z.object({ trackId: z.number(), name: z.string(), top10: z.number().int(), ratings: z.number().optional() })),
+  /** The few fixes that matter most, most valuable first. */
+  takeaways: z.array(z.string()),
+});
+export type AuditLocale = z.infer<typeof AuditLocale>;
+
+/** `metadata/audits/<date>.json`: where the listing stands, per language, kept across runs next to the rank history. */
+export const AuditReport = z.object({
+  date: z.string(),
+  /** Mean of the measured locales. */
+  score: z.number().int().min(0).max(100).nullable(),
+  locales: z.array(AuditLocale),
+});
+export type AuditReport = z.infer<typeof AuditReport>;

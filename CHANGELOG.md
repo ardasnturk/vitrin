@@ -2,7 +2,19 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## Unreleased
+## 2.4.0 — 2026-11-05
+
+Vitrin now tells you where a listing stands before it rewrites anything, and the screenshot templates draw on a review of 106 popular App Store galleries.
+
+### Added
+- **`vitrin audit`:** a 0–100 score per language from rankings (50), listing (30) and competition (20), never more than the rankings + 30, with a pivot / align / fine verdict, the terms with demand the app misses, the apps that hold the top 10 and the few fixes that matter. It reads what research and `vitrin rank` measured, sends no new requests, and keeps its history in `metadata/audits/`. The Studio shows the last one on the Metadata page, and the write brief opens with its fixes.
+- **`vitrin keywords`:** volume and difficulty for any terms in any storefront, in any folder, with what the App Store search box suggests for them. Good for sizing an idea before there is a project. Both numbers are estimates, not Apple's search counts, and the suggestion endpoint is undocumented.
+- **Rival ranks:** `vitrin rank` records up to five rivals next to the app and prints who is ahead per term. `research.rivals` pins App Store ids; otherwise the apps seen most often in the top 10 are followed, even after research is deleted.
+- **`vitrin pricing`:** a fair price per country from purchasing power (World Bank data in `data/ppp.json`), or five tiers, held between a floor and a ceiling. A proposal only: Vitrin does not change prices.
+- **Five style presets:** `ink-minimal`, `sky-dream`, `zine-collage`, `retro-sunset` and `horizon-block`, all Vitrin's own, each with its spec and category suggestions.
+- **Two archetypes:** `fragments` stacks cropped pieces of real UI as cards with no device, and `lockscreen` draws a phone at 9:41 with the app's notifications.
+- **Shot and direction options:** `captionPlate` sets the caption on a solid plate, `step` numbers a flow, and `thread` on an art direction runs one line through the whole set, meeting itself at every seam.
+- The art direction guide lists what the 106 galleries have in common and maps each pattern to a Vitrin setting. No app's screenshots or assets were copied.
 
 ### Fixed
 - **The website's Download buttons no longer break around a release:** they pointed at `releases/latest` with a versioned file name, so they returned 404 from the moment a new release was published until the site deployed. They now name the release.

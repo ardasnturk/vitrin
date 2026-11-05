@@ -52,6 +52,46 @@ const LIMITS = { name: 30, subtitle: 30, promotionalText: 170, keywords: 100, de
 const URL_FIELDS = { supportUrl: 'support', marketingUrl: 'marketing', privacyUrl: 'privacy' } as const;
 const isPlaceholder = (url?: string) => Boolean(url && /\bexample\.(com|org|net)\b/i.test(url));
 
+interface AuditTermRow {
+  term: string;
+  volume: number;
+  difficulty: number;
+  rank: number | null;
+}
+interface AuditLocaleRow {
+  locale: string;
+  storefront: string;
+  score: number | null;
+  verdict: 'pivot' | 'align' | 'fine' | null;
+  sections: { rankings: number | null; listing: number | null; competition: number | null };
+  gaps: AuditTermRow[];
+  takeaways: string[];
+}
+
+/** The last audit: one line per language, then the fixes it found. */
+function AuditCard({ file }: { file: string }) {
+  const audit = useFile<{ date: string; score: number | null; locales: AuditLocaleRow[] }>(file);
+  if (!audit.data) return null;
+  const n = (v: number | null) => v ?? '—';
+  return (
+    <Card title={`${t('auditTitle')} · ${audit.data.date}`}>
+      {audit.data.locales.map((l) => (
+        <div key={l.locale} style={{ marginBottom: 10 }}>
+          <div className="row wrap">
+            <strong>{l.locale}</strong>
+            <Pill tone={l.verdict === 'fine' ? 'ok' : l.verdict === 'pivot' ? 'err' : 'warn'}>{`${n(l.score)}/100`}</Pill>
+            <span className="muted">{`${t('auditRankings')} ${n(l.sections.rankings)} · ${t('auditListing')} ${n(l.sections.listing)} · ${t('auditCompetition')} ${n(l.sections.competition)}`}</span>
+          </div>
+          {l.gaps.length > 0 && <p className="muted">{`${t('auditGaps')}: ${l.gaps.slice(0, 5).map((g) => g.term).join(', ')}`}</p>}
+          {l.takeaways.map((x) => (
+            <p key={x}>{x}</p>
+          ))}
+        </div>
+      ))}
+    </Card>
+  );
+}
+
 export function Metadata({ openClaude }: { openClaude: () => void }) {
   const { state, run, toast } = useStudio();
   const busy = useBusy();
@@ -71,9 +111,13 @@ export function Metadata({ openClaude }: { openClaude: () => void }) {
         <h2>{t('metadata')}</h2>
         <p>{t('metadataIntro')}</p>
       </header>
+      {o.audit && <AuditCard file={o.audit} />}
       <div className="row wrap" style={{ marginBottom: 14 }}>
         <Button kind="primary" disabled={busy} title={cli('vitrin write')} onClick={() => run('write')}>
           {t('writeAction')}
+        </Button>
+        <Button disabled={busy} title={cli('vitrin audit')} onClick={() => run('audit')}>
+          {t('auditAction')}
         </Button>
         <Button disabled={busy} title={cli('vitrin research')} onClick={() => run('research')}>
           {t('researchAction')}

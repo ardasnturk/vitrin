@@ -93,6 +93,8 @@ export interface Overview {
   listing: string[];
   /** Open briefs only: one is closed once the stage it feeds completed after it was written. */
   briefs: Array<{ name: string; path: string; modifiedAt: string; stage?: PipelineStage }>;
+  /** Newest `vitrin audit` result, as a path the Studio can read. */
+  audit?: string;
   validation?: { ok: boolean; counts: ValidationReport['counts']; generatedAt?: string; issues: Array<Pick<ValidationReport['issues'][number], 'severity' | 'code' | 'message' | 'file' | 'locale' | 'field'>> };
   /**
    * `valid` is false when the approval cannot be uploaded as it is: validation found errors, or content stages ran
@@ -289,6 +291,10 @@ export async function buildOverview(root: string): Promise<Overview> {
       .catch(() => undefined)) as { generatedAt?: string; samples?: Array<{ letter?: string; style?: string; name?: string }> } | undefined;
     const options = (index?.samples ?? []).filter((x) => x.letter && x.style).map((x) => ({ letter: x.letter!, style: x.style!, name: x.name ?? x.style! }));
     base.samples = { styles, contactSheet: rel('contact-sheet.png'), storePreview: rel('store-preview.html'), generatedAt: index?.generatedAt, options };
+  }
+  if (existsSync(paths.audits)) {
+    const last = (await readdir(paths.audits)).filter((f) => /^\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort().at(-1);
+    if (last) base.audit = toPosix(relative(root, join(paths.audits, last)));
   }
   const mockupScreens = join(paths.mockups, 'screens');
   if (existsSync(paths.mockups)) {

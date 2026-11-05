@@ -10,9 +10,9 @@
 import type { ArtDirectionOption, Badge, Callout, Framing, Quote, RenderTarget, Shot } from '@vitrin/schemas';
 import { fontSetup, lucideIcon } from './assets.js';
 import { CaptionBlock, plainWords } from './caption.js';
-import { contrastRatio, ensureContrast, inkOn, mix, withAlpha } from './color.js';
+import { contrastRatio, ensureContrast, inkOn, luminance, mix, withAlpha } from './color.js';
 import { Background, BadgeView, CalloutCard, esc, QuoteCard, type PaletteDirection } from './components.js';
-import { backgroundLayer, canvasDecor, ChipView, grainLayer, stageBack, stageFront, topStructure, type Box, type DecorContext } from './decor.js';
+import { backgroundLayer, canvasDecor, ChipView, grainLayer, stageBack, stageFront, threadLayer, topStructure, type Box, type DecorContext } from './decor.js';
 import { CONTAINED_FAMILIES, DeviceFrame, deviceGeometry, widthForHeight, type DeviceFamily, type DeviceFinish, type FrameVariant } from './frames.js';
 import { PLATED_EMPHASIS, resolveDirection, surfaceFor, type BrandTint, type ResolvedDirection, type StyleTokens, type Surface } from './styles.js';
 
@@ -67,6 +67,10 @@ export interface PageInput {
   bulletStyle?: 'check' | 'chips';
   /** App icon and name above the headline. */
   brandMark?: boolean;
+  /** The caption on a solid plate over the UI. */
+  captionPlate?: boolean;
+  /** Step number above the caption. */
+  step?: number;
   /** file:// URL of a developer photo drawn full-bleed behind everything (with a scrim under the caption). */
   photo?: string;
   /** Profile brand, used to tint presets when the direction has no `brand`. */
@@ -102,16 +106,17 @@ export function planFramings(shots: Array<Pick<Shot, 'archetype' | 'framing'>>, 
     if (CONTAINED_FAMILIES.has(family)) f = s.archetype === 'statement' || s.archetype === 'testimonial' || s.archetype === 'feature-wall' ? 'no-device' : 'contained';
     else if (f === 'auto') {
       const a = s.archetype;
-      if (a === 'statement' || a === 'testimonial' || a === 'feature-wall' || a === 'mosaic') f = 'no-device';
+      if (a === 'statement' || a === 'testimonial' || a === 'feature-wall' || a === 'mosaic' || a === 'fragments') f = 'no-device';
       else if (a === 'split' || a === 'before-after' || a === 'collage') f = 'two-devices';
       else if (a === 'tilted') f = 'tilted';
+      else if (a === 'lockscreen') f = 'bleed-bottom';
       else if (a === 'panoramic' || a === 'stat') f = 'offset';
       else if (a === 'hero' || a === 'callout' || a === 'fullbleed' || a === 'social-proof') f = i === 0 ? 'bleed-bottom' : (tokens.device.rhythm[i % tokens.device.rhythm.length] ?? 'bleed-bottom');
       else f = tokens.device.rhythm[i % tokens.device.rhythm.length] ?? 'bleed-bottom';
       if (a === 'callout' || a === 'fullbleed') f = f === 'bleed-top' ? 'bleed-top' : 'bleed-bottom';
       if (f === 'two-devices' && a !== 'split' && a !== 'before-after' && a !== 'collage') f = 'offset';
       const prev = out[i - 1];
-      if (prev && prev === f && f !== 'no-device') {
+      if (prev && prev === f && f !== 'no-device' && a !== 'lockscreen') {
         const alts: Framing[] = ['offset', 'bleed-top', 'tilted', 'bleed-bottom'];
         f = alts.find((x) => x !== prev && !(upright && x === 'tilted') && !(a === 'callout' && x === 'tilted')) ?? f;
       }
@@ -477,6 +482,7 @@ function decorContext(p: PageInput & { index: number; total: number }, t: StyleT
     bridgeIn: Boolean(p.bridgeIn),
     badges: p.badges,
     stat: p.stat,
+    thread: (p.ad as ArtDirectionOption).thread,
     ...extra,
   };
 }
@@ -608,6 +614,9 @@ function badgesRow(p: PageInput, t: StyleTokens, sf: Surface, fontSize: number, 
 function portraitLayout(p: PageInput & { index: number; total: number; callouts: Callout[]; quotes: Quote[] }, ad: ResolvedDirection, sf: Surface, surfaceIndex: number, W: number, H: number): string {
   const t = ad.tokens;
   const a = p.archetype;
+  // The lock screen is drawn, so its device shows a wallpaper in the slide's own colors instead of a capture.
+  const notifications = a === 'lockscreen' ? p.bullets ?? [] : [];
+  if (a === 'lockscreen') p = { ...p, bullets: [], screens: [wallpaper(sf, frameFamily(p.target))] };
   const family = frameFamily(p.target, p.screens[0]);
   const variant = frameVariant(p.target, p.index);
   const planned = p.framing && p.framing !== 'auto' ? p.framing : planFramings([{ archetype: a, framing: 'auto' }], t, family)[0]!;
@@ -619,7 +628,7 @@ function portraitLayout(p: PageInput & { index: number; total: number; callouts:
   const spanIn = usesScreens && a !== 'mosaic' && p.spanIn ? p.spanIn : undefined;
   if (spanIn) p = { ...p, screens: [...p.screens, spanIn] };
   const deviceFraming = spanIn && framing !== 'no-device' ? 'offset' : framing;
-  const plan = planPortrait({ W, H, t, family, framing: usesScreens ? (a === 'mosaic' ? 'no-device' : deviceFraming) : 'no-device', archetype: a, screens: usesScreens ? (spanIn ? p.screens.slice(0, -1) : p.screens) : [], index: p.index, variant, span: { out: spanOut, inAspect: spanIn?.aspect } });
+  const plan = planPortrait({ W, H, t, family, framing: usesScreens ? (a === 'mosaic' || a === 'fragments' ? 'no-device' : deviceFraming) : 'no-device', archetype: a, screens: usesScreens ? (spanIn ? p.screens.slice(0, -1) : p.screens) : [], index: p.index, variant, span: { out: spanOut, inAspect: spanIn?.aspect } });
   const hs = headlineSizeFor(t, W, H, false);
   const statement = a === 'statement';
   const headlineSize = Math.round(hs * (statement ? 1.18 : 1));
@@ -641,6 +650,7 @@ function portraitLayout(p: PageInput & { index: number; total: number; callouts:
     above = `<img data-content src="${p.icon}" style="width:${size}px;height:${size}px;border-radius:${Math.round(size * 0.225)}px;box-shadow:0 ${size * 0.1}px ${size * 0.3}px ${sf.shadow}">`;
   }
   if (p.brandMark && !(statement && p.icon && !p.photo)) above = brandLockup(p, t, sf, W, H, align) + above;
+  if (p.step) above = stepChip(p.step, sf, W) + above;
   // Maximalist presets wear their badges as stickers on the device, which also keeps their huge type roomy.
   const floatBadges = plan.devices.length > 0 && (a === 'feature' || a === 'tilted' || framing === 'offset' || framing === 'tilted' || t.density === 'maximal');
   const proofElsewhere = (b: Badge) => !((a === 'social-proof' || a === 'testimonial') && b.type === 'proof');
@@ -667,6 +677,9 @@ function portraitLayout(p: PageInput & { index: number; total: number; callouts:
     } else if (a === 'mosaic') {
       captionBox = { x: plan.caption.x, y: plan.caption.y, w: plan.caption.w, h: H * 0.22 };
       items.push(mosaic(p, ad, sf, W, H, captionBox.y + captionBox.h + H * 0.02));
+    } else if (a === 'fragments') {
+      captionBox = { x: plan.caption.x, y: plan.caption.y, w: plan.caption.w, h: H * 0.24 };
+      items.push(fragments(p, W, H, captionBox.y + captionBox.h + H * 0.015));
     } else if (a === 'feature-wall') {
       captionBox = { x: plan.caption.x, y: plan.caption.y, w: plan.caption.w, h: H * 0.24 };
       items.push(featureWall(p, t, sf, W, H, captionBox.y + captionBox.h + H * 0.01, hs));
@@ -686,6 +699,7 @@ function portraitLayout(p: PageInput & { index: number; total: number; callouts:
     for (const d of [...plan.devices].sort((x, y) => x.z - y.z)) stage.push(deviceHtml(p, ad, sf, d, variant));
     const main = plan.devices.find((d) => d.z === Math.max(...plan.devices.map((x) => x.z)))!;
     if (a === 'callout') stage.push(...callouts(p, main, W));
+    if (a === 'lockscreen') stage.push(lockScreen(p, main, variant, notifications));
     if (a === 'before-after') {
       const arrow = Math.round(W * 0.09);
       const ay = main.y + (plan.captionSide === 'top' ? H * 0.16 : main.h - H * 0.2);
@@ -710,9 +724,12 @@ function portraitLayout(p: PageInput & { index: number; total: number; callouts:
 
   // The watch canvas is tiny: a two-line headline only (no kicker, subheadline or badges).
   const watch = family === 'watch';
+  const plateFill = p.captionPlate && !watch ? (contrastRatio(sf.accent, inkOn(sf.accent)) >= 4.5 ? sf.accent : sf.text) : undefined;
+  const plateInk = plateFill ? inkOn(plateFill) : '';
   const caption = CaptionBlock({
     t,
-    sf,
+    sf: plateFill ? { ...sf, text: plateInk, textGradient: undefined, muted: plateInk, emphasis: [plateInk], emphasisKind: 'color' } : sf,
+    plate: plateFill,
     headline: p.headline,
     kicker: watch ? '' : p.kicker,
     subheadline: watch ? '' : p.subheadline,
@@ -729,7 +746,60 @@ function portraitLayout(p: PageInput & { index: number; total: number; callouts:
     justify,
   });
 
-  return [background(ad, ctx, p), p.photo ? '' : canvasDecor(ctx), ...items, stageHtml, grainLayer(t.grain, t.background === 'paper' ? 'multiply' : 'overlay'), topStructure(ctx), caption].join('\n');
+  return [background(ad, ctx, p), p.photo ? '' : canvasDecor(ctx), threadLayer(ctx), ...items, stageHtml, grainLayer(t.grain, t.background === 'paper' ? 'multiply' : 'overlay'), topStructure(ctx), caption].join('\n');
+}
+
+/** A numbered step: a filled circle above the caption, so a set reads as 1 → 2 → 3. */
+function stepChip(n: number, sf: Surface, W: number): string {
+  const size = Math.round(W * 0.095);
+  const fill = contrastRatio(sf.accent, sf.bg[0]!) >= 1.6 ? sf.accent : sf.text;
+  return `<div data-content class="step" style="width:${size}px;height:${size}px;flex:none;border-radius:50%;background:${fill};color:${inkOn(fill)};display:flex;align-items:center;justify-content:center;font-family:var(--headline);font-weight:800;font-size:${Math.round(size * 0.56)}px;line-height:1">${n}</div>`;
+}
+
+/** Cropped pieces of real UI as cards: as wide as the canvas allows, shrunk together when they would not fit. */
+function fragments(p: PageInput & { callouts: Callout[] }, W: number, H: number, top: number): string {
+  const rows = p.callouts.flatMap((c) => {
+    const src = p.screens[c.screen] ?? p.screens[0];
+    const rect = src && (src.family === 'iphone' ? c.rect : src.family === 'ipad' || src.family === 'duo' ? c.rects[src.family] : undefined);
+    return src && rect ? [{ src, rect, ratio: (rect.h * src.aspect) / rect.w }] : [];
+  });
+  if (!rows.length) return '';
+  const gap = H * 0.02;
+  const avail = H * 0.95 - top - gap * (rows.length - 1);
+  const sum = rows.reduce((a, r) => a + r.ratio, 0);
+  const cw = Math.min(W * 0.84, avail / sum);
+  let y = top + Math.max(0, avail - cw * sum) / 2;
+  const cards = rows.map((r, i) => {
+    const x = (W - cw) / 2 + (rows.length > 1 ? (i % 2 ? 1 : -1) * W * 0.03 : 0);
+    const card = CalloutCard({ src: r.src.src, rect: r.rect, rawAspect: r.src.aspect, width: cw, radius: Math.round(cw * 0.05), style: `left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;z-index:6;` }).replace('class="callout ', 'data-content class="callout ');
+    y += cw * r.ratio + gap;
+    return card;
+  });
+  return `<div class="fragments" style="position:absolute;inset:0;z-index:5">${cards.join('')}</div>`;
+}
+
+/** A wallpaper for the drawn lock screen: the slide's accent falling into its darkest tone. */
+export function wallpaper(sf: Surface, family: DeviceFamily): ScreenImage {
+  // A pale accent would wash out behind the white clock, so those slides start from their own darker color.
+  const base = luminance(sf.accent) < 0.4 ? sf.accent : sf.dark ? sf.bg[1] ?? sf.bg[0]! : sf.text;
+  const top = mix(base, '#000000', 0.15);
+  const bottom = mix(base, '#000000', 0.7);
+  const aspect = family === 'ipad' ? 1.33 : 2.17;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="${Math.round(100 * aspect)}"><defs><linearGradient id="g" x2="0" y2="1"><stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#g)"/></svg>`;
+  return { src: `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`, aspect, family };
+}
+
+/** Clock, date and notification cards, in place on the device's screen; the classic 9:41 on Apple's keynote date. */
+function lockScreen(p: PageInput, d: DevicePlacement, variant: FrameVariant, lines: string[]): string {
+  const g = deviceGeometry(d.family, d.w, p.screens[0]!.aspect, variant);
+  const s = g.screen;
+  const date = new Intl.DateTimeFormat(p.locale, { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date(2007, 0, 9));
+  const icon = s.w * 0.1;
+  const cards = lines.slice(0, 3).map((line) => {
+    const mark = p.icon ? `<img src="${p.icon}" style="width:${icon.toFixed(1)}px;height:${icon.toFixed(1)}px;border-radius:${(icon * 0.225).toFixed(1)}px;flex:none">` : '';
+    return `<div style="display:flex;gap:${(s.w * 0.03).toFixed(1)}px;align-items:center;background:rgba(255,255,255,.86);border-radius:${(s.w * 0.06).toFixed(1)}px;padding:${(s.w * 0.035).toFixed(1)}px;color:#101014;box-shadow:0 ${(s.w * 0.01).toFixed(1)}px ${(s.w * 0.05).toFixed(1)}px rgba(0,0,0,.25)">${mark}<div style="min-width:0"><div style="font-weight:700;font-size:${(s.w * 0.036).toFixed(1)}px;line-height:1.2">${esc(p.appName ?? '')}</div><div style="font-size:${(s.w * 0.036).toFixed(1)}px;line-height:1.25">${esc(line)}</div></div></div>`;
+  });
+  return `<div data-layer="accent" class="lockscreen" style="position:absolute;left:${(d.x + s.x).toFixed(1)}px;top:${(d.y + s.y).toFixed(1)}px;width:${s.w.toFixed(1)}px;height:${s.h.toFixed(1)}px;overflow:hidden;z-index:6;font-family:var(--body);color:#FFFFFF;text-align:center;box-sizing:border-box;padding:${(s.h * 0.08).toFixed(1)}px ${(s.w * 0.045).toFixed(1)}px 0"><div style="font-size:${(s.w * 0.05).toFixed(1)}px;font-weight:600">${esc(date)}</div><div style="font-size:${(s.w * 0.25).toFixed(1)}px;font-weight:600;line-height:1.05;letter-spacing:-.02em;margin-bottom:${(s.h * 0.03).toFixed(1)}px">9:41</div><div style="display:flex;flex-direction:column;gap:${(s.w * 0.025).toFixed(1)}px;text-align:start">${cards.join('')}</div></div>`;
 }
 
 function callouts(p: PageInput & { callouts: Callout[] }, d: DevicePlacement, W: number): string[] {
@@ -920,7 +990,7 @@ function landscapeLayout(p: PageInput & { index: number; total: number }, ad: Re
     below: badgesRow(p, t, sf, badgeSize, align),
     justify: hero || (contained && screens.length > 0) ? 'flex-start' : 'center',
   });
-  return [background(ad, ctx, p), env, canvasDecor(ctx), ...items, stage, grainLayer(t.grain), topStructure(ctx), caption].join('\n');
+  return [background(ad, ctx, p), env, canvasDecor(ctx), threadLayer(ctx), ...items, stage, grainLayer(t.grain), topStructure(ctx), caption].join('\n');
 }
 
 function input(p: PageInput): { quotes: Quote[] } {

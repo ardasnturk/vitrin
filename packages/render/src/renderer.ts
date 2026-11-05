@@ -190,7 +190,7 @@ export function templateFile(designsDir: string, template: string, family: Devic
 }
 
 /** The per-locale extras of a shot: wall lines, benefit lines, brand lockup and the developer's photo. */
-export function shotExtras(paths: AppPaths, shot: Shot, locale: string): Pick<PageInput, 'wall' | 'bullets' | 'bulletStyle' | 'brandMark' | 'photo'> {
+export function shotExtras(paths: AppPaths, shot: Shot, locale: string): Pick<PageInput, 'wall' | 'bullets' | 'bulletStyle' | 'brandMark' | 'photo' | 'captionPlate' | 'step'> {
   let photo: string | undefined;
   if (shot.photo) {
     const file = join(paths.photos, shot.photo);
@@ -202,6 +202,8 @@ export function shotExtras(paths: AppPaths, shot: Shot, locale: string): Pick<Pa
     bullets: (shot.bullets ?? []).map((l) => l[locale] ?? '').filter(Boolean),
     bulletStyle: shot.bulletStyle,
     brandMark: shot.brandMark,
+    captionPlate: shot.captionPlate,
+    step: shot.step,
     photo,
   };
 }
@@ -390,23 +392,23 @@ async function writeThumbnails(paths: AppPaths, images: RenderManifest['images']
 
 /** Preset suggestions by App Store category (first pick, then alternates), from the reference style index. */
 const CATEGORY_STYLES: Record<string, StylePreset[]> = {
-  PRODUCTIVITY: ['hand-drawn-editorial', 'clean-studio-light', 'liquid-glass-aurora', 'quiet-japandi', 'bento-keynote-grid'],
+  PRODUCTIVITY: ['hand-drawn-editorial', 'clean-studio-light', 'ink-minimal', 'liquid-glass-aurora', 'quiet-japandi', 'bento-keynote-grid'],
   FINANCE: ['swiss-grid-bold', 'clean-studio-light', 'bento-keynote-grid', 'midnight-glow-pro', 'noir-gold-luxe'],
   BUSINESS: ['swiss-grid-bold', 'clean-studio-light', 'bento-keynote-grid', 'midnight-glow-pro'],
   DEVELOPER_TOOLS: ['midnight-glow-pro', 'swiss-grid-bold', 'liquid-glass-aurora'],
-  UTILITIES: ['bento-keynote-grid', 'clean-studio-light', 'liquid-glass-aurora', 'midnight-glow-pro'],
-  HEALTH_AND_FITNESS: ['neon-athletic-night', 'bold-poster-type', 'soft-clay-wellness', 'liquid-glass-aurora', 'swiss-grid-bold'],
-  SPORTS: ['neon-athletic-night', 'bold-poster-type', 'swiss-grid-bold'],
-  LIFESTYLE: ['magazine-cover-editorial', 'soft-clay-wellness', 'noir-gold-luxe', 'quiet-japandi'],
-  FOOD_AND_DRINK: ['magazine-cover-editorial', 'quiet-japandi', 'color-block-sequence'],
+  UTILITIES: ['bento-keynote-grid', 'clean-studio-light', 'horizon-block', 'liquid-glass-aurora', 'midnight-glow-pro'],
+  HEALTH_AND_FITNESS: ['neon-athletic-night', 'horizon-block', 'bold-poster-type', 'soft-clay-wellness', 'liquid-glass-aurora', 'swiss-grid-bold'],
+  SPORTS: ['neon-athletic-night', 'horizon-block', 'bold-poster-type', 'swiss-grid-bold'],
+  LIFESTYLE: ['magazine-cover-editorial', 'retro-sunset', 'soft-clay-wellness', 'noir-gold-luxe', 'quiet-japandi'],
+  FOOD_AND_DRINK: ['magazine-cover-editorial', 'retro-sunset', 'quiet-japandi', 'color-block-sequence'],
   BOOKS: ['magazine-cover-editorial', 'quiet-japandi', 'noir-gold-luxe'],
   SHOPPING: ['clean-studio-light', 'noir-gold-luxe', 'color-block-sequence'],
-  SOCIAL_NETWORKING: ['candy-pop-social', 'color-block-sequence', 'paper-sticker-skeuomorphic'],
+  SOCIAL_NETWORKING: ['candy-pop-social', 'zine-collage', 'color-block-sequence', 'paper-sticker-skeuomorphic'],
   EDUCATION: ['color-block-sequence', 'paper-sticker-skeuomorphic', 'candy-pop-social', 'bento-keynote-grid'],
   MEDICAL: ['soft-clay-wellness', 'clean-studio-light', 'liquid-glass-aurora'],
-  ENTERTAINMENT: ['candy-pop-social', 'bold-poster-type', 'neon-athletic-night'],
-  MUSIC: ['bold-poster-type', 'candy-pop-social', 'neon-athletic-night', 'midnight-glow-pro'],
-  TRAVEL: ['magazine-cover-editorial', 'liquid-glass-aurora', 'noir-gold-luxe'],
+  ENTERTAINMENT: ['candy-pop-social', 'zine-collage', 'bold-poster-type', 'neon-athletic-night'],
+  MUSIC: ['bold-poster-type', 'retro-sunset', 'candy-pop-social', 'neon-athletic-night', 'midnight-glow-pro'],
+  TRAVEL: ['magazine-cover-editorial', 'sky-dream', 'liquid-glass-aurora', 'noir-gold-luxe'],
 };
 
 /** Clearly different presets: category picks first, then the most contrasting looks (light/dark, sans/serif). */

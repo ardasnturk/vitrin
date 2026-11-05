@@ -10,6 +10,22 @@ Text that earns ranking in App Store search comes from the **name**, the **subti
 4. Distribution: the strongest 1–2 terms go into the **name**, the next 1–2 into the **subtitle**, the rest into the **keyword field**. Write them to the `selected` field — validate checks that each selected term really is in its field (`keywords.plan-mismatch`).
 5. `ownRank` is where the app ranks for the term today (live apps). Keep the terms it ranks top 10 for (`keywords.drops-ranked-term`), and see `metadata/research/live-listing.json` for what the listing says now.
 
+## Audit
+
+`vitrin audit` scores where the listing stands today, per language, from what `vitrin research` and `vitrin rank` already measured (no new requests): 0–100, from rankings (50), listing (30) and competition (20), and never more than the rankings + 30, because a perfect listing nobody finds is not a good listing. Under 40 is `pivot` (change the keywords), under 70 `align` (fine-tune), above that `fine`. It judges the live listing when there is one; `--draft` judges `metadata/listing/` instead, to see what a rewrite would change. Results stay in `metadata/audits/<date>.json`, and the newest one's fixes open the write brief.
+
+Volume and difficulty (0–100) are Vitrin's estimates from the apps that rank for a term, not Apple's search counts. Say so whenever you quote them. Scores are heuristics: use them to compare terms and runs, never as a promise.
+
+`vitrin rank` records the top rivals' ranks next to the app's own, and prints who is ahead for each term. `research.rivals` in `vitrin.config.yaml` pins App Store ids to follow; otherwise the apps seen most often in the top 10 are used.
+
+## Ideas before an app exists
+
+`vitrin keywords "calorie tracker" --storefront us,de` works in any folder, with no project: it scores the terms and what the App Store's search box suggests for them in each country. Use it to size an idea or to find seeds. Suggestions come from an undocumented endpoint: an empty list is normal, and some countries have none.
+
+## Pricing
+
+`vitrin pricing --base 9.99 --country us [--method tiers]` proposes a price per country from purchasing power (World Bank GNI per capita, PPP; `data/ppp.json`, refreshed with `scripts/update-ppp.mjs`), held between `--floor` and `--ceiling` shares of the base price. It is a proposal in the base currency: Vitrin never changes prices, and App Store Connect snaps each one to a local price point. Show it to the user; lowering a price is a business decision.
+
 ## Measure
 
 Run `vitrin rank` before a metadata change and again one to two weeks after it: it records the app's own rank for the selected and best-scored terms in `metadata/rankings/<date>.json` (kept in git, outside `research/`, so it survives the research clean-up) and prints the change since the previous snapshot. Use the result for the next iteration: keep what moved up, replace what did not.
