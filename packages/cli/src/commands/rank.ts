@@ -1,5 +1,5 @@
 import { ensureDir, existsSync, log, readJsonIfExists, writeJson } from '@vitrin/core';
-import { checkRanks, compareRanks, rivalsToTrack, storefrontPlan } from '@vitrin/research';
+import { checkRanks, compareRanks, rankHighlights, rivalsToTrack, storefrontPlan } from '@vitrin/research';
 import { Competitors, KeywordPlan, RankSnapshot } from '@vitrin/schemas';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -33,6 +33,8 @@ export async function rankCommand(ctx: Ctx): Promise<number> {
     log.info(`${pc.dim(row.locale)} ${row.term}: ${rank(row.after)}${previous ? pc.dim(` (was ${rank(row.before)})`) : ''}${move}${rivalLine(snapshot, row)}`);
   }
   if (snapshot.entries.every((e) => e.rank === null)) log.warn(`The app is not in the first ${ctx.config.research.limit} results for any tracked term (not live yet, or ranked lower).`);
+  const changes = compareRanks(previous, snapshot);
+  log.result({ date: snapshot.date, previous: previous?.date ?? null, highlights: previous ? rankHighlights(changes) : null });
   log.ok(`${previous ? `Compared with ${previous.date}; s` : 'S'}aved metadata/rankings/${snapshot.date}.json`);
   return EXIT.OK;
 }

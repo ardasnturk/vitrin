@@ -71,3 +71,27 @@ export function compareRanks(previous: RankSnapshot | undefined, current: RankSn
     return { locale: e.locale, term: e.term, before, after: e.rank, delta: before !== null && e.rank !== null ? before - e.rank : null };
   });
 }
+
+/** What in a comparison is worth telling someone who did not ask: the small moves are search noise. */
+export interface RankHighlights {
+  /** Terms that moved at least `RANK_MOVE` places. */
+  up: number;
+  down: number;
+  enteredTop10: RankChange[];
+  leftTop10: RankChange[];
+}
+
+export const RANK_MOVE = 5;
+
+const inTop10 = (rank: number | null) => rank !== null && rank <= 10;
+
+/** Empty without an earlier snapshot: a first measurement has nothing to compare with. */
+export function rankHighlights(changes: RankChange[]): RankHighlights {
+  const compared = changes.filter((c) => c.before !== null || c.after !== null);
+  return {
+    up: compared.filter((c) => (c.delta ?? 0) >= RANK_MOVE).length,
+    down: compared.filter((c) => (c.delta ?? 0) <= -RANK_MOVE).length,
+    enteredTop10: compared.filter((c) => inTop10(c.after) && !inTop10(c.before)),
+    leftTop10: compared.filter((c) => inTop10(c.before) && !inTop10(c.after)),
+  };
+}

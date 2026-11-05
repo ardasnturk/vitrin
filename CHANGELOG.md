@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 2.4.1 — 2026-11-05
+
+### Added
+- **Scheduled rank checks in the Mac app:** Settings → Check search ranks runs `vitrin rank` every day or every week while the app is open, for projects measured at least once, and notifies when a term enters or leaves the top 10 or when terms move five places or more. Off by default, since each check adds a file to `metadata/rankings/`.
+- `vitrin rank --json` reports what changed since the last snapshot.
+
 ## 2.4.0 — 2026-11-05
 
 Vitrin now tells you where a listing stands before it rewrites anything, and the screenshot templates draw on a review of 106 popular App Store galleries.

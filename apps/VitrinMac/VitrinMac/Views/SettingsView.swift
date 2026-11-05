@@ -87,6 +87,10 @@ struct GeneralSettings: View {
             Toggle(L.t("settings.keepInMenuBar"), isOn: $settings.keepInMenuBar).disabled(!settings.showMenuBarExtra)
             Toggle(L.t("settings.notifications"), isOn: $settings.notifications)
             Toggle(L.t("settings.notifyAppReview"), isOn: $settings.notifyAppReview).disabled(!settings.notifications)
+            Picker(L.t("settings.rankSchedule"), selection: $settings.rankSchedule) {
+                ForEach(RankSchedule.allCases, id: \.self) { Text(L.t("settings.rankSchedule.\($0.rawValue)")).tag($0) }
+            }
+            Text(L.t("settings.rankScheduleHint")).font(.caption).foregroundStyle(.secondary)
             Toggle(L.t("settings.developerMode"), isOn: $settings.developerMode)
             Text(L.t("settings.developerModeHint")).font(.caption).foregroundStyle(.secondary)
         }

@@ -23,6 +23,9 @@ import Observation
     private(set) var cliError: String?
     private(set) var locating = false
     private var watchingAppReview = false
+    private var watchingRanks = false
+    /// When each project's check last ran here, so a failing one waits instead of retrying every hour.
+    private var rankAttempts: [String: Date] = [:]
     var selectedProjectID: String? { didSet { settings.lastProjectID = selectedProjectID; applyLanguage() } }
     var selectedPage: ProjectPage = .flow
     /// An App Store Connect app without a linked project folder, shown read-only; nil while a project page is open.
@@ -107,6 +110,28 @@ import Observation
         }
     }
 
+    private func watchRanks() async {
+        // Launching is busy enough, and the App Store search API is slow on purpose.
+        try? await Task.sleep(for: .seconds(120))
+        while !Task.isCancelled {
+            await checkRanks()
+            try? await Task.sleep(for: RankWatcher.interval)
+        }
+    }
+
+    /// One pass over the projects: those already measured once and due now, one at a time.
+    func checkRanks(now: Date = .now) async {
+        guard settings.rankSchedule != .off, let cli else { return }
+        for project in store.projects where project.hasConfig {
+            let due = RankWatcher.isDue(newest: RankWatcher.newestSnapshot(in: project.path), schedule: settings.rankSchedule, lastAttempt: rankAttempts[project.id], now: now)
+            guard due else { continue }
+            rankAttempts[project.id] = now
+            guard let result = try? await CLIRunner(location: cli).json(["rank"], as: RankWatcher.Result.self, cwd: project.path, timeout: RankWatcher.timeout).value,
+                  let body = RankWatcher.message(result.highlights) else { continue }
+            Notifier.shared.post(id: "ranks-\(project.id)-\(result.date)", title: displayName(for: project), body: body)
+        }
+    }
+
     func session(for project: Project) -> ProjectSession {
         if let s = sessions[project.id] { return s }
         let s = ProjectSession(project: project)
@@ -133,6 +158,10 @@ import Observation
         if !watchingAppReview {
             watchingAppReview = true
             Task { await watchAppReview() }
+        }
+        if !watchingRanks {
+            watchingRanks = true
+            Task { await watchRanks() }
         }
         Task { await updateCLIIfBehind() }
         if let p = selectedProject { await open(p) }

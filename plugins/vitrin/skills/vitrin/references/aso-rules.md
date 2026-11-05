@@ -30,6 +30,8 @@ Volume and difficulty (0–100) are Vitrin's estimates from the apps that rank f
 
 Run `vitrin rank` before a metadata change and again one to two weeks after it: it records the app's own rank for the selected and best-scored terms in `metadata/rankings/<date>.json` (kept in git, outside `research/`, so it survives the research clean-up) and prints the change since the previous snapshot. Use the result for the next iteration: keep what moved up, replace what did not.
 
+The Mac app can do this by itself: Settings → Check search ranks, every day or every week. It runs while the app is open, only for projects measured at least once, and notifies when a term enters or leaves the top 10 or several move five places or more. Each run adds a snapshot to `metadata/rankings/`, so tell the user those files will show up in git.
+
 Rank is not the goal, and a move does not prove the metadata caused it. Ask the user to compare impressions, conversion rate and downloads in App Analytics, with the source type set to App Store Search. A term that does not move may be too competitive or have the wrong intent. `vitrin rank` reads the iTunes Search API, which approximates the store's order; give it a week or two, not a day.
 
 ## Name (2–30)

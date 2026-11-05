@@ -15,6 +15,8 @@ import Observation
     var notifications: Bool { didSet { d.set(notifications, forKey: "notifications") } }
     /// Look at the apps in App Store Connect every few minutes and tell when one moves through App Review.
     var notifyAppReview: Bool { didSet { d.set(notifyAppReview, forKey: "notifyAppReview") } }
+    /// How often the app measures search ranks by itself. Off by default: each check writes a file into the project.
+    var rankSchedule: RankSchedule { didSet { d.set(rankSchedule.rawValue, forKey: "rankSchedule") } }
     /// Explicit path to the Vitrin CLI entry (`bin.js` or a `vitrin` executable); empty = search.
     var cliPath: String { didSet { d.set(cliPath, forKey: "cliPath") } }
     /// A Vitrin checkout to run from (`packages/cli/dist/bin.js`); empty = none.
@@ -40,6 +42,7 @@ import Observation
         notifications = d.object(forKey: "notifications") as? Bool ?? true
         // A test run never calls App Store Connect on its own.
         notifyAppReview = d.object(forKey: "notifyAppReview") as? Bool ?? !testing
+        rankSchedule = d.string(forKey: "rankSchedule").flatMap(RankSchedule.init(rawValue:)) ?? .off
         cliPath = d.string(forKey: "cliPath") ?? ""
         vitrinCheckout = d.string(forKey: "vitrinCheckout") ?? ProcessInfo.processInfo.environment["VITRIN_DEV"] ?? ""
         developerMode = d.bool(forKey: "developerMode")

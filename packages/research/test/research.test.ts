@@ -1,7 +1,7 @@
 import type { StorefrontInfo } from '@vitrin/core';
 import type { Competitors, CompetitorApp, KeywordCandidate, KeywordPlan, RankSnapshot } from '@vitrin/schemas';
 import { describe, expect, it } from 'vitest';
-import { auditLocale, auditTotal, charmPrice, loadPpp, parseHints, pricingPlan, rivalsToTrack, shareFor, termCovered, topRivals, totalAudit, verdictFor, compareRanks, competitionScore, estimatePopularity, kmeans, median, nameTermFrequency, rgbToHex, titleShare, totalScore, trackedTerms } from '../src/index.js';
+import { rankHighlights, auditLocale, auditTotal, charmPrice, loadPpp, parseHints, pricingPlan, rivalsToTrack, shareFor, termCovered, topRivals, totalAudit, verdictFor, compareRanks, competitionScore, estimatePopularity, kmeans, median, nameTermFrequency, rgbToHex, titleShare, totalScore, trackedTerms } from '../src/index.js';
 
 describe('keyword scoring', () => {
   it('computes median and competition', () => {
@@ -178,5 +178,16 @@ describe('pricing', () => {
     expect(Object.keys(loadPpp().gni).length).toBeGreaterThan(150);
     expect(charmPrice(4.9)).toBe(4.99);
     expect(charmPrice(0.5)).toBe(0.5);
+  });
+});
+
+describe('rank highlights', () => {
+  const row = (term: string, before: number | null, after: number | null) => ({ locale: 'en-US', term, before, after, delta: before !== null && after !== null ? before - after : null });
+
+  it('tells big moves and crossings of the top 10, not noise', () => {
+    const h = rankHighlights([row('a', 12, 9), row('b', 8, 30), row('c', 40, 20), row('d', 20, 22), row('e', null, 7), row('f', 4, null), row('g', null, null)]);
+    expect(h.enteredTop10.map((c) => c.term)).toEqual(['a', 'e']);
+    expect(h.leftTop10.map((c) => c.term)).toEqual(['b', 'f']);
+    expect([h.up, h.down]).toEqual([1, 1]);
   });
 });

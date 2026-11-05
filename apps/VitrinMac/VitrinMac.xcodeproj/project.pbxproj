@@ -38,9 +38,11 @@
 		55A46D05A4F7FF6FDE0B43D8 /* AscCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 907F24C99792DD5A89398989 /* AscCLI.swift */; };
 		56CABFF4FEC52F0C2DCEF426 /* MainWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E276ADD36183CB2534CD55D /* MainWindow.swift */; };
 		57BA7539C3C139FE16F2EF1F /* AscPanelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4499DB8A461594587411B912 /* AscPanelTests.swift */; };
+		581C1EE167DBB8CD128C31F0 /* RankWatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6D75D9603D193D5351C2675 /* RankWatcherTests.swift */; };
 		5A47CC0DEB0E271DE00C1852 /* OverviewDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB048CF9E3B96B7FFB1A78B /* OverviewDecodingTests.swift */; };
 		5BE80297C1C52E2F0AA89693 /* vitrin in Resources */ = {isa = PBXBuildFile; fileRef = 783EF8CBA29B5EE231F68014 /* vitrin */; };
 		5F90AB4B1153ED5592C566E6 /* VisualsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01E20EED87A8F2960D1D0B50 /* VisualsView.swift */; };
+		63FDD579854A7EABE40E39D8 /* RankWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 719A8EB1702CE4EAE23111B8 /* RankWatcher.swift */; };
 		66098835DA01703BD923ACA6 /* TestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178E50E1F076BEF93183110C /* TestSupport.swift */; };
 		69C506659A1FFDA0CFC008B5 /* asc-commands.json in Resources */ = {isa = PBXBuildFile; fileRef = D5609E8300E5225278AE77B4 /* asc-commands.json */; };
 		6E7D7FF75ADCF7C949E05D36 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03E402820452B8F74BC043AE /* Components.swift */; };
@@ -154,6 +156,7 @@
 		6C5B27F54EB1DD541DA0E5E4 /* ASCAppsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASCAppsTests.swift; sourceTree = "<group>"; };
 		6E1B5EF1079BAFCD67698F97 /* CredentialsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialsTests.swift; sourceTree = "<group>"; };
 		6E9D5CDB16DA2B1A46BABA71 /* asc-apps.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "asc-apps.json"; sourceTree = "<group>"; };
+		719A8EB1702CE4EAE23111B8 /* RankWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankWatcher.swift; sourceTree = "<group>"; };
 		73A615B339C608275E0690C8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		752E06D58004A85091315517 /* AppleAccountForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleAccountForm.swift; sourceTree = "<group>"; };
 		753C7DBD65CAA94F7E2F4BD3 /* AscDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscDataView.swift; sourceTree = "<group>"; };
@@ -180,6 +183,7 @@
 		C3CA2D93E3EA234007CA5797 /* AscCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscCacheTests.swift; sourceTree = "<group>"; };
 		C6A3F41FBC6CAE0D466C60EF /* AscListingImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscListingImport.swift; sourceTree = "<group>"; };
 		C6D51CAE05B7F00B658B2BA0 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		C6D75D9603D193D5351C2675 /* RankWatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankWatcherTests.swift; sourceTree = "<group>"; };
 		CBE4D6DF03D2F9BD630E46C3 /* AscCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscCatalog.swift; sourceTree = "<group>"; };
 		CC082A50AEAD3C99A7E712AF /* CLILocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLILocator.swift; sourceTree = "<group>"; };
 		D5609E8300E5225278AE77B4 /* asc-commands.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "asc-commands.json"; sourceTree = "<group>"; };
@@ -233,6 +237,7 @@
 				B74D68F1B0BD20A23DC2231D /* JSONValueTests.swift */,
 				5BB048CF9E3B96B7FFB1A78B /* OverviewDecodingTests.swift */,
 				3F67ECA6B8CDF368EF22E230 /* ProjectStoreTests.swift */,
+				C6D75D9603D193D5351C2675 /* RankWatcherTests.swift */,
 				49ED2DE5B9BA4D66A3D616C6 /* SSEParserTests.swift */,
 				2E0F98EB10502D837CFE213C /* StudioHandshakeTests.swift */,
 				178E50E1F076BEF93183110C /* TestSupport.swift */,
@@ -382,6 +387,7 @@
 				F471CF129037F43BFC201D31 /* Onboarding.swift */,
 				476499AF954F73C7E3B491F9 /* ProjectSession.swift */,
 				EA5817B638BEABD004C8AEC4 /* ProjectStore.swift */,
+				719A8EB1702CE4EAE23111B8 /* RankWatcher.swift */,
 				48040DA2E36A7D8B5ABD9C0C /* StudioClient.swift */,
 				AA21416BDE031F109E9C8C96 /* StudioEvents.swift */,
 				EACD137CC67DA4F8B7886237 /* StudioProcess.swift */,
@@ -534,6 +540,7 @@
 				EE7F39DE57B3D619CC9D499A /* JSONValueTests.swift in Sources */,
 				5A47CC0DEB0E271DE00C1852 /* OverviewDecodingTests.swift in Sources */,
 				825A29589F51FB40F4D4F7A2 /* ProjectStoreTests.swift in Sources */,
+				581C1EE167DBB8CD128C31F0 /* RankWatcherTests.swift in Sources */,
 				8ADFBB8EB97D74D673427D90 /* SSEParserTests.swift in Sources */,
 				6EF806F1907DC9ADD2A48AF1 /* StudioHandshakeTests.swift in Sources */,
 				66098835DA01703BD923ACA6 /* TestSupport.swift in Sources */,
@@ -593,6 +600,7 @@
 				85775490D9326B1BA9FEDFB8 /* OnboardingView.swift in Sources */,
 				C0AB2ED630D16EF8AB0A41E0 /* ProjectSession.swift in Sources */,
 				C444ABE275FBC3C4C3BD1068 /* ProjectStore.swift in Sources */,
+				63FDD579854A7EABE40E39D8 /* RankWatcher.swift in Sources */,
 				32BBF053F822E37356686EA9 /* ResearchView.swift in Sources */,
 				002E76A5498A3C3D3C8AA23B /* ReviewView.swift in Sources */,
 				33F2783440EC511CB7579C86 /* SettingsView.swift in Sources */,
@@ -670,7 +678,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -690,7 +698,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 2.4.0;
+				MARKETING_VERSION = 2.4.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -769,7 +777,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -783,7 +791,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 2.4.0;
+				MARKETING_VERSION = 2.4.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
